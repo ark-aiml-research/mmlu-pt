@@ -1,0 +1,92 @@
+{
+  "run_id": "05ca24295d37f9c51b35",
+  "spec": {
+    "protocol": "nvidia-semdedup-octen-vllm-v1",
+    "annotation_sha256": "a51cbf1099b969b0573abd104184bf91874df64f1dc09bbb5a418ac2110290a6",
+    "model": "Octen/Octen-Embedding-8B",
+    "revision": "5adcfa292e712091dfc30f0e97f0b2282e6cc66c",
+    "representation": "nfkc_question_labeled_choices_with_document_prefix",
+    "clusters": [
+      1,
+      8,
+      32
+    ],
+    "seed": 42,
+    "cv_seed": 20260911,
+    "attention_backend": "TRITON_ATTN",
+    "outer_splits": 5,
+    "outer_repeats": 10,
+    "inner_splits": 4,
+    "versions": {
+      "nemo-curator": "1.3.0",
+      "vllm": "0.19.1",
+      "torch": "2.10.0",
+      "transformers": "4.57.6",
+      "numpy": "2.2.6",
+      "pandas": "2.3.3",
+      "pyarrow": "25.0.0",
+      "ray": "2.56.1",
+      "cuml-cu12": "25.10.0",
+      "scikit-learn": "1.7.2"
+    }
+  },
+  "selection": {
+    "n_clusters": 1,
+    "cosine_threshold": 0.9755067527294159,
+    "eps": 0.024493247270584106,
+    "which_to_keep": "hard",
+    "distance_metric": "cosine",
+    "selection": "mean inner grouped-CV MCC; threshold refitted on all annotated pairs"
+  },
+  "embedding": {
+    "model": "Octen/Octen-Embedding-8B",
+    "revision": "5adcfa292e712091dfc30f0e97f0b2282e6cc66c",
+    "snapshot": "/raid/aluno_paulosantana/cache/hf/hub/models--Octen--Octen-Embedding-8B/snapshots/5adcfa292e712091dfc30f0e97f0b2282e6cc66c",
+    "stage": "VLLMEmbeddingModelStage",
+    "pretokenize": false,
+    "max_chars": null,
+    "runner": "pooling",
+    "attention_backend": "TRITON_ATTN",
+    "pooling": "last_token",
+    "normalized": true,
+    "dtype": "bfloat16",
+    "dimension": 4096,
+    "max_model_len": 32768,
+    "seconds": 113.85991188045591,
+    "files_sha256": {
+      "a475311890bc.parquet": "1c94c04dd202491301455ceb97cea99d9c09ecd32e91386c3e72be3a51204861"
+    },
+    "norm_min": 0.9999998807907104,
+    "norm_max": 1.0000001192092896,
+    "max_tokens_observed": 2230
+  },
+  "input_pairs": 466,
+  "unique_items": 837,
+  "removed_items": 218,
+  "retained_items": 619,
+  "mean_outer_metrics": {
+    "mcc": 0.957691896239024,
+    "precision": 0.9655364618670195,
+    "recall": 0.9837837837837837,
+    "f1": 0.974560619145645
+  },
+  "std_outer_metrics": {
+    "mcc": 0.004416691860131841,
+    "precision": 0.0035615237416027406,
+    "recall": 0.005697797585888972,
+    "f1": 0.0026470381254400446
+  },
+  "artifacts_sha256": {
+    "analysis.md": "e16ae84d8e46706b1c7456157878b1c986debdca952a16f58470783dca569993",
+    "calibration.png": "d8b8570d89a4c94f812858e9cc9334fbb1f3a6f0f55b3a42a96c4d52f12b4dde",
+    "cluster_diagnostics.csv": "01b7ce411fb7f77bd45cbbeae01832c51bbd3d6b5b03a6a166a41fdc60279afb",
+    "final_inner_ranking.parquet": "8e25d9c323cf6ea26f89b3f12d847a37e0187395259a5cad56737c9e6a21daa6",
+    "outer_results.parquet": "b62186e0e287027fd0573130be399c015244846426cdadf7980e7893467684bc",
+    "pair_audit.parquet": "6b750cf7e6212ab319c0d1688cc1a5bbed5f89ad6e7e1e0fd5ff82cf6badc91d",
+    "removal_audit.parquet": "4f992cc20da5801f66469306db0aa6d5fb9a54f49c377d2c72564fd00fa45247",
+    "removed_ids.parquet": "3d2fdac8f7677fe739c7f62135a07d66d72585fb64ae8ae43755474a81b694eb",
+    "selected_configuration.json": "b3836a6e4942d8a4327bd1bfb088808052ccd7856e9fd804d335ff3cb24e6b4f"
+  },
+  "python_version": "3.12.3",
+  "created_at": "2026-09-29T19:31:44.332288+00:00"
+}

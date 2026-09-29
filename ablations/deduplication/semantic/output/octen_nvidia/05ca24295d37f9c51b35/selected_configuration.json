@@ -1,0 +1,8 @@
+{
+  "n_clusters": 1,
+  "cosine_threshold": 0.9755067527294159,
+  "eps": 0.024493247270584106,
+  "which_to_keep": "hard",
+  "distance_metric": "cosine",
+  "selection": "mean inner grouped-CV MCC; threshold refitted on all annotated pairs"
+}

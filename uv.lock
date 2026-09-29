@@ -33,7 +33,8 @@ dependencies = [
     { name = "psutil" },
     { name = "pyyaml" },
     { name = "safetensors" },
-    { name = "torch" },
+    { name = "torch", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/8d/75/94cd5d389649578aca399e5aa822637eec18319a1dadc400ffe2f9a7493f/accelerate-1.14.0.tar.gz", hash = "sha256:41b9c4377a54e0b460a959b0defa1b736e4ca0a2373252d9a539964c2afe3c8d", size = 412167, upload-time = "2026-06-11T13:45:52.326Z" }
 wheels = [
@@ -515,15 +516,37 @@ sdist = { url = "https://files.pythonhosted.org/packages/76/cd/6e4c79d4a25e3b654
 name = "compressed-tensors"
 version = "0.13.0"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
+]
 dependencies = [
-    { name = "loguru", marker = "platform_machine == 'x86_64'" },
-    { name = "pydantic", marker = "platform_machine == 'x86_64'" },
-    { name = "torch", marker = "platform_machine == 'x86_64'" },
-    { name = "transformers", marker = "platform_machine == 'x86_64'" },
+    { name = "loguru", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "pydantic", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "torch", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "transformers", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/fc/65/88dd1c58fb9d0ded51b5c86471b937a1525f91fad2211a6f051dc1ea822d/compressed_tensors-0.13.0.tar.gz", hash = "sha256:23893824d3498ea3f1a829f14a8fa85f9a5e76a34c711a038b8d7c619ca9a67c", size = 200995, upload-time = "2025-12-16T16:03:55.397Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0b/b5/61ac2563c62490922b603c09113a083fd74af3630ec3931e769484d6dcb5/compressed_tensors-0.13.0-py3-none-any.whl", hash = "sha256:3518799c9baf034eb642efb551db6b0537b8713d45a64fe4def26f7f8d6cabec", size = 192620, upload-time = "2025-12-16T16:03:53.041Z" },
+]
+
+[[package]]
+name = "compressed-tensors"
+version = "0.15.0.1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+dependencies = [
+    { name = "loguru", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "pydantic", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "transformers", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/41/1b/c3c4a98ec5f2727656336f07a0c35862195c310d8eb0b2fa5b4be6848680/compressed_tensors-0.15.0.1.tar.gz", hash = "sha256:a8e93054e8a5ec49c980b09ed36c4c1249b4a8ee167920a8e461c4da26e78d99", size = 229412, upload-time = "2026-04-10T14:23:54.708Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a8/52/93833dc1610e017ac5b7dcd59b8304d8ef67d1114c2d124e728a2cbbea12/compressed_tensors-0.15.0.1-py3-none-any.whl", hash = "sha256:e1b1f322e82e475715e242bad46925a304ea8e5c98b5055a15b8eb22fb6bfea9", size = 194260, upload-time = "2026-04-10T14:23:53.098Z" },
 ]
 
 [[package]]
@@ -622,10 +645,34 @@ wheels = [
 
 [[package]]
 name = "cuda-bindings"
+version = "12.9.4"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+dependencies = [
+    { name = "cuda-pathfinder", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a9/c1/dabe88f52c3e3760d861401bb994df08f672ec893b8f7592dc91626adcf3/cuda_bindings-12.9.4-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:fda147a344e8eaeca0c6ff113d2851ffca8f7dfc0a6c932374ee5c47caa649c8", size = 12151019, upload-time = "2025-10-21T14:51:43.167Z" },
+]
+
+[[package]]
+name = "cuda-bindings"
 version = "12.9.7"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'aarch64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'aarch64' and sys_platform == 'emscripten'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
+    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'emscripten'",
+    "platform_machine == 'aarch64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
 dependencies = [
-    { name = "cuda-pathfinder" },
+    { name = "cuda-pathfinder", marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/32/45/557d4ed1fa54f0c7db8aee083229f624990d69f7d00f55477eed5c7e169a/cuda_bindings-12.9.7-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:0666d3c082ef8f4b2d670950589373550e9f3bf564d635dd883f24a0b40402ff", size = 7071026, upload-time = "2026-05-27T18:44:13.356Z" },
@@ -656,10 +703,34 @@ wheels = [
 
 [[package]]
 name = "cuda-python"
+version = "12.9.4"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+dependencies = [
+    { name = "cuda-bindings", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/af/f3/6b032a554019cfb3447e671798c1bd3e79b5f1af20d10253f56cea269ef2/cuda_python-12.9.4-py3-none-any.whl", hash = "sha256:d2cacea882a69863f1e7d27ee71d75f0684f4c76910aff839067e4f89c902279", size = 7594, upload-time = "2025-10-21T14:55:12.846Z" },
+]
+
+[[package]]
+name = "cuda-python"
 version = "12.9.7"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'aarch64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'aarch64' and sys_platform == 'emscripten'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
+    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'emscripten'",
+    "platform_machine == 'aarch64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
 dependencies = [
-    { name = "cuda-bindings" },
+    { name = "cuda-bindings", version = "12.9.7", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c1/9d/05e753afbaac3f92691059b3ba875589c98a425d69e5808cec32b31b580c/cuda_python-12.9.7-py3-none-any.whl", hash = "sha256:23a1fc406d491eef7a7e985095725cb7b20a04a7bd9b7a66400e5c86e082e0aa", size = 7597, upload-time = "2026-05-27T19:50:32.605Z" },
@@ -723,7 +794,8 @@ version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
-    { name = "cuda-python" },
+    { name = "cuda-python", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "cuda-python", version = "12.9.7", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
     { name = "cuda-toolkit", version = "12.8.1", source = { registry = "https://pypi.org/simple" }, extra = ["nvcc", "nvrtc"], marker = "(platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform != 'emscripten' and sys_platform != 'win32') or (platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32')" },
     { name = "cuda-toolkit", version = "12.9.2.0", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform != 'win32') or (platform_machine == 'aarch64' and sys_platform == 'win32') or (platform_machine == 'x86_64' and sys_platform == 'win32') or sys_platform == 'emscripten'" },
     { name = "cupy-cuda12x" },
@@ -751,7 +823,8 @@ name = "cuml-cu12"
 version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-python" },
+    { name = "cuda-python", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "cuda-python", version = "12.9.7", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
     { name = "cuda-toolkit", version = "12.8.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "cufft", "curand", "cusolver", "cusparse"], marker = "(platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform != 'emscripten' and sys_platform != 'win32') or (platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32')" },
     { name = "cuda-toolkit", version = "12.9.2.0", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform != 'win32') or (platform_machine == 'aarch64' and sys_platform == 'win32') or (platform_machine == 'x86_64' and sys_platform == 'win32') or sys_platform == 'emscripten'" },
     { name = "cudf-cu12" },
@@ -1197,27 +1270,66 @@ wheels = [
 ]
 
 [[package]]
+name = "flashinfer-cubin"
+version = "0.6.6"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/12/e8/826f9452bc5f76b94d7eb025f03dcaf1b51b9ed7790386c0285191e69be4/flashinfer_cubin-0.6.6-py3-none-any.whl", hash = "sha256:36508dfc792eb5ecfb15d2c140a7702812e1fa1ab0fb03929b2ed55e3e8191f3", size = 267661457, upload-time = "2026-03-11T01:36:36.538Z" },
+]
+
+[[package]]
 name = "flashinfer-python"
 version = "0.6.1"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
+]
 dependencies = [
-    { name = "apache-tvm-ffi", marker = "platform_machine == 'x86_64'" },
-    { name = "click", marker = "platform_machine == 'x86_64'" },
-    { name = "einops", marker = "platform_machine == 'x86_64'" },
-    { name = "ninja", marker = "platform_machine == 'x86_64'" },
-    { name = "numpy", marker = "platform_machine == 'x86_64'" },
-    { name = "nvidia-cudnn-frontend", marker = "platform_machine == 'x86_64'" },
-    { name = "nvidia-cutlass-dsl", marker = "platform_machine == 'x86_64'" },
-    { name = "nvidia-ml-py", marker = "platform_machine == 'x86_64'" },
-    { name = "packaging", marker = "platform_machine == 'x86_64'" },
-    { name = "requests", marker = "platform_machine == 'x86_64'" },
-    { name = "tabulate", marker = "platform_machine == 'x86_64'" },
-    { name = "torch", marker = "platform_machine == 'x86_64'" },
-    { name = "tqdm", marker = "platform_machine == 'x86_64'" },
+    { name = "apache-tvm-ffi", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "click", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "einops", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "ninja", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "numpy", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "nvidia-cudnn-frontend", version = "1.26.0", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "nvidia-cutlass-dsl", version = "4.5.3", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "nvidia-ml-py", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "packaging", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "requests", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "tabulate", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "torch", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "tqdm", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/68/81/5a84e14df7358d2c2903b18c6f2779bd4b4a6739076d01a847d4c18fb102/flashinfer_python-0.6.1.tar.gz", hash = "sha256:8dc2fc5dc187fc70151d5f39ef560fde8a38117a4f6cf40dce0ddb09cbd4f0bf", size = 5141191, upload-time = "2026-01-14T05:40:27.825Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/76/d5/bca632bb5781689415186421bbee2ad39ae8a39b0996d579c76901e5c66f/flashinfer_python-0.6.1-py3-none-any.whl", hash = "sha256:610dd4ac15e7a0874b79e7577d027cb35133e8dc31dc3137c2f2d6497fe46f18", size = 7580432, upload-time = "2026-01-14T05:40:25.636Z" },
+]
+
+[[package]]
+name = "flashinfer-python"
+version = "0.6.6"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+dependencies = [
+    { name = "apache-tvm-ffi", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "click", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "einops", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "ninja", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "numpy", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "nvidia-cudnn-frontend", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "nvidia-cutlass-dsl", version = "4.8.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "nvidia-ml-py", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "packaging", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "requests", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "tabulate", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "tqdm", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/03/70/c5a235297351021f5d3d3233523a85f5a6468495587489ad2f257e8eafe2/flashinfer_python-0.6.6.tar.gz", hash = "sha256:0730ba7c7aad332961933bcebc5119762797161ede57d955f6fd199818ed1d92", size = 5344156, upload-time = "2026-03-11T01:36:21.434Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e0/61/385d06755f3ab66333018285657adf0daf8a90a129448231fd09e315bd2e/flashinfer_python-0.6.6-py3-none-any.whl", hash = "sha256:078f158636969eec1a0d3dea19c3ca90b426b66df89bbf7b7b8276ce2ec08148", size = 7817047, upload-time = "2026-03-11T01:36:19.198Z" },
 ]
 
 [[package]]
@@ -1390,8 +1502,8 @@ name = "grpcio-reflection"
 version = "1.83.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "grpcio", marker = "platform_machine == 'x86_64'" },
-    { name = "protobuf", marker = "platform_machine == 'x86_64'" },
+    { name = "grpcio", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "protobuf", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/e5/6e/e46a65398fe4289b62f46266234321fcfb9ff96fcd69c872440c2bfaf607/grpcio_reflection-1.83.0.tar.gz", hash = "sha256:6a2a30a462ac2c3c6d149734a8fe655fa7617c17fa2cda9949006f3bf07f5b3e", size = 19203, upload-time = "2026-07-23T15:24:26.163Z" }
 wheels = [
@@ -2420,7 +2532,7 @@ dependencies = [
     { name = "nemo-curator", extra = ["text-cuda12"] },
     { name = "pydantic" },
     { name = "sentence-transformers" },
-    { name = "vllm", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "vllm", version = "0.19.1", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
 ]
 
 [package.dev-dependencies]
@@ -2446,7 +2558,7 @@ requires-dist = [
     { name = "nemo-curator", extras = ["text-cuda12"], specifier = "==1.3.0" },
     { name = "pydantic", specifier = ">=2.0" },
     { name = "sentence-transformers", specifier = ">=5.6,<6" },
-    { name = "vllm", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'", specifier = "==0.15.1" },
+    { name = "vllm", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'", specifier = "==0.19.1" },
 ]
 
 [package.metadata.requires-dev]
@@ -2647,7 +2759,8 @@ dependencies = [
     { name = "pandas" },
     { name = "pyarrow" },
     { name = "ray", extra = ["data", "default"] },
-    { name = "torch" },
+    { name = "torch", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
     { name = "transformers" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/79/e3/82fdf51656c8d4d78af0d7ce714ad9585edf70d9c910989638dd2b2a0dec/nemo_curator-1.3.0.tar.gz", hash = "sha256:747cf7557eccc66538e5cfbfa8f861354346df4f0076fda424cf1c49c1e6160a", size = 647197, upload-time = "2026-07-27T18:08:06.594Z" }
@@ -2679,7 +2792,8 @@ text-cuda12 = [
     { name = "sentence-transformers" },
     { name = "sentencepiece" },
     { name = "trafilatura" },
-    { name = "vllm", marker = "platform_machine == 'x86_64' and sys_platform != 'darwin'" },
+    { name = "vllm", version = "0.15.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "vllm", version = "0.19.1", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'darwin' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
     { name = "warcio" },
 ]
 
@@ -2763,9 +2877,11 @@ wheels = [
 
 [package.optional-dependencies]
 cu12 = [
-    { name = "cuda-bindings" },
+    { name = "cuda-bindings", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "cuda-bindings", version = "12.9.7", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
     { name = "cuda-core" },
-    { name = "cuda-python" },
+    { name = "cuda-python", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "cuda-python", version = "12.9.7", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
     { name = "nvidia-cuda-cccl-cu12" },
     { name = "nvidia-cuda-nvcc-cu12", version = "12.8.93", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform != 'emscripten' and sys_platform != 'win32') or (platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32')" },
     { name = "nvidia-cuda-nvcc-cu12", version = "12.9.86", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform != 'win32') or (platform_machine == 'aarch64' and sys_platform == 'win32') or (platform_machine == 'x86_64' and sys_platform == 'win32') or sys_platform == 'emscripten'" },
@@ -2886,10 +3002,24 @@ wheels = [
 
 [[package]]
 name = "nvidia-cudnn-frontend"
+version = "1.18.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c6/52/08f98262e77b1cbcc834cc1a5db494d0661ea1dbdea58c2e2d51a57fdaca/nvidia_cudnn_frontend-1.18.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6c023539ca6de99234cf5102c3ec0d6af817f5396fc93028a22ba5b834a35b8a", size = 2159245, upload-time = "2026-01-27T23:07:32.664Z" },
+]
+
+[[package]]
+name = "nvidia-cudnn-frontend"
 version = "1.26.0"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
+]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/31/64818fbaa117456349241b42ddfaef3ae6b050f5e99bb0e9d78eb831279b/nvidia_cudnn_frontend-1.26.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:1a1223c4e2e8bbe6f620148d6848f4eb773dd94bef534d5b748e91232b5be618", size = 3627033, upload-time = "2026-07-07T20:55:47.089Z" },
     { url = "https://files.pythonhosted.org/packages/f9/99/04a37f34b271ed157c6108c3191bd1993ab3fad8d5d66516970bd1e7c12d/nvidia_cudnn_frontend-1.26.0-cp312-cp312-win_amd64.whl", hash = "sha256:7f104a40cb6f25cf01b7d7e84cb99af7dedd32b1cb8264384c2f363b7a3f7fb6", size = 2998730, upload-time = "2026-07-07T20:56:09.848Z" },
 ]
 
@@ -2964,24 +3094,88 @@ wheels = [
 name = "nvidia-cutlass-dsl"
 version = "4.5.3"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
+]
 dependencies = [
-    { name = "nvidia-cutlass-dsl-libs-base", marker = "platform_machine == 'x86_64'" },
+    { name = "nvidia-cutlass-dsl-libs-base", version = "4.5.3", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d5/3b/b8ff6a6103d387ce7272e31ad15b74e46fdc93aaeceab1d7ca457f813200/nvidia_cutlass_dsl-4.5.3-py3-none-any.whl", hash = "sha256:c14ca121c2a4ce53ca4d5ee5d939e4181b97054b55ea7bb84aa9f99b98960060", size = 10178, upload-time = "2026-07-08T01:56:16.346Z" },
 ]
 
 [[package]]
+name = "nvidia-cutlass-dsl"
+version = "4.8.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+dependencies = [
+    { name = "nvidia-cutlass-dsl-libs-base", version = "4.8.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "nvidia-cutlass-dsl-libs-cu12", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e4/f4/e96f452f7975dd2fd4d2a4af88c63205431dad7efbe63aff6e3a4b1ada17/nvidia_cutlass_dsl-4.8.0-py3-none-any.whl", hash = "sha256:24f996e0e5fa88c8b417f4893e615af135bdfdfdbdbed7e239faf36a88df711b", size = 10493, upload-time = "2026-09-21T03:44:08.278Z" },
+]
+
+[[package]]
 name = "nvidia-cutlass-dsl-libs-base"
 version = "4.5.3"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
+]
 dependencies = [
-    { name = "cuda-python", marker = "platform_machine == 'x86_64'" },
-    { name = "numpy", marker = "platform_machine == 'x86_64'" },
-    { name = "typing-extensions", marker = "platform_machine == 'x86_64'" },
+    { name = "cuda-python", version = "12.9.7", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "numpy", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "typing-extensions", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+]
+
+[[package]]
+name = "nvidia-cutlass-dsl-libs-base"
+version = "4.8.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+dependencies = [
+    { name = "cuda-bindings", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "nvidia-cutlass-dsl-libs-core", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "protobuf", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "typing-extensions", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a6/18/170e4aca062632a7ad6d59604e29e3a7d0ed29af04fd33ce1ca0ecccd412/nvidia_cutlass_dsl_libs_base-4.5.3-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:b5b5229c4ac9508b5f5554de62f35cfa162dadbd806a3dad4affb34775eb2a89", size = 74512695, upload-time = "2026-07-08T01:58:20.734Z" },
+    { url = "https://files.pythonhosted.org/packages/12/1c/2f7a13626af1edfefb5ad69234d47e3b212064a42ad2e6db59351b5ae002/nvidia_cutlass_dsl_libs_base-4.8.0-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:5bdc80989b0fbbac3d58960057e74e2ce8676fafa76b852d9422b9c4b9b74bdd", size = 3050530, upload-time = "2026-09-21T03:23:37.86Z" },
+]
+
+[[package]]
+name = "nvidia-cutlass-dsl-libs-core"
+version = "4.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cuda-bindings", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "protobuf", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "typing-extensions", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/85/66/d05f0ae372b80fc757e59d5211d93483c6ff721f574cb68cad84ceb87157/nvidia_cutlass_dsl_libs_core-4.8.0-py3-none-any.whl", hash = "sha256:b32716d2ed10c185cdbbb6b5c6fca26a3113a60e6e2fe4e2f0cb15966422b621", size = 1634056, upload-time = "2026-09-21T03:20:12.741Z" },
+]
+
+[[package]]
+name = "nvidia-cutlass-dsl-libs-cu12"
+version = "4.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cuda-bindings", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "nvidia-cutlass-dsl-libs-base", version = "4.8.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "protobuf", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "typing-extensions", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/13/a0/fdde64cc231f52a716107bf1a1246db9dde8cb11b28278b8d9c05f7c87bd/nvidia_cutlass_dsl_libs_cu12-4.8.0-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:2374cfdff635ceaf7e2c5bd17b4beb410830420a4fd65b12b7f24b5d5cbb9d4c", size = 91698149, upload-time = "2026-09-21T03:30:50.832Z" },
 ]
 
 [[package]]
@@ -3014,10 +3208,10 @@ wheels = [
 
 [[package]]
 name = "nvidia-nvshmem-cu12"
-version = "3.3.20"
+version = "3.4.5"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3b/6c/99acb2f9eb85c29fc6f3a7ac4dccfd992e22666dd08a642b303311326a97/nvidia_nvshmem_cu12-3.3.20-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:d00f26d3f9b2e3c3065be895e3059d6479ea5c638a3f38c9fec49b1b9dd7c1e5", size = 124657145, upload-time = "2025-08-04T20:25:19.995Z" },
+    { url = "https://files.pythonhosted.org/packages/b5/09/6ea3ea725f82e1e76684f0708bbedd871fc96da89945adeba65c3835a64c/nvidia_nvshmem_cu12-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:042f2500f24c021db8a06c5eec2539027d57460e1c1a762055a6554f72c369bd", size = 139103095, upload-time = "2025-09-06T00:32:31.266Z" },
 ]
 
 [[package]]
@@ -3162,6 +3356,67 @@ wheels = [
 ]
 
 [[package]]
+name = "opentelemetry-exporter-otlp"
+version = "1.44.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "opentelemetry-exporter-otlp-proto-grpc", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-exporter-otlp-proto-http", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f2/45/7af37fe54e5d3e66e7dcd7ba8b8aeee73f202bfac909cc94b8c4e428f9ac/opentelemetry_exporter_otlp-1.44.0.tar.gz", hash = "sha256:af1cde7c33ea8ed624bf04ac49a885730fe44c1f1ad698656e592c38f70ce106", size = 6090, upload-time = "2026-07-16T15:25:34.585Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/18/c3/7b466a9463944e70b37b744072a0c1b88a425dade3fff0631adec66c9bcc/opentelemetry_exporter_otlp-1.44.0-py3-none-any.whl", hash = "sha256:4a498fa8d8fd8be9e8e2d175fe5524a3fe581ccffadd8509db86526a5fb97051", size = 6727, upload-time = "2026-07-16T15:25:14.445Z" },
+]
+
+[[package]]
+name = "opentelemetry-exporter-otlp-proto-common"
+version = "1.44.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "opentelemetry-proto", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/61/09/4d717852c1cf3f854b76c7110a5d00883bc3c99288b9b0dbcbeb9e306eb6/opentelemetry_exporter_otlp_proto_common-1.44.0.tar.gz", hash = "sha256:dc87a5a5bc58f149a56d1547e4691588fa12994cdc3bc039a694ccb3375862ac", size = 20202, upload-time = "2026-07-16T15:25:37.658Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5e/71/65fd9d54c10b860f87c045ccee1264cab7011268895d3528818a29c1172a/opentelemetry_exporter_otlp_proto_common-1.44.0-py3-none-any.whl", hash = "sha256:9a9fe61bba73d802904bc989f1d6b4a7b1ee40f06c40e98d6f85af65aaebb694", size = 17045, upload-time = "2026-07-16T15:25:18.201Z" },
+]
+
+[[package]]
+name = "opentelemetry-exporter-otlp-proto-grpc"
+version = "1.44.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "googleapis-common-protos", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "grpcio", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-api", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-exporter-otlp-proto-common", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-proto", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-sdk", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "typing-extensions", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1f/47/80d9e9d468dc5de3af5096f5ccdb065fa4dd1470f74495cc53e59e397f47/opentelemetry_exporter_otlp_proto_grpc-1.44.0.tar.gz", hash = "sha256:40d1ae9e03fcc36de3cbac610cc99f35894938bff9cfd90fc4ec68bd85448463", size = 27225, upload-time = "2026-07-16T15:25:38.308Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/29/6ae42ba32b153ae0a44ae125f0caff2188bbe62d99c82d1768da30864e72/opentelemetry_exporter_otlp_proto_grpc-1.44.0-py3-none-any.whl", hash = "sha256:6a1a645ea182a2f59440c51fa8301d309f3324a8f9d65f8395584b064b67ee4e", size = 19624, upload-time = "2026-07-16T15:25:19.096Z" },
+]
+
+[[package]]
+name = "opentelemetry-exporter-otlp-proto-http"
+version = "1.44.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "googleapis-common-protos", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-api", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-exporter-otlp-proto-common", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-proto", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-sdk", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "requests", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "typing-extensions", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1a/87/95e2a5aaa795b4e2260d74e16df2d5541deb2ea9de010bcd615f4dee2654/opentelemetry_exporter_otlp_proto_http-1.44.0.tar.gz", hash = "sha256:c633d7270ad6b57cd4cfbe8b0007a9e2e7c0cb50bd6c50fe2a7b245f721a09d8", size = 25806, upload-time = "2026-07-16T15:25:39.162Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cd/d0/fdeb1a98d8d3a6205f5f297c51b4a9bfe65126ab60339669bbe3dd54c2e2/opentelemetry_exporter_otlp_proto_http-1.44.0-py3-none-any.whl", hash = "sha256:838592fce774c1c8bb7b9a0a7facbfa82e17be5a8a4e94cef10cb84ae026bae3", size = 21850, upload-time = "2026-07-16T15:25:20.006Z" },
+]
+
+[[package]]
 name = "opentelemetry-exporter-prometheus"
 version = "0.65b0"
 source = { registry = "https://pypi.org/simple" }
@@ -3212,6 +3467,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8f/73/0cbdebcb4cf545fdd328da14f5137e37d0770c3f26185e478b0d15d94f50/opentelemetry_semantic_conventions-0.65b0.tar.gz", hash = "sha256:f9b2b81e9d5b64f11bc952075e7e9c7fb0aab075c7fd1c46d597f1b919852d60", size = 148774, upload-time = "2026-07-16T15:25:46.902Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a6/0e/49df70d9b81fb5cbae4bbf2a49d865b09bcbcbc4eb53f5851b1027738d78/opentelemetry_semantic_conventions-0.65b0-py3-none-any.whl", hash = "sha256:1cacde7b0ad306f84c5ef08c3dbe1bbaf20165bba6f8bff43b670e555a086bcb", size = 204645, upload-time = "2026-07-16T15:25:30.688Z" },
+]
+
+[[package]]
+name = "opentelemetry-semantic-conventions-ai"
+version = "0.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "opentelemetry-sdk", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-semantic-conventions", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/24/02/10aeacc37a38a3a8fa16ff67bec1ae3bf882539f6f9efb0f70acf802ca2d/opentelemetry_semantic_conventions_ai-0.5.1.tar.gz", hash = "sha256:153906200d8c1d2f8e09bd78dbef526916023de85ac3dab35912bfafb69ff04c", size = 26533, upload-time = "2026-03-26T14:20:38.73Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/55/22/41fb05f1dc5fda2c468e05a41814c20859016c85117b66c8a257cae814f6/opentelemetry_semantic_conventions_ai-0.5.1-py3-none-any.whl", hash = "sha256:25aeb22bd261543b4898a73824026d96770e5351209c7d07a0b1314762b1f6e4", size = 11250, upload-time = "2026-03-26T14:20:37.108Z" },
 ]
 
 [[package]]
@@ -3306,7 +3574,8 @@ dependencies = [
     { name = "psutil" },
     { name = "pyyaml" },
     { name = "safetensors" },
-    { name = "torch" },
+    { name = "torch", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
     { name = "tqdm" },
     { name = "transformers" },
 ]
@@ -3728,7 +3997,8 @@ name = "pylibcudf-cu12"
 version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-python" },
+    { name = "cuda-python", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "cuda-python", version = "12.9.7", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
     { name = "libcudf-cu12" },
     { name = "nvtx" },
     { name = "packaging" },
@@ -3758,7 +4028,8 @@ name = "pylibraft-cu12"
 version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-python" },
+    { name = "cuda-python", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "cuda-python", version = "12.9.7", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
     { name = "libraft-cu12" },
     { name = "numpy" },
     { name = "rmm-cu12" },
@@ -3904,6 +4175,22 @@ wheels = [
 ]
 
 [[package]]
+name = "quack-kernels"
+version = "0.6.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "apache-tvm-ffi", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "einops", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "nvidia-cutlass-dsl", version = "4.8.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "torch-c-dlpack-ext", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5f/18/6c2a20d00dff254f154fb3b951f4e5a0377a60122c17385e5f08d5f5b5e1/quack_kernels-0.6.5.tar.gz", hash = "sha256:dd9405a4a6fa35fc3a5a18fe35b46a14b0bf7e3ad9fe2451903e355047ac471d", size = 846876, upload-time = "2026-09-11T05:08:20.621Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/73/d8/f5e56c38b286308d115a171e3c5c44f24e9d03980c3cfd22588df40261fa/quack_kernels-0.6.5-py3-none-any.whl", hash = "sha256:df1ddd31366c82eb9692fe087c671209189dcbde53c909c81a865d4ee66b158d", size = 729615, upload-time = "2026-09-11T05:08:19.306Z" },
+]
+
+[[package]]
 name = "raft-dask-cu12"
 version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3946,7 +4233,8 @@ name = "rapidsmpf-cu12"
 version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-python" },
+    { name = "cuda-python", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "cuda-python", version = "12.9.7", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
     { name = "cupy-cuda12x" },
     { name = "librapidsmpf-cu12" },
     { name = "numpy" },
@@ -3981,7 +4269,7 @@ wheels = [
 
 [package.optional-dependencies]
 cgraph = [
-    { name = "cupy-cuda12x", marker = "platform_machine == 'x86_64' and sys_platform != 'darwin'" },
+    { name = "cupy-cuda12x", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
 ]
 data = [
     { name = "fsspec" },
@@ -4156,7 +4444,8 @@ name = "rmm-cu12"
 version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-python" },
+    { name = "cuda-python", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "cuda-python", version = "12.9.7", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
     { name = "librmm-cu12" },
     { name = "numpy" },
 ]
@@ -4302,7 +4591,8 @@ dependencies = [
     { name = "numpy" },
     { name = "scikit-learn" },
     { name = "scipy" },
-    { name = "torch" },
+    { name = "torch", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
     { name = "tqdm" },
     { name = "transformers" },
     { name = "typing-extensions" },
@@ -4596,11 +4886,45 @@ wheels = [
 name = "torch"
 version = "2.9.1"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'aarch64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'aarch64' and sys_platform == 'emscripten'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
+    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'emscripten'",
+    "platform_machine == 'aarch64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
 dependencies = [
-    { name = "filelock" },
-    { name = "fsspec" },
-    { name = "jinja2" },
-    { name = "networkx" },
+    { name = "filelock", marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
+    { name = "fsspec", marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
+    { name = "jinja2", marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
+    { name = "networkx", marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
+    { name = "setuptools", marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
+    { name = "sympy", marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
+    { name = "typing-extensions", marker = "platform_machine != 'x86_64' or sys_platform == 'emscripten' or sys_platform == 'win32'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0f/27/07c645c7673e73e53ded71705045d6cb5bae94c4b021b03aa8d03eee90ab/torch-2.9.1-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:da5f6f4d7f4940a173e5572791af238cb0b9e21b1aab592bd8b26da4c99f1cd6", size = 104126592, upload-time = "2025-11-12T15:20:41.62Z" },
+    { url = "https://files.pythonhosted.org/packages/19/17/e377a460603132b00760511299fceba4102bd95db1a0ee788da21298ccff/torch-2.9.1-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:27331cd902fb4322252657f3902adf1c4f6acad9dcad81d8df3ae14c7c4f07c4", size = 899742281, upload-time = "2025-11-12T15:22:17.602Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/1a/64f5769025db846a82567fa5b7d21dba4558a7234ee631712ee4771c436c/torch-2.9.1-cp312-cp312-win_amd64.whl", hash = "sha256:81a285002d7b8cfd3fdf1b98aa8df138d41f1a8334fd9ea37511517cedf43083", size = 110940568, upload-time = "2025-11-12T15:21:18.689Z" },
+    { url = "https://files.pythonhosted.org/packages/6e/ab/07739fd776618e5882661d04c43f5b5586323e2f6a2d7d84aac20d8f20bd/torch-2.9.1-cp312-none-macosx_11_0_arm64.whl", hash = "sha256:c0d25d1d8e531b8343bea0ed811d5d528958f1dcbd37e7245bc686273177ad7e", size = 74479191, upload-time = "2025-11-12T15:21:25.816Z" },
+]
+
+[[package]]
+name = "torch"
+version = "2.10.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+dependencies = [
+    { name = "cuda-bindings", version = "12.9.4", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "filelock", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "fsspec", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "jinja2", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "networkx", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
     { name = "nvidia-cublas-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "nvidia-cuda-cupti-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "nvidia-cuda-nvrtc-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
@@ -4616,42 +4940,88 @@ dependencies = [
     { name = "nvidia-nvjitlink-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "nvidia-nvshmem-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "nvidia-nvtx-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "setuptools" },
-    { name = "sympy" },
+    { name = "setuptools", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "sympy", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
     { name = "triton", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "typing-extensions" },
+    { name = "typing-extensions", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0f/27/07c645c7673e73e53ded71705045d6cb5bae94c4b021b03aa8d03eee90ab/torch-2.9.1-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:da5f6f4d7f4940a173e5572791af238cb0b9e21b1aab592bd8b26da4c99f1cd6", size = 104126592, upload-time = "2025-11-12T15:20:41.62Z" },
-    { url = "https://files.pythonhosted.org/packages/19/17/e377a460603132b00760511299fceba4102bd95db1a0ee788da21298ccff/torch-2.9.1-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:27331cd902fb4322252657f3902adf1c4f6acad9dcad81d8df3ae14c7c4f07c4", size = 899742281, upload-time = "2025-11-12T15:22:17.602Z" },
-    { url = "https://files.pythonhosted.org/packages/b1/1a/64f5769025db846a82567fa5b7d21dba4558a7234ee631712ee4771c436c/torch-2.9.1-cp312-cp312-win_amd64.whl", hash = "sha256:81a285002d7b8cfd3fdf1b98aa8df138d41f1a8334fd9ea37511517cedf43083", size = 110940568, upload-time = "2025-11-12T15:21:18.689Z" },
-    { url = "https://files.pythonhosted.org/packages/6e/ab/07739fd776618e5882661d04c43f5b5586323e2f6a2d7d84aac20d8f20bd/torch-2.9.1-cp312-none-macosx_11_0_arm64.whl", hash = "sha256:c0d25d1d8e531b8343bea0ed811d5d528958f1dcbd37e7245bc686273177ad7e", size = 74479191, upload-time = "2025-11-12T15:21:25.816Z" },
+    { url = "https://files.pythonhosted.org/packages/b3/7a/abada41517ce0011775f0f4eacc79659bc9bc6c361e6bfe6f7052a6b9363/torch-2.10.0-3-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:98c01b8bb5e3240426dcde1446eed6f40c778091c8544767ef1168fc663a05a6", size = 915622781, upload-time = "2026-03-11T14:17:11.354Z" },
+    { url = "https://files.pythonhosted.org/packages/23/8e/3c74db5e53bff7ed9e34c8123e6a8bfef718b2450c35eefab85bb4a7e270/torch-2.10.0-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:787124e7db3b379d4f1ed54dd12ae7c741c16a4d29b49c0226a89bea50923ffb", size = 915711952, upload-time = "2026-01-21T16:23:53.503Z" },
+]
+
+[[package]]
+name = "torch-c-dlpack-ext"
+version = "0.1.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/37/de/921b6491efce5c389a5ef9bbed3d2d6660005840dae488124173180859ab/torch_c_dlpack_ext-0.1.5.tar.gz", hash = "sha256:d06f0357d575d22a168cc77acb9020fc4bae30968ceb6718a055dcbe92bacabe", size = 12913, upload-time = "2026-01-12T11:25:08.484Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e2/79/a914539b4785f3e44f891aa012a886edb8bc10fe081c440981c57543ce21/torch_c_dlpack_ext-0.1.5-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:e6f9da4bb9af70e27facc777458be62e10dbbbddda7672d16138db0553c5a524", size = 897846, upload-time = "2026-01-12T11:24:48.168Z" },
 ]
 
 [[package]]
 name = "torchaudio"
 version = "2.9.1"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
+]
 dependencies = [
-    { name = "torch", marker = "platform_machine == 'x86_64'" },
+    { name = "torch", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fe/0d/b5af1d55ede1ca07769a2cf71256073d8958e2a5521fc734fc19f5343283/torchaudio-2.9.1-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:4533fdafba73d7bcfcb5f1225b2cc8974a290ed0fe54c44638d6f440e91b8999", size = 2059899, upload-time = "2025-11-12T15:26:19.363Z" },
     { url = "https://files.pythonhosted.org/packages/2e/7c/df90eb0b337cbad59296ed91778e32be069330f5186256d4ce9ea603d324/torchaudio-2.9.1-cp312-cp312-win_amd64.whl", hash = "sha256:923dccc67be4a6cbb45c3dcc2d69ee182bda75b09b69bc88cd3bcdfc739883a2", size = 665337, upload-time = "2025-11-12T15:26:07.407Z" },
+]
+
+[[package]]
+name = "torchaudio"
+version = "2.10.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+dependencies = [
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/98/25/e55a30d7138f8fe56ed006df25b0a3c27681f0ec7bc9989e1778e6d559c3/torchaudio-2.10.0-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:0e77b2956448d63790a99beed0b74ac8b8cd3a94dcdd9ad01974411078f46278", size = 1895234, upload-time = "2026-01-21T16:28:37.034Z" },
 ]
 
 [[package]]
 name = "torchvision"
 version = "0.24.1"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
+]
 dependencies = [
-    { name = "numpy", marker = "platform_machine == 'x86_64'" },
-    { name = "pillow", marker = "platform_machine == 'x86_64'" },
-    { name = "torch", marker = "platform_machine == 'x86_64'" },
+    { name = "numpy", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "pillow", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "torch", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/93/b1/db2941526ecddd84884132e2742a55c9311296a6a38627f9e2627f5ac889/torchvision-0.24.1-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:66a98471fc18cad9064123106d810a75f57f0838eee20edc56233fd8484b0cc7", size = 8049868, upload-time = "2025-11-12T15:25:13.058Z" },
     { url = "https://files.pythonhosted.org/packages/69/98/16e583f59f86cd59949f59d52bfa8fc286f86341a229a9d15cbe7a694f0c/torchvision-0.24.1-cp312-cp312-win_amd64.whl", hash = "sha256:4aa6cb806eb8541e92c9b313e96192c6b826e9eb0042720e2fa250d021079952", size = 4302006, upload-time = "2025-11-12T15:25:16.184Z" },
+]
+
+[[package]]
+name = "torchvision"
+version = "0.25.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+dependencies = [
+    { name = "numpy", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "pillow", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/68/2f/f24b039169db474e8688f649377de082a965fbf85daf4e46c44412f1d15a/torchvision-0.25.0-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:f25aa9e380865b11ea6e9d99d84df86b9cc959f1a007cd966fc6f1ab2ed0e248", size = 8072351, upload-time = "2026-01-21T16:27:21.074Z" },
 ]
 
 [[package]]
@@ -4751,10 +5121,10 @@ wheels = [
 
 [[package]]
 name = "triton"
-version = "3.5.1"
+version = "3.6.0"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f2/50/9a8358d3ef58162c0a415d173cfb45b67de60176e1024f71fbc4d24c0b6d/triton-3.5.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:d2c6b915a03888ab931a9fd3e55ba36785e1fe70cbea0b40c6ef93b20fc85232", size = 170470207, upload-time = "2025-11-11T17:41:00.253Z" },
+    { url = "https://files.pythonhosted.org/packages/ab/a8/cdf8b3e4c98132f965f88c2313a4b493266832ad47fb52f23d14d4f86bb5/triton-3.6.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:74caf5e34b66d9f3a429af689c1c7128daba1d8208df60e81106b115c00d6fca", size = 188266850, upload-time = "2026-01-20T16:00:43.041Z" },
 ]
 
 [[package]]
@@ -4909,70 +5279,150 @@ wheels = [
 name = "vllm"
 version = "0.15.1"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "aiohttp", marker = "platform_machine == 'x86_64'" },
-    { name = "anthropic", marker = "platform_machine == 'x86_64'" },
-    { name = "blake3", marker = "platform_machine == 'x86_64'" },
-    { name = "cachetools", marker = "platform_machine == 'x86_64'" },
-    { name = "cbor2", marker = "platform_machine == 'x86_64'" },
-    { name = "cloudpickle", marker = "platform_machine == 'x86_64'" },
-    { name = "compressed-tensors", marker = "platform_machine == 'x86_64'" },
-    { name = "depyf", marker = "platform_machine == 'x86_64'" },
-    { name = "diskcache", marker = "platform_machine == 'x86_64'" },
-    { name = "einops", marker = "platform_machine == 'x86_64'" },
-    { name = "fastapi", extra = ["standard"], marker = "platform_machine == 'x86_64'" },
-    { name = "filelock", marker = "platform_machine == 'x86_64'" },
-    { name = "flashinfer-python", marker = "platform_machine == 'x86_64'" },
-    { name = "gguf", marker = "platform_machine == 'x86_64'" },
-    { name = "grpcio", marker = "platform_machine == 'x86_64'" },
-    { name = "grpcio-reflection", marker = "platform_machine == 'x86_64'" },
-    { name = "ijson", marker = "platform_machine == 'x86_64'" },
-    { name = "lark", marker = "platform_machine == 'x86_64'" },
-    { name = "llguidance", marker = "platform_machine == 'x86_64'" },
-    { name = "lm-format-enforcer", marker = "platform_machine == 'x86_64'" },
-    { name = "mcp", marker = "platform_machine == 'x86_64'" },
-    { name = "mistral-common", extra = ["image"], marker = "platform_machine == 'x86_64'" },
-    { name = "model-hosting-container-standards", marker = "platform_machine == 'x86_64'" },
-    { name = "msgspec", marker = "platform_machine == 'x86_64'" },
-    { name = "ninja", marker = "platform_machine == 'x86_64'" },
-    { name = "numba", marker = "platform_machine == 'x86_64'" },
-    { name = "numpy", marker = "platform_machine == 'x86_64'" },
-    { name = "openai", marker = "platform_machine == 'x86_64'" },
-    { name = "openai-harmony", marker = "platform_machine == 'x86_64'" },
-    { name = "opencv-python-headless", marker = "platform_machine == 'x86_64'" },
-    { name = "outlines-core", marker = "platform_machine == 'x86_64'" },
-    { name = "partial-json-parser", marker = "platform_machine == 'x86_64'" },
-    { name = "pillow", marker = "platform_machine == 'x86_64'" },
-    { name = "prometheus-client", marker = "platform_machine == 'x86_64'" },
-    { name = "prometheus-fastapi-instrumentator", marker = "platform_machine == 'x86_64'" },
-    { name = "protobuf", marker = "platform_machine == 'x86_64'" },
-    { name = "psutil", marker = "platform_machine == 'x86_64'" },
-    { name = "py-cpuinfo", marker = "platform_machine == 'x86_64'" },
-    { name = "pybase64", marker = "platform_machine == 'x86_64'" },
-    { name = "pydantic", marker = "platform_machine == 'x86_64'" },
-    { name = "python-json-logger", marker = "platform_machine == 'x86_64'" },
-    { name = "pyyaml", marker = "platform_machine == 'x86_64'" },
-    { name = "pyzmq", marker = "platform_machine == 'x86_64'" },
-    { name = "ray", extra = ["cgraph"], marker = "platform_machine == 'x86_64'" },
-    { name = "regex", marker = "platform_machine == 'x86_64'" },
-    { name = "requests", marker = "platform_machine == 'x86_64'" },
-    { name = "sentencepiece", marker = "platform_machine == 'x86_64'" },
-    { name = "setproctitle", marker = "platform_machine == 'x86_64'" },
-    { name = "setuptools", marker = "platform_machine == 'x86_64'" },
-    { name = "six", marker = "platform_machine == 'x86_64'" },
-    { name = "tiktoken", marker = "platform_machine == 'x86_64'" },
-    { name = "tokenizers", marker = "platform_machine == 'x86_64'" },
-    { name = "torch", marker = "platform_machine == 'x86_64'" },
-    { name = "torchaudio", marker = "platform_machine == 'x86_64'" },
-    { name = "torchvision", marker = "platform_machine == 'x86_64'" },
-    { name = "tqdm", marker = "platform_machine == 'x86_64'" },
-    { name = "transformers", marker = "platform_machine == 'x86_64'" },
-    { name = "typing-extensions", marker = "platform_machine == 'x86_64'" },
-    { name = "watchfiles", marker = "platform_machine == 'x86_64'" },
-    { name = "xgrammar", marker = "platform_machine == 'x86_64'" },
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
 ]
+dependencies = [
+    { name = "aiohttp", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "anthropic", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "blake3", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "cachetools", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "cbor2", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "cloudpickle", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "compressed-tensors", version = "0.13.0", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "depyf", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "diskcache", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "einops", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "fastapi", extra = ["standard"], marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "filelock", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "flashinfer-python", version = "0.6.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "gguf", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "grpcio", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "grpcio-reflection", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "ijson", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "lark", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "llguidance", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "lm-format-enforcer", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "mcp", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "mistral-common", extra = ["image"], marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "model-hosting-container-standards", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "msgspec", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "ninja", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "numba", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "numpy", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "openai", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "openai-harmony", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "opencv-python-headless", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "outlines-core", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "partial-json-parser", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "pillow", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "prometheus-client", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "prometheus-fastapi-instrumentator", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "protobuf", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "psutil", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "py-cpuinfo", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "pybase64", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "pydantic", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "python-json-logger", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "pyyaml", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "pyzmq", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "ray", extra = ["cgraph"], marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "regex", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "requests", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "sentencepiece", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "setproctitle", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "setuptools", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "six", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "tiktoken", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "tokenizers", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "torch", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "torchaudio", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "torchvision", version = "0.24.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "tqdm", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "transformers", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "typing-extensions", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "watchfiles", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "xgrammar", version = "0.1.29", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+]
+
+[[package]]
+name = "vllm"
+version = "0.19.1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+dependencies = [
+    { name = "aiohttp", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "anthropic", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "blake3", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "cachetools", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "cbor2", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "cloudpickle", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "compressed-tensors", version = "0.15.0.1", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "depyf", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "diskcache", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "einops", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "fastapi", extra = ["standard"], marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "filelock", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "flashinfer-cubin", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "flashinfer-python", version = "0.6.6", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "gguf", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "ijson", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "lark", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "llguidance", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "lm-format-enforcer", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "mcp", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "mistral-common", extra = ["image"], marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "model-hosting-container-standards", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "msgspec", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "ninja", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "numba", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "numpy", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "nvidia-cudnn-frontend", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "nvidia-cutlass-dsl", version = "4.8.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "openai", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "openai-harmony", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opencv-python-headless", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-api", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-exporter-otlp", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-sdk", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "opentelemetry-semantic-conventions-ai", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "outlines-core", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "partial-json-parser", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "pillow", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "prometheus-client", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "prometheus-fastapi-instrumentator", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "protobuf", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "psutil", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "py-cpuinfo", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "pybase64", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "pydantic", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "python-json-logger", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "pyyaml", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "pyzmq", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "quack-kernels", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "regex", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "requests", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "sentencepiece", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "setproctitle", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "setuptools", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "six", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "tiktoken", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "tokenizers", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "torchaudio", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "torchvision", version = "0.25.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "tqdm", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "transformers", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "typing-extensions", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "watchfiles", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "xgrammar", version = "0.2.8", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a8/49/60a2a962ecbf780c8fbfd0d5548b208d654d5c4267df94d8d93883641431/vllm-0.19.1.tar.gz", hash = "sha256:9fb88ce6b50991eba41d183584f65f51d7f6015d86a42cdabf79c1c8bd5d66fa", size = 31105401, upload-time = "2026-04-18T05:50:15.143Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/19/2a/a8fdb1d71dfb5b67485b1755a2cc2e069e72fccfa1787cc6dadb6b4176e8/vllm-0.15.1-cp38-abi3-manylinux_2_31_x86_64.whl", hash = "sha256:d3810299d331fc1031c8a2a9886f1f0e0cc2f14ddad284d337174324b1c83e92", size = 509219874, upload-time = "2026-02-05T00:18:30.377Z" },
+    { url = "https://files.pythonhosted.org/packages/78/20/f41216b79c87372a9d03175f36fa1411ee61059ce8c557d2691722ea4aae/vllm-0.19.1-cp38-abi3-manylinux_2_31_x86_64.whl", hash = "sha256:71a87f46cafab4489c69a5c5c83b870d0235e5694d8222303d460576293dc719", size = 433132101, upload-time = "2026-04-18T05:49:54.202Z" },
 ]
 
 [[package]]
@@ -5103,18 +5553,41 @@ wheels = [
 name = "xgrammar"
 version = "0.1.29"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform == 'win32'",
+    "platform_machine == 'x86_64' and sys_platform == 'emscripten'",
+]
 dependencies = [
-    { name = "numpy", marker = "platform_machine == 'x86_64'" },
-    { name = "pydantic", marker = "platform_machine == 'x86_64'" },
-    { name = "torch", marker = "platform_machine == 'x86_64'" },
-    { name = "transformers", marker = "platform_machine == 'x86_64'" },
-    { name = "triton", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "typing-extensions", marker = "platform_machine == 'x86_64'" },
+    { name = "numpy", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "pydantic", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "torch", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "transformers", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
+    { name = "typing-extensions", marker = "(platform_machine == 'x86_64' and sys_platform == 'emscripten') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/02/a3/70dbe3ffd331a1e7e1ad5a95690a4086e6c7cdb8089f5c7eda712219ccec/xgrammar-0.1.29.tar.gz", hash = "sha256:cf195afa81b489eebf35d4c6f37f27136d05420739ab4a6f7f065c938d7e4baa", size = 2321317, upload-time = "2025-12-19T08:23:54.53Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3e/da/4c14e3e00be698009b52700f15326a23272b4b00475939b6acc86b151188/xgrammar-0.1.29-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:79e6e4f5cd33be77418cf91efc482f2b3d773d309891224383bc8a4948ad7b07", size = 34906135, upload-time = "2025-12-19T08:23:30.838Z" },
     { url = "https://files.pythonhosted.org/packages/22/d8/34423997f48627cef3b74cc894d9dfcaacae02941c06237ac5f3196406a7/xgrammar-0.1.29-cp312-cp312-win_amd64.whl", hash = "sha256:39bdfadedbce34599835486164fa80ba00248c6c75ad91f3843db90ef37e037f", size = 5928381, upload-time = "2025-12-19T08:23:33.428Z" },
+]
+
+[[package]]
+name = "xgrammar"
+version = "0.2.8"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+dependencies = [
+    { name = "apache-tvm-ffi", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "numpy", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "pydantic", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "torch", version = "2.10.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "transformers", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "triton", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "typing-extensions", marker = "platform_machine == 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/03/0f/29f521535729be740779c2c98b630ef6607cf28be9b669895dd2b821ff63/xgrammar-0.2.8.tar.gz", hash = "sha256:8305646fd2b319d6c3003f51a1665e54cbbe9cba1fb636bc41d0b46434ccbb80", size = 2689558, upload-time = "2026-09-24T18:35:21.261Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/2e/bab212484b84c296974168021693278f8d73d87ebccc4a6cc04e5ae2a061/xgrammar-0.2.8-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:4045b096735bb2523e0d874039a55994c1b390620d547c4a0d4f43b9a106177b", size = 1311291, upload-time = "2026-09-24T18:34:38.217Z" },
 ]
 
 [[package]]
