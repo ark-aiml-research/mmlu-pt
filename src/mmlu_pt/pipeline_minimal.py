@@ -8,24 +8,25 @@ os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
 import argparse  # noqa: I001
 from pathlib import Path
 
+import ray
 from nemo_curator.core.client import RayClient
 
 from mmlu_pt.pipelines.definition import (
     DEDUPLICATED_DIR,
     DEDUPLICATION_WORK_DIR,
     FILTERED_DIR,
-    FUZZY_DEDUPLICATED_DIR,
-    FUZZY_WORK_DIR,
     ORIGINAL_DIR,
     PRE_WORD_FILTER_DIR,
     READ_DIR,
+    SEMANTIC_DEDUPLICATED_DIR,
+    SEMANTIC_WORK_DIR,
     PipelineStep,
     create_deduplication_input_pipeline,
     create_duplicate_removal_workflow,
     create_exact_deduplication_workflow,
     create_preprocessing_pipeline,
 )
-from mmlu_pt.pipelines.fuzzy import run_fuzzy_deduplication
+from mmlu_pt.pipelines.semantic import run_semantic_deduplication
 from mmlu_pt.utils.manifest import read_manifest_file
 from mmlu_pt.utils.pipeline_utils import (
     get_stage_record_counts,
@@ -41,7 +42,7 @@ STEP_INPUT_DIRS = {
     PipelineStep.STRUCTURAL_FILTER: READ_DIR,
     PipelineStep.WORD_FILTER: PRE_WORD_FILTER_DIR,
     PipelineStep.DEDUPLICATE: FILTERED_DIR,
-    PipelineStep.FUZZY_DEDUPLICATE: DEDUPLICATED_DIR,
+    PipelineStep.SEMANTIC_DEDUPLICATE: DEDUPLICATED_DIR,
 }
 
 
@@ -72,7 +73,7 @@ def _validate_resume_input(start_step: PipelineStep) -> None:
         return
 
     input_dir = STEP_INPUT_DIRS[start_step]
-    if start_step == PipelineStep.FUZZY_DEDUPLICATE and input_dir.is_dir():
+    if start_step == PipelineStep.SEMANTIC_DEDUPLICATE and input_dir.is_dir():
         return
     if input_dir.is_dir() and any(input_dir.glob("*.jsonl")):
         return
@@ -117,8 +118,8 @@ def main(
 
     _validate_resume_input(start_step)
 
-    if start_step == PipelineStep.FUZZY_DEDUPLICATE:
-        run_fuzzy_deduplication(DEDUPLICATED_DIR, FUZZY_DEDUPLICATED_DIR, FUZZY_WORK_DIR)
+    if start_step == PipelineStep.SEMANTIC_DEDUPLICATE:
+        run_semantic_deduplication(DEDUPLICATED_DIR, SEMANTIC_DEDUPLICATED_DIR, SEMANTIC_WORK_DIR)
         print("Pipeline completed successfully!")
         return 0
 
@@ -128,19 +129,33 @@ def main(
         prepare_sources_for_processing(ORIGINAL_DIR, clean=True, manifest=manifest)
 
     with RayClient(include_dashboard=False):
-        pipeline = None
-        pipeline_results = None
-        if start_step <= PipelineStep.WORD_FILTER:
-            preprocessing_start = max(start_step, PipelineStep.NORMALIZE)
-            pipeline = create_preprocessing_pipeline(preprocessing_start)
-            pipeline_results = pipeline.run()
+        pipeline_error = None
+        try:
+            pipeline = None
+            pipeline_results = None
+            if start_step <= PipelineStep.WORD_FILTER:
+                preprocessing_start = max(start_step, PipelineStep.NORMALIZE)
+                pipeline = create_preprocessing_pipeline(preprocessing_start)
+                pipeline_results = pipeline.run()
 
-        (
-            deduplication_input_pipeline,
-            deduplication_input_results,
-            exact_deduplication_results,
-            duplicate_removal_results,
-        ) = _run_deduplication()
+            (
+                deduplication_input_pipeline,
+                deduplication_input_results,
+                exact_deduplication_results,
+                duplicate_removal_results,
+            ) = _run_deduplication()
+        except BaseException as error:
+            pipeline_error = error
+            raise
+        finally:
+            try:
+                ray.shutdown()
+            except Exception as shutdown_error:
+                if pipeline_error is None:
+                    raise
+                pipeline_error.add_note(
+                    f"Falha adicional ao encerrar o Ray: {shutdown_error}"
+                )
 
     deduplication_input_counts = get_stage_record_counts(
         deduplication_input_pipeline,
@@ -165,7 +180,7 @@ def main(
         deduplication_input_records,
     )
 
-    run_fuzzy_deduplication(DEDUPLICATED_DIR, FUZZY_DEDUPLICATED_DIR, FUZZY_WORK_DIR)
+    run_semantic_deduplication(DEDUPLICATED_DIR, SEMANTIC_DEDUPLICATED_DIR, SEMANTIC_WORK_DIR)
 
     print(
         "Pipeline completed successfully! "

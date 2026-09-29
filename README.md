@@ -3,7 +3,7 @@
 Data curation pipeline for Portuguese-MMLU, a multiple-choice question
 answering (MCQA) benchmark built from Brazilian exams. The repository turns
 tabular sources into a consistent JSONL dataset, applies structural and length
-validation, and removes duplicate questions with NVIDIA NeMo Curator.
+validation, and removes duplicate questions with NVIDIA NeMo Curator and Octen embeddings.
 
 [Project website](https://golabai.github.io/mmlu-pt/) ·
 [Paper](https://openreview.net/pdf?id=2FpqhqcNnu) ·
@@ -23,7 +23,7 @@ flowchart LR
     E --> F[Question: 4 to 1,000 words<br/>Choices: up to 300 words<br/>Combined: up to 1,000 words]
     F --> G[Question normalization]
     G --> H[Exact deduplication]
-    H --> I[Question + labeled choices<br/>MinHash/LSH + exact Jaccard]
+    H --> I[Question + labeled choices<br/>Octen embeddings + cosine similarity]
     I --> J[Direct representative matching]
     J --> K[Final JSONL]
 ```
@@ -41,18 +41,28 @@ The pipeline performs the following operations:
    at most 1,000 words. All limits are inclusive and applied in that order.
 5. Normalizes question text with Unicode NFKC, `casefold`, and whitespace
    collapsing, then uses the result as the exact-deduplication key.
-6. Applies fuzzy deduplication to normalized question plus ordered, labeled
-   choices, then writes the final dataset with only the public fields.
+6. Applies semantic deduplication to question plus ordered, labeled choices,
+   then writes the final dataset with only the public fields.
 
-Fuzzy deduplication uses character 8-grams, seed 42, 260 32-bit MinHashes,
-10 bands of 26 hashes, at least one matching band, and exact Jaccard ≥ 0.94.
-The answer is excluded from the similarity text. Representatives are processed
-by descending number of filled public fields, descending normalized text length,
-and ascending stable ID (SHA-256 of canonical public fields plus occurrence index).
-An item is removed only when it directly matches an already preserved
-representative in both LSH and Jaccard. Transitive connections alone cannot
-cause removal. This is the parameter set selected by grouped-CV MCC in the
-[parameter search notebook](notebooks/deduplication/fuzzy/parameter_search.ipynb).
+Semantic deduplication uses `Octen/Octen-Embedding-8B` at revision
+`5adcfa292e712091dfc30f0e97f0b2282e6cc66c` and cosine similarity ≥
+`0.9737051129341125`, selected in the
+[semantic ablation](ablations/deduplication/semantic/ablation.ipynb).
+Text is normalized with Unicode NFKC and whitespace collapsing while preserving
+case; alternatives retain their order and receive `[A]`, `[B]`, etc. labels.
+The encoder receives the document prefix `- `. The answer is excluded.
+Inference uses SentenceTransformers on CUDA, BF16, SDPA, left padding, batches
+of 4, and a 32,768-token limit. Embeddings have 4,096 dimensions and are
+converted to float32 before L2 normalization. Token counts and truncations are audited.
+
+Representatives are processed by descending number of filled public fields,
+descending semantic text length, and ascending stable ID (SHA-256 of canonical
+public fields plus occurrence index). An item is removed only when its cosine
+meets the threshold against an already preserved representative; the first
+matching representative in that order wins. Comparisons are global in blocks
+of at most 1,024 items, without clustering or a full corpus similarity matrix.
+Transitive connections alone cannot cause removal. This differs from the NeMo
+SemDeDup workflow explored in the notebook, whose references may also be removed.
 
 Records that fail a filter are removed. At the end of a run, the pipeline
 prints the input, output, and removal counts for every stage.
@@ -61,7 +71,8 @@ prints the input, output, and removal counts for every stage.
 
 - Python 3.12 (`>=3.12,<3.13`);
 - [uv](https://docs.astral.sh/uv/);
-- an environment compatible with `nemo-curator[text_cuda12]==1.3.0`.
+- an environment compatible with `nemo-curator[text_cuda12]==1.3.0`;
+- an NVIDIA/CUDA GPU with enough memory for the 8B Octen encoder in BF16.
 
 The lockfile includes the CUDA 12 variant of NeMo Curator and pins
 `vllm==0.15.1` on Linux x86-64. This is therefore the project's primary target
@@ -136,7 +147,7 @@ from being mixed with the sources declared in the current manifest.
 
 The output location is fixed to `output/`, relative to the working directory.
 The exact-deduplication workspace is recreated whenever step 5 runs.
-Fuzzy audits use a fingerprint of the input files and fixed parameters, with
+Semantic audits use a fingerprint of the input files and encoder configuration, with
 separate run directories. GPU selection defaults to `CUDA_VISIBLE_DEVICES=0`;
 an existing environment setting is respected.
 
@@ -154,7 +165,7 @@ uv run python -m mmlu_pt.pipeline_minimal --resume-from-step 5
 | `3` | `output/02 - read/` | Apply structural filters |
 | `4` | `output/03 - pre-word-filter/` | Apply the question, choice, and combined word-count filters |
 | `5` | `output/04 - filtered/` | Run exact deduplication |
-| `6` | `output/05 - deduplicated/` | Run fuzzy deduplication |
+| `6` | `output/05 - deduplicated/` | Run semantic deduplication |
 
 The selected input directory must contain at least one JSONL file for steps
 2–5. Step 6 also accepts an empty directory as an empty dataset. The source
@@ -162,18 +173,24 @@ manifest is only used when starting from step 1. Starting from step 2 reuses
 `output/01 - original/` without preparing or cleaning it. Outputs from the
 selected step onward are recreated normally.
 
-To rerun only fuzzy deduplication on GPU 0:
+To rerun only semantic deduplication on GPU 0:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 uv run python -m mmlu_pt.pipeline_minimal --resume-from-step 6
 ```
 
-Step 6 runs after the earlier Ray context has closed. It computes MinHash in
-batches of at most 2,048 items and records every removal and its preserved
-representative, Jaccard, and number of matching bands. Empty or shorter-than-eight
-normalized texts are preserved. The final JSONL is staged and validated before
-publication; previous fuzzy outputs are retained in a `.fuzzy-backup-*` directory
-whose path is printed after replacement.
+Step 6 runs after the earlier Ray context has closed. It records every removal,
+its preserved representative, and their cosine similarity. Embeddings are cached
+by input file hashes, ordered record IDs, serialized texts, model revision,
+parameters, and library versions. Only complete caches with matching identities,
+checksums, dimensions, and normalized finite vectors are reused. Incomplete or
+invalid caches are recomputed. Empty inputs publish an empty dataset without
+loading the model.
+
+The final JSONL is staged and validated before publication; previous semantic
+outputs are retained in a `.semantic-backup-*` directory whose path is printed
+after replacement. Failures preserve the previous published dataset. Historical
+fuzzy outputs are not modified.
 
 ## Outputs
 
@@ -189,13 +206,15 @@ output/
 │       ├── ExactDuplicateIds/      # IDs identified as duplicates
 │       └── exact_id_generator.json
 ├── 05 - deduplicated/              # exact-deduplicated dataset
-├── fuzzy-deduplication-work/
-│   └── <fingerprint>/run-*/         # manifest.json, records.jsonl, removals.jsonl
-└── 06 - fuzzy-deduplicated/         # final dataset (data.jsonl)
+├── semantic-deduplication-work/
+│   └── <fingerprint>/
+│       ├── embeddings/             # embeddings.npy and info.json (identity and token audit)
+│       └── run-*/                  # manifest.json, records.jsonl, removals.jsonl
+└── 06 - semantic-deduplicated/         # final dataset (data.jsonl)
 ```
 
 NeMo Curator partitions intermediate data and may produce hash-based file names.
-The final file `output/06 - fuzzy-deduplicated/data.jsonl` uses the following schema:
+The final file `output/06 - semantic-deduplicated/data.jsonl` uses the following schema:
 
 | Field | Description |
 | --- | --- |
@@ -214,20 +233,20 @@ the final output directory are ignored by Git.
 ## Question-length analysis
 
 The
-[`notebooks/filtering/question_length_ablation.ipynb`](notebooks/filtering/question_length_ablation.ipynb)
+[`ablations/filtering/question_length_ablation.ipynb`](ablations/filtering/question_length_ablation.ipynb)
 notebook evaluates retention by exam and academic level across different
 word-count thresholds. It reads `output/03 - pre-word-filter/` and selects
 inclusive limits of 4 to 1,000 words for the question text.
 
 ```bash
 uv sync --group notebook
-uv run jupyter lab notebooks/filtering/question_length_ablation.ipynb
+uv run jupyter lab ablations/filtering/question_length_ablation.ipynb
 ```
 
 ## Choice-length analysis
 
 The
-[`notebooks/filtering/choices_length_ablation.ipynb`](notebooks/filtering/choices_length_ablation.ipynb)
+[`ablations/filtering/choices_length_ablation.ipynb`](ablations/filtering/choices_length_ablation.ipynb)
 notebook evaluates maximum thresholds for the total number of words across all
 choices. It reads `output/03 - pre-word-filter/`, reports the incremental effect
 after the current question-length filter, and recommends an inclusive limit of
@@ -235,13 +254,13 @@ after the current question-length filter, and recommends an inclusive limit of
 
 ```bash
 uv sync --group notebook
-uv run jupyter lab notebooks/filtering/choices_length_ablation.ipynb
+uv run jupyter lab ablations/filtering/choices_length_ablation.ipynb
 ```
 
 ## Question-plus-choices length analysis
 
 The
-[`notebooks/filtering/question_choices_length_ablation.ipynb`](notebooks/filtering/question_choices_length_ablation.ipynb)
+[`ablations/filtering/question_choices_length_ablation.ipynb`](ablations/filtering/question_choices_length_ablation.ipynb)
 notebook evaluates an additional maximum threshold on the combined word count
 of each question and its choices. It applies the existing inclusive question
 and choice limits first, then reports the incremental effect of candidate total
@@ -249,31 +268,30 @@ limits and selects an inclusive combined limit of 1,000 words.
 
 ```bash
 uv sync --group notebook
-uv run jupyter lab notebooks/filtering/question_choices_length_ablation.ipynb
+uv run jupyter lab ablations/filtering/question_choices_length_ablation.ipynb
 ```
 
 ## Semantic-deduplication exploration
 
-The [semantic-deduplication notebook](notebooks/deduplication/semantic/ablation.ipynb)
-compares BGE-M3, GTE-multilingual-base, Qwen3-Embedding-8B, and
-NVIDIA Llama-Embed-Nemotron-8B on the 466 pairs in
-`notebooks/deduplication/assets/annotations/manual_labels_llm_annotated.csv`. It contrasts question-only
+The [semantic-deduplication notebook](ablations/deduplication/semantic/ablation.ipynb)
+compares BGE-M3, GTE-multilingual-base, Octen, Qwen3, and NVIDIA Nemotron embeddings on the 466 pairs in
+`ablations/deduplication/assets/annotations/manual_labels_llm_annotated.csv`. It contrasts question-only
 and question-plus-choices embeddings, audits truncation, and selects a model and
 cosine threshold using nested grouped cross-validation with MCC. Explanations
 and literature references are in English; original exam questions remain in Portuguese.
 
 ```bash
 uv sync --group notebook
-CUDA_VISIBLE_DEVICES=0 uv run --group notebook jupyter lab notebooks/deduplication/semantic/ablation.ipynb
+CUDA_VISIBLE_DEVICES=0 uv run --group notebook jupyter lab ablations/deduplication/semantic/ablation.ipynb
 ```
 
 `RUN_COMPUTE=True` downloads the models and computes missing caches on one NVIDIA
 GPU. Nemotron uses a temporary Transformers 4.51.0/tokenizers 0.21.4 runtime
-through `notebooks/deduplication/semantic/nemotron_embeddings.py`, preserving the project environment.
+through `ablations/deduplication/semantic/nemotron_embeddings.py`, preserving the project environment.
 The full experiment targets a B200; batch sizes are configurable. Set
 `RUN_COMPUTE=False` to reuse complete caches without initializing CUDA. Results,
 model revisions, folds, figures, and manifests are saved under
-`notebooks/deduplication/semantic/output/ablation/`, keyed by the input and configuration.
+`ablations/deduplication/semantic/output/ablation/`, keyed by the input and configuration.
 
 The notebook also runs NeMo Curator 1.3.0 semantic deduplication with 1, 8, and 32
 clusters on the annotated items. It distinguishes pair classification from item
@@ -298,8 +316,8 @@ Use synchronous mode for small tests or when results are needed immediately.
 discarded:
 
 ```bash
-uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py run \
-  notebooks/deduplication/assets/annotations/manual_labels_blind.csv \
+uv run --group annotation python ablations/deduplication/annotation/llm_judge.py run \
+  ablations/deduplication/assets/annotations/manual_labels_blind.csv \
   --mode sync \
   --limit 10
 ```
@@ -310,25 +328,25 @@ can continue from its checkpoint with the same arguments plus `--resume`.
 Use Batch mode for larger offline runs:
 
 ```bash
-uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py run \
-  notebooks/deduplication/assets/annotations/manual_labels_blind.csv \
+uv run --group annotation python ablations/deduplication/annotation/llm_judge.py run \
+  ablations/deduplication/assets/annotations/manual_labels_blind.csv \
   --mode batch
 ```
 
 The Batch workflow can also be controlled step by step:
 
 ```bash
-uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py prepare \
-  notebooks/deduplication/assets/annotations/manual_labels_blind.csv
+uv run --group annotation python ablations/deduplication/annotation/llm_judge.py prepare \
+  ablations/deduplication/assets/annotations/manual_labels_blind.csv
 
-uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py submit \
-  notebooks/deduplication/assets/annotations/manual_labels_blind.judge-requests.jsonl
+uv run --group annotation python ablations/deduplication/annotation/llm_judge.py submit \
+  ablations/deduplication/assets/annotations/manual_labels_blind.judge-requests.jsonl
 
-uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py status \
-  notebooks/deduplication/assets/annotations/manual_labels_blind.batch-state.json
+uv run --group annotation python ablations/deduplication/annotation/llm_judge.py status \
+  ablations/deduplication/assets/annotations/manual_labels_blind.batch-state.json
 
-uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py collect \
-  notebooks/deduplication/assets/annotations/manual_labels_blind.csv
+uv run --group annotation python ablations/deduplication/annotation/llm_judge.py collect \
+  ablations/deduplication/assets/annotations/manual_labels_blind.csv
 ```
 
 By default, the CLI writes the applicable files next to the input CSV:
@@ -346,7 +364,7 @@ By default, the CLI writes the applicable files next to the input CSV:
 Output paths, model, and reasoning effort can be changed through command-line
 options. Existing labels are skipped unless `--include-labeled` is used. The
 judge instructions live in
-[`notebooks/deduplication/assets/prompts/question_pair_deduplication.md`](notebooks/deduplication/assets/prompts/question_pair_deduplication.md),
+[`ablations/deduplication/assets/prompts/question_pair_deduplication.md`](ablations/deduplication/assets/prompts/question_pair_deduplication.md),
 and their SHA-256 hash is recorded with each execution.
 
 ## Code structure
@@ -356,7 +374,8 @@ src/mmlu_pt/
 ├── pipeline_minimal.py             # CLI arguments and orchestration
 ├── pipelines/
 │   ├── definition.py               # NeMo Curator stages and workflows
-│   └── fuzzy.py                    # MinHash, Jaccard, and direct representatives
+│   ├── semantic.py                 # Octen embeddings and direct representatives
+│   └── fuzzy.py                    # historical fuzzy baseline for ablations
 ├── mcqa_minimal.py                 # parsing, normalization, and predicates
 └── utils/
     ├── csv.py                      # CSV/JSONL source preparation
@@ -367,7 +386,7 @@ src/mmlu_pt/
 Notebooks are grouped by experiment, with shared annotation tools and assets:
 
 ```text
-notebooks/
+ablations/
 ├── filtering/
 │   ├── question_length_ablation.ipynb
 │   ├── choices_length_ablation.ipynb
@@ -400,8 +419,11 @@ notebooks/
 - Raw source files must be obtained separately.
 - The `output/` directory cannot yet be configured through the command line.
 - Exact deduplication still uses the question alone, so identical prompts with
-  different choices can be removed before the fuzzy stage. Fuzzy deduplication
-  is lexical; semantic deduplication is not implemented.
+  different choices can be removed before the semantic stage.
+- The semantic threshold was fitted on a lexically enriched, LLM-labeled panel;
+  it does not guarantee a minimum removal precision across the full corpus.
+- Global semantic comparisons have quadratic worst-case computation, although
+  similarity matrices are bounded by the block size.
 - Answers are validated as `A`–`E`, but their indices are not checked against
   the number of choices in each record.
 - The repository does not yet include an automated test suite.
