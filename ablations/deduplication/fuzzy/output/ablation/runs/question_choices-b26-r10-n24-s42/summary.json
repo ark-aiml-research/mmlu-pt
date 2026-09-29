@@ -1,0 +1,20 @@
+{
+  "char_ngrams": 24,
+  "connected_components_pipeline_time": 26.179206132888794,
+  "disk_bytes": 41710585,
+  "family": "banding",
+  "id_generator_path": "/home/aluno_paulosantana/repositories/mmlu-pt/output/fuzzy-deduplication-ablation/runs/question_choices-b26-r10-n24-s42/results/fuzzy_id_generator.json",
+  "lsh_time": 45.82856345176697,
+  "minhash_time": 16.215314626693726,
+  "minhashes_per_band": 10,
+  "num_bands": 26,
+  "num_duplicates": 2619,
+  "num_hashes": 260,
+  "p50_similarity": 0.6950364700840985,
+  "representation": "question_choices",
+  "seed": 42,
+  "slug": "question_choices-b26-r10-n24-s42",
+  "snapshot_sha256": "541caeb8e48f33ce4b8c8e2e438801f4db5e08347511ffe160bca9970a64b8c5",
+  "total_time": 89.35110998153687,
+  "wall_time": 89.3553102016449
+}

@@ -9,8 +9,8 @@ wheels/
 # Virtual environments
 .venv
 .env
-runs/
-output
+/runs/
+/output/
 temp
 
 # CUSTOM

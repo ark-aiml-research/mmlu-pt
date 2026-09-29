@@ -52,7 +52,7 @@ and ascending stable ID (SHA-256 of canonical public fields plus occurrence inde
 An item is removed only when it directly matches an already preserved
 representative in both LSH and Jaccard. Transitive connections alone cannot
 cause removal. This is the parameter set selected by grouped-CV MCC in the
-[parameter search notebook](notebooks/fuzzy_deduplication_parameter_search.ipynb).
+[parameter search notebook](notebooks/deduplication/fuzzy/parameter_search.ipynb).
 
 Records that fail a filter are removed. At the end of a run, the pipeline
 prints the input, output, and removal counts for every stage.
@@ -214,20 +214,20 @@ the final output directory are ignored by Git.
 ## Question-length analysis
 
 The
-[`notebooks/question_length_ablation.ipynb`](notebooks/question_length_ablation.ipynb)
+[`notebooks/filtering/question_length_ablation.ipynb`](notebooks/filtering/question_length_ablation.ipynb)
 notebook evaluates retention by exam and academic level across different
 word-count thresholds. It reads `output/03 - pre-word-filter/` and selects
 inclusive limits of 4 to 1,000 words for the question text.
 
 ```bash
 uv sync --group notebook
-uv run jupyter lab notebooks/question_length_ablation.ipynb
+uv run jupyter lab notebooks/filtering/question_length_ablation.ipynb
 ```
 
 ## Choice-length analysis
 
 The
-[`notebooks/choices_length_ablation.ipynb`](notebooks/choices_length_ablation.ipynb)
+[`notebooks/filtering/choices_length_ablation.ipynb`](notebooks/filtering/choices_length_ablation.ipynb)
 notebook evaluates maximum thresholds for the total number of words across all
 choices. It reads `output/03 - pre-word-filter/`, reports the incremental effect
 after the current question-length filter, and recommends an inclusive limit of
@@ -235,13 +235,13 @@ after the current question-length filter, and recommends an inclusive limit of
 
 ```bash
 uv sync --group notebook
-uv run jupyter lab notebooks/choices_length_ablation.ipynb
+uv run jupyter lab notebooks/filtering/choices_length_ablation.ipynb
 ```
 
 ## Question-plus-choices length analysis
 
 The
-[`notebooks/question_choices_length_ablation.ipynb`](notebooks/question_choices_length_ablation.ipynb)
+[`notebooks/filtering/question_choices_length_ablation.ipynb`](notebooks/filtering/question_choices_length_ablation.ipynb)
 notebook evaluates an additional maximum threshold on the combined word count
 of each question and its choices. It applies the existing inclusive question
 and choice limits first, then reports the incremental effect of candidate total
@@ -249,31 +249,31 @@ limits and selects an inclusive combined limit of 1,000 words.
 
 ```bash
 uv sync --group notebook
-uv run jupyter lab notebooks/question_choices_length_ablation.ipynb
+uv run jupyter lab notebooks/filtering/question_choices_length_ablation.ipynb
 ```
 
 ## Semantic-deduplication exploration
 
-The [semantic-deduplication notebook](notebooks/semantic_deduplication_ablation.ipynb)
+The [semantic-deduplication notebook](notebooks/deduplication/semantic/ablation.ipynb)
 compares BGE-M3, GTE-multilingual-base, Qwen3-Embedding-8B, and
 NVIDIA Llama-Embed-Nemotron-8B on the 466 pairs in
-`assets/annotations/manual_labels_llm_annotated.csv`. It contrasts question-only
+`notebooks/deduplication/assets/annotations/manual_labels_llm_annotated.csv`. It contrasts question-only
 and question-plus-choices embeddings, audits truncation, and selects a model and
 cosine threshold using nested grouped cross-validation with MCC. Explanations
 and literature references are in English; original exam questions remain in Portuguese.
 
 ```bash
 uv sync --group notebook
-CUDA_VISIBLE_DEVICES=0 uv run --group notebook jupyter lab notebooks/semantic_deduplication_ablation.ipynb
+CUDA_VISIBLE_DEVICES=0 uv run --group notebook jupyter lab notebooks/deduplication/semantic/ablation.ipynb
 ```
 
 `RUN_COMPUTE=True` downloads the models and computes missing caches on one NVIDIA
 GPU. Nemotron uses a temporary Transformers 4.51.0/tokenizers 0.21.4 runtime
-through `notebooks/nemotron_embeddings.py`, preserving the project environment.
+through `notebooks/deduplication/semantic/nemotron_embeddings.py`, preserving the project environment.
 The full experiment targets a B200; batch sizes are configurable. Set
 `RUN_COMPUTE=False` to reuse complete caches without initializing CUDA. Results,
 model revisions, folds, figures, and manifests are saved under
-`output/semantic-deduplication-ablation/`, keyed by the input and configuration.
+`notebooks/deduplication/semantic/output/ablation/`, keyed by the input and configuration.
 
 The notebook also runs NeMo Curator 1.3.0 semantic deduplication with 1, 8, and 32
 clusters on the annotated items. It distinguishes pair classification from item
@@ -298,8 +298,8 @@ Use synchronous mode for small tests or when results are needed immediately.
 discarded:
 
 ```bash
-uv run --group annotation python scripts/llm_judge.py run \
-  assets/annotations/manual_labels_blind.csv \
+uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py run \
+  notebooks/deduplication/assets/annotations/manual_labels_blind.csv \
   --mode sync \
   --limit 10
 ```
@@ -310,25 +310,25 @@ can continue from its checkpoint with the same arguments plus `--resume`.
 Use Batch mode for larger offline runs:
 
 ```bash
-uv run --group annotation python scripts/llm_judge.py run \
-  assets/annotations/manual_labels_blind.csv \
+uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py run \
+  notebooks/deduplication/assets/annotations/manual_labels_blind.csv \
   --mode batch
 ```
 
 The Batch workflow can also be controlled step by step:
 
 ```bash
-uv run --group annotation python scripts/llm_judge.py prepare \
-  assets/annotations/manual_labels_blind.csv
+uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py prepare \
+  notebooks/deduplication/assets/annotations/manual_labels_blind.csv
 
-uv run --group annotation python scripts/llm_judge.py submit \
-  assets/annotations/manual_labels_blind.judge-requests.jsonl
+uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py submit \
+  notebooks/deduplication/assets/annotations/manual_labels_blind.judge-requests.jsonl
 
-uv run --group annotation python scripts/llm_judge.py status \
-  assets/annotations/manual_labels_blind.batch-state.json
+uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py status \
+  notebooks/deduplication/assets/annotations/manual_labels_blind.batch-state.json
 
-uv run --group annotation python scripts/llm_judge.py collect \
-  assets/annotations/manual_labels_blind.csv
+uv run --group annotation python notebooks/deduplication/annotation/llm_judge.py collect \
+  notebooks/deduplication/assets/annotations/manual_labels_blind.csv
 ```
 
 By default, the CLI writes the applicable files next to the input CSV:
@@ -346,9 +346,8 @@ By default, the CLI writes the applicable files next to the input CSV:
 Output paths, model, and reasoning effort can be changed through command-line
 options. Existing labels are skipped unless `--include-labeled` is used. The
 judge instructions live in
-[`assets/prompts/question_pair_deduplication.md`](assets/prompts/question_pair_deduplication.md),
-and their SHA-256 hash is recorded with each execution. The previous
-`scripts/llm_judge_batch.py` entrypoint remains available for compatibility.
+[`notebooks/deduplication/assets/prompts/question_pair_deduplication.md`](notebooks/deduplication/assets/prompts/question_pair_deduplication.md),
+and their SHA-256 hash is recorded with each execution.
 
 ## Code structure
 
@@ -359,15 +358,41 @@ src/mmlu_pt/
 │   ├── definition.py               # NeMo Curator stages and workflows
 │   └── fuzzy.py                    # MinHash, Jaccard, and direct representatives
 ├── mcqa_minimal.py                 # parsing, normalization, and predicates
-├── llm_as_a_judge/
-│   ├── judge_common.py             # shared request and result handling
-│   ├── judge_sync.py               # synchronous Responses API transport
-│   ├── judge_batch.py              # asynchronous Batch API transport
-│   └── judge_cli.py                # command definitions and orchestration
 └── utils/
     ├── csv.py                      # CSV/JSONL source preparation
     ├── manifest.py                 # manifest schema and loading
     └── pipeline_utils.py           # metrics and stage integration
+```
+
+Notebooks are grouped by experiment, with shared annotation tools and assets:
+
+```text
+notebooks/
+├── filtering/
+│   ├── question_length_ablation.ipynb
+│   ├── choices_length_ablation.ipynb
+│   └── question_choices_length_ablation.ipynb
+└── deduplication/
+    ├── fuzzy/
+    │   ├── ablation.ipynb
+    │   ├── parameter_search.ipynb
+    │   ├── pareto_audit.ipynb
+    │   └── output/
+    │       ├── .gitignore
+    │       ├── ablation/
+    │       ├── parameter_search/
+    │       └── pairwise_benchmark/
+    ├── semantic/
+    │   ├── ablation.ipynb
+    │   ├── nemotron_embeddings.py
+    │   └── output/
+    │       ├── .gitignore
+    │       └── ablation/
+    ├── annotation/
+    │   ├── human_llm_agreement.ipynb
+    │   ├── llm_judge.py
+    │   └── llm_as_a_judge/         # CLI, shared logic, sync and Batch transports
+    └── assets/                    # annotations, prompts, and source snapshots
 ```
 
 ## Current limitations

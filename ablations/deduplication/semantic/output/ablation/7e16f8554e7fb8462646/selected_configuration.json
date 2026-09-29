@@ -1,0 +1,6 @@
+{
+  "configuration": "Octen-Embedding-8B__question_choices",
+  "threshold": 0.9737051129341125,
+  "eps": 0.02629488706588745,
+  "selection": "mean inner grouped-CV MCC; final threshold fitted on all pairs"
+}

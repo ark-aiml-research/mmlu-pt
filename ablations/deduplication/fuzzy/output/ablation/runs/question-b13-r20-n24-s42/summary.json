@@ -1,0 +1,20 @@
+{
+  "char_ngrams": 24,
+  "connected_components_pipeline_time": 25.13029670715332,
+  "disk_bytes": 41376268,
+  "family": "banding",
+  "id_generator_path": "/home/aluno_paulosantana/repositories/mmlu-pt/output/fuzzy-deduplication-ablation/runs/question-b13-r20-n24-s42/results/fuzzy_id_generator.json",
+  "lsh_time": 24.9274160861969,
+  "minhash_time": 15.007230281829834,
+  "minhashes_per_band": 20,
+  "num_bands": 13,
+  "num_duplicates": 2362,
+  "num_hashes": 260,
+  "p50_similarity": 0.8625172186312609,
+  "representation": "question",
+  "seed": 42,
+  "slug": "question-b13-r20-n24-s42",
+  "snapshot_sha256": "541caeb8e48f33ce4b8c8e2e438801f4db5e08347511ffe160bca9970a64b8c5",
+  "total_time": 66.12167096138,
+  "wall_time": 66.12497067451477
+}

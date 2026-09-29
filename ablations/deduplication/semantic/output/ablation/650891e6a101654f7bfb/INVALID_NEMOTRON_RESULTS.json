@@ -1,0 +1,5 @@
+{
+  "status": "invalid_nemotron_embeddings",
+  "reason": "The provisional Transformers 4.57.6 attention adaptation produced embeddings that differed substantially from the official Transformers 4.51.0 implementation. Do not use Nemotron scores from this run.",
+  "replacement": "Use the final notebook run with isolated_transformers=4.51.0 and mean_float32 pooling."
+}

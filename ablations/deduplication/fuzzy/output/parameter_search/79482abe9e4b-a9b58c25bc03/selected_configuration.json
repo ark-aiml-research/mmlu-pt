@@ -1,0 +1,225 @@
+{
+  "selection_objective": "mean grouped-cross-validation MCC",
+  "parameters": {
+    "config_id": 115,
+    "slug": "n8-b10-r26-m1-j094-s42",
+    "char_ngrams": 8,
+    "num_bands": 10,
+    "minhashes_per_band": 26,
+    "num_hashes": 260,
+    "min_matching_bands": 1,
+    "jaccard_threshold": 0.94,
+    "seed": 42,
+    "p50_similarity": 0.9012407157202502
+  },
+  "descriptive_full_panel_metrics": {
+    "tp": 128,
+    "fp": 6,
+    "tn": 275,
+    "fn": 57,
+    "detection_rate": 0.2875536480686695,
+    "precision": 0.9552238805970149,
+    "recall": 0.6918918918918919,
+    "specificity": 0.9786476868327402,
+    "f1": 0.8025078369905956,
+    "balanced_accuracy": 0.835269789362316,
+    "mcc": 0.7248397474513432,
+    "accuracy": 0.8648068669527897
+  },
+  "component_bootstrap_intervals": [
+    {
+      "metric": "precision",
+      "estimate": 0.9552238805970149,
+      "bootstrap_95_lower": 0.9166666666666666,
+      "bootstrap_95_upper": 0.9859154929577465
+    },
+    {
+      "metric": "recall",
+      "estimate": 0.6918918918918919,
+      "bootstrap_95_lower": 0.6228571428571429,
+      "bootstrap_95_upper": 0.7602339181286549
+    },
+    {
+      "metric": "specificity",
+      "estimate": 0.9786476868327402,
+      "bootstrap_95_lower": 0.9605734767025089,
+      "bootstrap_95_upper": 0.993103448275862
+    },
+    {
+      "metric": "f1",
+      "estimate": 0.8025078369905956,
+      "bootstrap_95_lower": 0.75,
+      "bootstrap_95_upper": 0.8503948553351652
+    },
+    {
+      "metric": "balanced_accuracy",
+      "estimate": 0.835269789362316,
+      "bootstrap_95_lower": 0.7994298906547084,
+      "bootstrap_95_upper": 0.8708695192264779
+    },
+    {
+      "metric": "mcc",
+      "estimate": 0.7248397474513432,
+      "bootstrap_95_lower": 0.663051788634676,
+      "bootstrap_95_upper": 0.7839496513664101
+    },
+    {
+      "metric": "accuracy",
+      "estimate": 0.8648068669527897,
+      "bootstrap_95_lower": 0.8318960811624755,
+      "bootstrap_95_upper": 0.8960176991150443
+    }
+  ],
+  "nested_selection_repeat_metrics": [
+    {
+      "repeat": 0,
+      "tp": 128,
+      "fp": 6,
+      "tn": 275,
+      "fn": 57,
+      "detection_rate": 0.2875536480686695,
+      "precision": 0.9552238805970149,
+      "recall": 0.6918918918918919,
+      "specificity": 0.9786476868327402,
+      "f1": 0.8025078369905956,
+      "balanced_accuracy": 0.835269789362316,
+      "mcc": 0.7248397474513432,
+      "accuracy": 0.8648068669527897
+    },
+    {
+      "repeat": 1,
+      "tp": 125,
+      "fp": 6,
+      "tn": 275,
+      "fn": 60,
+      "detection_rate": 0.2811158798283262,
+      "precision": 0.9541984732824428,
+      "recall": 0.6756756756756757,
+      "specificity": 0.9786476868327402,
+      "f1": 0.7911392405063291,
+      "balanced_accuracy": 0.827161681254208,
+      "mcc": 0.712153150317547,
+      "accuracy": 0.8583690987124464
+    },
+    {
+      "repeat": 2,
+      "tp": 128,
+      "fp": 6,
+      "tn": 275,
+      "fn": 57,
+      "detection_rate": 0.2875536480686695,
+      "precision": 0.9552238805970149,
+      "recall": 0.6918918918918919,
+      "specificity": 0.9786476868327402,
+      "f1": 0.8025078369905956,
+      "balanced_accuracy": 0.835269789362316,
+      "mcc": 0.7248397474513432,
+      "accuracy": 0.8648068669527897
+    },
+    {
+      "repeat": 3,
+      "tp": 128,
+      "fp": 6,
+      "tn": 275,
+      "fn": 57,
+      "detection_rate": 0.2875536480686695,
+      "precision": 0.9552238805970149,
+      "recall": 0.6918918918918919,
+      "specificity": 0.9786476868327402,
+      "f1": 0.8025078369905956,
+      "balanced_accuracy": 0.835269789362316,
+      "mcc": 0.7248397474513432,
+      "accuracy": 0.8648068669527897
+    },
+    {
+      "repeat": 4,
+      "tp": 128,
+      "fp": 6,
+      "tn": 275,
+      "fn": 57,
+      "detection_rate": 0.2875536480686695,
+      "precision": 0.9552238805970149,
+      "recall": 0.6918918918918919,
+      "specificity": 0.9786476868327402,
+      "f1": 0.8025078369905956,
+      "balanced_accuracy": 0.835269789362316,
+      "mcc": 0.7248397474513432,
+      "accuracy": 0.8648068669527897
+    },
+    {
+      "repeat": 5,
+      "tp": 126,
+      "fp": 6,
+      "tn": 275,
+      "fn": 59,
+      "detection_rate": 0.2832618025751073,
+      "precision": 0.9545454545454546,
+      "recall": 0.6810810810810811,
+      "specificity": 0.9786476868327402,
+      "f1": 0.7949526813880127,
+      "balanced_accuracy": 0.8298643839569106,
+      "mcc": 0.7163813108620646,
+      "accuracy": 0.8605150214592274
+    },
+    {
+      "repeat": 6,
+      "tp": 128,
+      "fp": 6,
+      "tn": 275,
+      "fn": 57,
+      "detection_rate": 0.2875536480686695,
+      "precision": 0.9552238805970149,
+      "recall": 0.6918918918918919,
+      "specificity": 0.9786476868327402,
+      "f1": 0.8025078369905956,
+      "balanced_accuracy": 0.835269789362316,
+      "mcc": 0.7248397474513432,
+      "accuracy": 0.8648068669527897
+    },
+    {
+      "repeat": 7,
+      "tp": 128,
+      "fp": 6,
+      "tn": 275,
+      "fn": 57,
+      "detection_rate": 0.2875536480686695,
+      "precision": 0.9552238805970149,
+      "recall": 0.6918918918918919,
+      "specificity": 0.9786476868327402,
+      "f1": 0.8025078369905956,
+      "balanced_accuracy": 0.835269789362316,
+      "mcc": 0.7248397474513432,
+      "accuracy": 0.8648068669527897
+    },
+    {
+      "repeat": 8,
+      "tp": 128,
+      "fp": 6,
+      "tn": 275,
+      "fn": 57,
+      "detection_rate": 0.2875536480686695,
+      "precision": 0.9552238805970149,
+      "recall": 0.6918918918918919,
+      "specificity": 0.9786476868327402,
+      "f1": 0.8025078369905956,
+      "balanced_accuracy": 0.835269789362316,
+      "mcc": 0.7248397474513432,
+      "accuracy": 0.8648068669527897
+    },
+    {
+      "repeat": 9,
+      "tp": 128,
+      "fp": 6,
+      "tn": 275,
+      "fn": 57,
+      "detection_rate": 0.2875536480686695,
+      "precision": 0.9552238805970149,
+      "recall": 0.6918918918918919,
+      "specificity": 0.9786476868327402,
+      "f1": 0.8025078369905956,
+      "balanced_accuracy": 0.835269789362316,
+      "mcc": 0.7248397474513432,
+      "accuracy": 0.8648068669527897
+    }
+  ]
+}

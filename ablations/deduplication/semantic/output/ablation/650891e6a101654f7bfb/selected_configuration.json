@@ -1,0 +1,6 @@
+{
+  "configuration": "Qwen3-Embedding-8B__question_choices",
+  "threshold": 0.9800073504447937,
+  "eps": 0.0199926495552063,
+  "selection": "mean inner grouped-CV MCC; final threshold fitted on all pairs"
+}

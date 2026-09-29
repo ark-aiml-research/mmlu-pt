@@ -1,0 +1,21 @@
+{
+  "char_ngrams": 24,
+  "connected_components_pipeline_time": 26.20884346961975,
+  "corpus_fingerprint": "9603b934c72ceb641880da0aa02de34c1a4e55383f18a0593eb269c7f10fb456",
+  "disk_bytes": 41376285,
+  "family": "banding",
+  "id_generator_path": "/home/aluno_paulosantana/repositories/mmlu-pt/output/fuzzy-deduplication-ablation/studies/9603b934c72c/runs/question-b13-r20-n24-s42/results/fuzzy_id_generator.json",
+  "lsh_time": 25.823827028274536,
+  "minhash_time": 15.700496673583984,
+  "minhashes_per_band": 20,
+  "num_bands": 13,
+  "num_duplicates": 2362,
+  "num_hashes": 260,
+  "p50_similarity": 0.8625172186312609,
+  "representation": "question",
+  "seed": 42,
+  "slug": "question-b13-r20-n24-s42",
+  "source_sha256": "79cb3c1f1330c875bdbddaa17635e728d6493fcc94c27c67a711508bde7bafc5",
+  "total_time": 68.86463332176208,
+  "wall_time": 68.86961269378662
+}

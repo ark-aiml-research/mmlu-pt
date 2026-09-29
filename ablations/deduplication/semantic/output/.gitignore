@@ -1,0 +1,15 @@
+# Generated caches and inputs
+**/cache/
+**/input/
+**/signatures/
+
+# Embeddings and NumPy signatures
+*.npy
+
+# Intermediate NeMo workflow outputs
+**/runs/**/results/
+**/nemo/**/results/
+
+# Logs and temporary files
+*.log
+.ipynb_checkpoints/
