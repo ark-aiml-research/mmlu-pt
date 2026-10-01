@@ -52,23 +52,23 @@ Limitations are discussed in \S\ref{app:dedup-limitations}.
 \toprule
 Stage & Removed & Retained & $R_{\mathrm{stage}}$ & $R_{\mathrm{cum}}$ \\
 \midrule
-Input $D_F$ & -- & 41,654 & -- & 100.000 \\
-Exact & 2,611 & 39,043 & 93.732 & 93.732 \\
-Semantic & 1,158 & 37,885 & 97.034 & 90.952 \\
+Input $D_F$ & -- & 41,653 & -- & 100.000 \\
+Exact & 2,611 & 39,042 & 93.732 & 93.732 \\
+Semantic & 1,155 & 37,887 & 97.042 & 90.959 \\
 \bottomrule
 \end{tabular}
-\caption{Effect of the two deduplication stages on the 41,654 records that
+\caption{Effect of the two deduplication stages on the 41,653 records that
 pass the length filters. $R_{\mathrm{stage}}$: retention (\%) relative to the
 stage input; $R_{\mathrm{cum}}$: retention (\%) relative to $D_F$.
-High-school retention is 89.150\% and undergraduate retention 91.507\%
+High-school retention is 89.190\% and undergraduate retention 91.503\%
 (Table~\ref{tab:dedup-exams}).}
 \label{tab:dedup-overview}
 \end{table}
 
-\paragraph{Summary.} The final policy removes 3,769 records (9.048\%;
+\paragraph{Summary.} The final policy removes 3,766 records (9.041\%;
 Table~\ref{tab:dedup-overview}): 2,611 records whose normalized question is
-identical to that of another record, and 1,158 semantic near-duplicates
-(2.966\% of the exact-deduplicated set). The ablations support four decisions.
+identical to that of another record, and 1,155 semantic near-duplicates
+(2.958\% of the exact-deduplicated set). The ablations support four decisions.
 (1)~Similarity is computed on the question \emph{and} its choices:
 question-only matching links different items that share a passage and removes
 up to 75\% of an exam. (2)~MinHash--LSH collisions are not a removal rule: on
@@ -87,17 +87,20 @@ policy.
 \subsection{Data, notation and metrics}
 \label{app:dedup-setup}
 
-\paragraph{Data.} Let $D_F$ be the output of the length filters (41,654
-records), $D_E$ the output of exact deduplication (39,043) and $D_S$ the
-released set (37,885). The corpus-level studies of \S\ref{app:dedup-fuzzy}
+\paragraph{Data.} Let $D_F$ be the output of the length filters (41,653
+records), $D_E$ the output of exact deduplication (39,042) and $D_S$ the
+released set (37,887). The corpus-level studies of \S\ref{app:dedup-fuzzy}
 analyze a snapshot $\tilde D_E$ of the exact-deduplicated stage with 39,120
 records (17 exams, 1,039 editions; 9,243 high-school and 29,877 undergraduate
 records), identified by the SHA-256 of its file, \texttt{79cb3c1f}\ldots, and
 by a corpus fingerprint, the SHA-256 of its sorted record identifiers,
 \texttt{9603b934}\ldots.\footnote{$\tilde D_E$ was materialized before minor
-upstream changes and has 77 more records than $D_E$. The pair-level studies
-evaluate a fixed labelled panel (\S\ref{app:dedup-panel}) and are unaffected
-by the difference; corpus-level counts refer to $\tilde D_E$ in
+upstream changes, including the image filter of structural validation
+(Appendix~\ref{app:len}), and has 78 more records than $D_E$, among them the
+single record that this filter removes. The pair-level studies evaluate a
+fixed labelled panel (\S\ref{app:dedup-panel}), which contains no record with
+an image, and are unaffected by the difference; corpus-level counts refer to
+$\tilde D_E$ in
 \S\ref{app:dedup-fuzzy} and to $D_E$ in \S\ref{app:dedup-final}.} A record
 $x=(q,C,a,e,\ell)$ has question $q$, ordered choices $C=(c_1,\dots,c_k)$ with
 $k\in\{4,5\}$, answer index $a$, exam $e$ and level $\ell$. Its identifier is
@@ -945,22 +948,25 @@ rule of Proposition~\thesection.1. The implementation is in
 \texttt{src/mmlu\_pt/pipelines/semantic.py} (semantic stage), which records
 every removal with its representative and cosine.
 
-\paragraph{Exact stage.} It removes 2,611 of the 41,654 filtered records
+\paragraph{Exact stage.} It removes 2,611 of the 41,653 filtered records
 (6.268\%; Table~\ref{tab:dedup-exams}). The removals concentrate on ENADE
 (1,046), OAB (733), OBI (523), CNU (114), BACEN (101) and IME (64). CNU loses
 23.2\% of its records at this stage and OBI 22.7\%.
 
-\paragraph{Semantic stage.} It removes 1,158 of the 39,043 exact-deduplicated
-records (2.966\%) in 643.5\,s, of which 501.3\,s are spent embedding on one
-NVIDIA B200 (peak memory 51.1\,GiB). One record exceeds the 32,768-token
-limit (63,209 tokens) and is truncated; the median input has 261 tokens. The
-removals are absorbed by 800 representatives, the largest of which accounts
-for 30. No removal crosses exams. The cosines of the removals have a median
-of 0.99359 and a minimum of 0.97372. By cosine, 165 removals fall in
-$[\tau, 0.98)$, 255 in $[0.98, 0.99)$, 248 in $[0.99, 0.995)$, 373 in
-$[0.995, 0.999)$ and 117 in $[0.999, 1]$. The panel's false positives have
-cosines between 0.976 and 0.985, and 282 corpus removals (24.4\%), 198 of
-them from OBI, have a cosine of at most 0.9851. ENADE (502), OBI (456) and
+\paragraph{Semantic stage.} It removes 1,155 of the 39,042 exact-deduplicated
+records (2.958\%) in 980.1\,s, of which 675.5\,s are spent embedding on a
+3g.90gb MIG partition of one NVIDIA B200 (peak memory 18.3\,GiB). No record
+exceeds the 32,768-token limit: the longest input has 4,325 tokens and the
+median 261. The only source record that would exceed it, a POSCOMP item whose
+choice embeds a base64-encoded image (63,209 tokens), is removed by structural
+validation.
+The removals are absorbed by 798 representatives, the largest of which
+accounts for 30. No removal crosses exams. The cosines of the removals have a
+median of 0.99358 and a minimum of 0.97371. By cosine, 159 removals fall in
+$[\tau, 0.98)$, 251 in $[0.98, 0.99)$, 250 in $[0.99, 0.995)$, 377 in
+$[0.995, 0.999)$ and 118 in $[0.999, 1]$. The panel's false positives have
+cosines between 0.976 and 0.985, and 276 corpus removals (23.9\%), 193 of
+them from OBI, have a cosine of at most 0.9851. ENADE (502), OBI (452) and
 Res.\ USP/Unicamp (82) account for 90\% of the removals.
 
 \begin{figure}[t]
@@ -981,27 +987,27 @@ records.}
 Level & Exam & $|D_F|$ & Exact & $|D_E|$ & Semantic & $|D_S|$ & Ret.\ (\%) \\
 \midrule
 High school & ENEM & 2,688 & 0 & 2,688 & 0 & 2,688 & 100.000 \\
- & OBI & 2,301 & 523 & 1,778 & 456 & 1,322 & 57.453 \\
+ & OBI & 2,301 & 523 & 1,778 & 452 & 1,326 & 57.627 \\
  & FUVEST & 1,659 & 2 & 1,657 & 1 & 1,656 & 99.819 \\
  & AFA & 1,085 & 0 & 1,085 & 1 & 1,084 & 99.908 \\
  & IME & 958 & 64 & 894 & 15 & 879 & 91.754 \\
  & BLUEX & 663 & 2 & 661 & 0 & 661 & 99.698 \\
  & COMVEST & 452 & 0 & 452 & 0 & 452 & 100.000 \\
- & \emph{Subtotal} & 9,806 & 591 & 9,215 & 473 & 8,742 & 89.150 \\
+ & \emph{Subtotal} & 9,806 & 591 & 9,215 & 469 & 8,746 & 89.190 \\
 \midrule
 Undergraduate & ENADE & 10,785 & 1,046 & 9,739 & 502 & 9,237 & 85.647 \\
  & OAB & 10,251 & 733 & 9,518 & 10 & 9,508 & 92.752 \\
- & BNDES & 4,048 & 16 & 4,032 & 24 & 4,008 & 99.012 \\
+ & BNDES & 4,048 & 16 & 4,032 & 23 & 4,009 & 99.037 \\
  & Res.\ USP/Unicamp & 1,574 & 1 & 1,573 & 82 & 1,491 & 94.727 \\
- & POSCOMP & 1,305 & 0 & 1,305 & 4 & 1,301 & 99.693 \\
+ & POSCOMP & 1,304 & 0 & 1,304 & 4 & 1,300 & 99.693 \\
  & REVALIDA & 1,195 & 0 & 1,195 & 0 & 1,195 & 100.000 \\
- & BACEN & 1,178 & 101 & 1,077 & 59 & 1,018 & 86.418 \\
+ & BACEN & 1,178 & 101 & 1,077 & 61 & 1,016 & 86.248 \\
  & CFCES & 707 & 9 & 698 & 4 & 694 & 98.161 \\
  & CNU & 491 & 114 & 377 & 0 & 377 & 76.782 \\
  & ENAM & 314 & 0 & 314 & 0 & 314 & 100.000 \\
- & \emph{Subtotal} & 31,848 & 2,020 & 29,828 & 685 & 29,143 & 91.507 \\
+ & \emph{Subtotal} & 31,847 & 2,020 & 29,827 & 686 & 29,141 & 91.503 \\
 \midrule
-\multicolumn{2}{@{}l}{\emph{All exams}} & 41,654 & 2,611 & 39,043 & 1,158 & 37,885 & 90.952 \\
+\multicolumn{2}{@{}l}{\emph{All exams}} & 41,653 & 2,611 & 39,042 & 1,155 & 37,887 & 90.959 \\
 \bottomrule
 \end{tabular}
 \caption{Per-exam effect of the two deduplication stages. \emph{Ret.}:
@@ -1010,9 +1016,9 @@ retention of the exam relative to $D_F$.}
 \end{table*}
 
 \paragraph{Where removals concentrate.} Deduplication is very unequal across
-exams (Figure~\ref{fig:dedup-removals}). OBI retains 57.5\% of its records
-(979 of 2,301 are removed): the exact stage removes 22.7\% of them and the
-semantic stage 25.6\% of the rest. ENADE and BACEN retain about 86\%, and
+exams (Figure~\ref{fig:dedup-removals}). OBI retains 57.6\% of its records
+(975 of 2,301 are removed): the exact stage removes 22.7\% of them and the
+semantic stage 25.4\% of the rest. ENADE and BACEN retain about 86\%, and
 four exams lose nothing. The pattern matches the panel: ENADE,
 Res.\ USP/Unicamp and OBI print the same items in several booklets of one
 administration, and OBI also reuses puzzle scenarios across different
@@ -1049,7 +1055,7 @@ characterize the boundary between duplicates and related items, not between
 duplicates and unrelated items.
 \emph{A narrow operating point.} The threshold is set by a handful of pairs
 near 0.974, and all semantic false positives are OBI puzzles with cosines
-between 0.976 and 0.985. Since 198 OBI removals fall in or below that range,
+between 0.976 and 0.985. Since 193 OBI removals fall in or below that range,
 some removed OBI items may be related rather than duplicate items. The
 full-panel precision (lower Wilson limit 0.933) also falls short of the
 acceptance criterion stated for LSH collisions (0.95).

@@ -41,17 +41,17 @@ sources, not whether removal improves benchmark validity
 \toprule
 Condition & Alone & Removed & Only & Retained & $R_{\mathrm{cum}}$ \\
 \midrule
-Input $D_0$ & -- & -- & -- & 41,988 & 100.000 \\
+Input $D_0$ & -- & -- & -- & 41,987 & 100.000 \\
 \midrule
-$w_q \ge 4$ & 105 & 105 & 105 & 41,883 & 99.750 \\
-$w_q \le 1{,}000$ & 152 & 152 & 0 & 41,731 & 99.388 \\
-$w_c \le 300$ & 42 & 41 & 41 & 41,690 & 99.290 \\
-$w_t \le 1{,}000$ & 188 & 36 & 36 & 41,654 & 99.205 \\
+$w_q \ge 4$ & 105 & 105 & 105 & 41,882 & 99.750 \\
+$w_q \le 1{,}000$ & 152 & 152 & 0 & 41,730 & 99.388 \\
+$w_c \le 300$ & 42 & 41 & 41 & 41,689 & 99.290 \\
+$w_t \le 1{,}000$ & 188 & 36 & 36 & 41,653 & 99.205 \\
 \midrule
-Any condition & 334 & 334 & 182 & 41,654 & 99.205 \\
+Any condition & 334 & 334 & 182 & 41,653 & 99.205 \\
 \bottomrule
 \end{tabular}
-\caption{Effect of the length filters on the 41,988 structurally valid
+\caption{Effect of the length filters on the 41,987 structurally valid
 records. \emph{Alone}: records violating the condition; \emph{Removed}:
 records attributed to the stage in pipeline order; \emph{Only}: records
 violating this condition and no other; \emph{Retained} and
@@ -74,17 +74,20 @@ whose choices exceed 300 words; and 36 records whose combined length exceeds
 \label{app:len-setup}
 
 \paragraph{Data.} All studies analyze the materialized output of the
-structural-validation stage, which retains 41,988 of the 42,237 source
+structural-validation stage, which retains 41,987 of the 42,237 source
 records: 17 exams (7 high-school and 10 undergraduate; every exam belongs to
-exactly one level), 1,045 exam editions, 9,992 high-school and 31,996
-undergraduate questions, and 15,309 questions with four and 26,679 with five
-choices. The snapshot is identified by the SHA-256 of its sorted files,
-\texttt{2a7ded87ec71df2f3d304e392ea3c152}\allowbreak
-\texttt{5ba432bcd9d4566f6a82525bc3360caa}.\footnote{The question-length
-notebook was executed on a byte-different materialization of the same stage
-(SHA-256 prefix \texttt{19c2e2b5}); every statistic it reports is identical
-to those re-derived on the snapshot above.} Deduplication, which reduces the
-filtered set to 39,043 (exact) and 37,885 (semantic) records, runs downstream
+exactly one level), 1,045 exam editions, 9,992 high-school and 31,995
+undergraduate questions, and 15,309 questions with four and 26,678 with five
+choices. Besides malformed choices and answers, structural validation
+discards records whose question or choices contain an image (Markdown image
+syntax, an HTML \texttt{<img>} tag or a \texttt{data:image/} URI, ignoring
+Markdown code). In this corpus it removes a single POSCOMP~2018 item whose
+choice embeds a base64-encoded JPEG, which the length filters would have
+kept, since the encoded image contains no whitespace and counts as one word.
+The snapshot is identified by the SHA-256 of its sorted files,
+\texttt{7bed145549bee1524ca5f6a97763b7e5}\allowbreak
+\texttt{dd701f8ed86cb8bb3ab597d133b0874b}. Deduplication, which reduces the
+filtered set to 39,042 (exact) and 37,887 (semantic) records, runs downstream
 and is out of scope.
 
 \paragraph{Notation.} Let $D_0$ be the snapshot. A record
@@ -126,7 +129,7 @@ string, and therefore remains maximal. $\square$
 
 \smallskip\noindent Summing per-choice counts, as the ablation notebooks do,
 therefore reproduces the pipeline measurement; we verified the equality on all
-41,988 records.
+41,987 records.
 
 \medskip\noindent\textbf{Lemma~\thesection.2 (Non-empty choices).} Structural
 validation keeps only records whose choices are all non-blank, so
@@ -184,7 +187,7 @@ breaks them down by exam.
 \toprule
  & $w_q$ on $D_0$ & $w_c$ on $D_0$ & $w_t$ on $D_2$ \\
 \midrule
-Records & 41,988 & 41,988 & 41,690 \\
+Records & 41,987 & 41,987 & 41,689 \\
 Mean & 115.3 & 52.8 & 163.3 \\
 \midrule
 Minimum & 1 & 4 & 9 \\
@@ -288,7 +291,7 @@ $a$ & $b$ & Removed & $R$ & $R_{\mathrm{HS}}$ & $R_{\mathrm{UG}}$ & $e^{*}$ & $R
 4 & 500 & 1,022 & 97.566 & 94.976 & 98.375 & IME & 75.227 & 0.601 \\
 \bottomrule
 \end{tabular}
-\caption{Question-length ablation on $D_0$ ($n = 41{,}988$) for the filter
+\caption{Question-length ablation on $D_0$ ($n = 41{,}987$) for the filter
 $a \le w_q \le b$; ``--'' denotes a neutral bound. \emph{Removed}: records
 outside $[a,b]$; $R$, $R_{\mathrm{HS}}$, $R_{\mathrm{UG}}$: retention (\%)
 overall and by level; $e^{*}$, $R_{\min}$: least-retained exam and its
@@ -333,7 +336,7 @@ operational decision: it caps example size, which matters when several
 examples are concatenated in few-shot prompts, and it prevents a handful of
 passages from being over-represented through the many items attached to
 them. It is not a quality judgment, since the removed items are legitimate
-reading-comprehension questions. The selected pair retains 41,731 records
+reading-comprehension questions. The selected pair retains 41,730 records
 (99.388\%), and IME is the most affected exam (970 of 1,102, 88.022\%). In
 the final policy, the upper bound is subsumed by the combined filter
 (Proposition~\thesection.6).
@@ -370,7 +373,7 @@ is negligible at the selected point (a single record).
 \toprule
 $b_c$ & Removed & $R$ & $R_{\mathrm{HS}}$ & $R_{\mathrm{UG}}$ & $e^{*}$ & $R_{\min}$ & $\Delta$ (pp) & Inc & Ovl & $R_{\mathrm{cum}}$ \\
 \midrule
-125 & 3,077 & 92.672 & 97.658 & 91.115 & ENAM & 57.143 & 0.784 & 3,063 & 14 & 92.093 \\
+125 & 3,077 & 92.672 & 97.658 & 91.114 & ENAM & 57.143 & 0.784 & 3,063 & 14 & 92.093 \\
 150 & 1,505 & 96.416 & 99.079 & 95.584 & ENAM & 70.476 & 0.216 & 1,496 & 9 & 95.825 \\
 175 & 728 & 98.266 & 99.650 & 97.834 & ENAM & 82.857 & 0.118 & 725 & 3 & 97.661 \\
 200 & 385 & 99.083 & 99.770 & 98.869 & ENAM & 91.429 & 0.087 & 382 & 3 & 98.478 \\
@@ -462,8 +465,8 @@ which retains 89.517\% at $N = 750$ and 96.992\% at $N = 950$
 \toprule
 $N$ & Removed & $R(\cdot \mid D_2)$ & $R(\cdot \mid D_0)$ & $R_{\mathrm{HS}}$ & $R_{\mathrm{UG}}$ & $e^{*}$ & $R_{\min}$ & $\Delta$ (pp) \\
 \midrule
-300 & 3,568 & 91.442 & 90.793 & 90.315 & 91.789 & AFA & 66.180 & 2.099 \\
-400 & 1,590 & 96.186 & 95.503 & 94.232 & 96.789 & AFA & 71.741 & 0.962 \\
+300 & 3,568 & 91.441 & 90.792 & 90.315 & 91.789 & AFA & 66.180 & 2.099 \\
+400 & 1,590 & 96.186 & 95.503 & 94.232 & 96.789 & AFA & 71.741 & 0.963 \\
 500 & 933 & 97.762 & 97.068 & 95.799 & 98.368 & AFA & 77.940 & 0.636 \\
 600 & 648 & 98.446 & 97.747 & 97.019 & 98.886 & AFA & 83.865 & 0.468 \\
 700 & 455 & 98.909 & 98.207 & 97.854 & 99.234 & AFA & 88.149 & 0.286 \\
@@ -480,7 +483,7 @@ $N$ & Removed & $R(\cdot \mid D_2)$ & $R(\cdot \mid D_0)$ & $R_{\mathrm{HS}}$ & 
 \bottomrule
 \end{tabular}
 \caption{Combined-length ablation for the filter $w_t \le N$ on $D_2$
-($n = 41{,}690$), the records retained by the question and choice filters.
+($n = 41{,}689$), the records retained by the question and choice filters.
 \emph{Removed}, $R_{\mathrm{HS}}$, $R_{\mathrm{UG}}$, $e^{*}$, $R_{\min}$ and
 $\Delta$ are relative to $D_2$; $R(\cdot \mid D_0)$ is the cumulative
 retention of the three filters. Selected value in bold.}
@@ -489,7 +492,7 @@ retention of the three filters. Selected value in bold.}
 
 \paragraph{Decision: $w_t \le 1{,}000$.} The bound lies just above the 99.9th
 percentile of $D_2$ (992.3) and matches the question ceiling. It removes 36
-of 41,690 records (0.086\%), 12 each from AFA, BNDES and IME, all with
+of 41,689 records (0.086\%), 12 each from AFA, BNDES and IME, all with
 $w_q \ge 888$. Relative to $D_2$, IME is the least-retained exam (98.763\%)
 and $\Delta = 0.027$\,pp. Cumulative retention is 99.205\%.
 
@@ -548,9 +551,9 @@ or passage title) and the resulting assessment.}
 \subsection{Cumulative effect and final policy}
 \label{app:len-cumulative}
 
-Applied in sequence, the three filters retain 41,654 of 41,988 records
+Applied in sequence, the three filters retain 41,653 of 41,987 records
 (99.205\%): 98.139\% of the high-school questions (9,806 of 9,992) and
-99.537\% of the undergraduate ones (31,848 of 31,996). The share shift is
+99.537\% of the undergraduate ones (31,847 of 31,995). The share shift is
 0.325\,pp, well below the bound of 0.80\,pp given by
 Lemma~\thesection.3. Removals are concentrated in a few exams
 (Table~\ref{tab:len-exams}, Figure~\ref{fig:len-removals}). IME loses 144
@@ -599,15 +602,15 @@ Undergraduate & ENADE & 10,793 & 1 & 0 & 7 & 0 & 8 & 10,785 & 99.926 \\
  & OAB & 10,331 & 73 & 0 & 7 & 0 & 80 & 10,251 & 99.226 \\
  & BNDES & 4,075 & 4 & 9 & 2 & 12 & 27 & 4,048 & 99.337 \\
  & Res.\ USP/Unicamp & 1,575 & 0 & 0 & 1 & 0 & 1 & 1,574 & 99.937 \\
- & POSCOMP & 1,311 & 4 & 0 & 2 & 0 & 6 & 1,305 & 99.542 \\
+ & POSCOMP & 1,310 & 4 & 0 & 2 & 0 & 6 & 1,304 & 99.542 \\
  & REVALIDA & 1,195 & 0 & 0 & 0 & 0 & 0 & 1,195 & 100.000 \\
  & BACEN & 1,188 & 8 & 0 & 2 & 0 & 10 & 1,178 & 99.158 \\
  & CFCES & 722 & 0 & 0 & 15 & 0 & 15 & 707 & 97.922 \\
  & CNU & 491 & 0 & 0 & 0 & 0 & 0 & 491 & 100.000 \\
  & ENAM & 315 & 0 & 0 & 1 & 0 & 1 & 314 & 99.683 \\
- & \emph{Subtotal} & 31,996 & 90 & 9 & 37 & 12 & 148 & 31,848 & 99.537 \\
+ & \emph{Subtotal} & 31,995 & 90 & 9 & 37 & 12 & 148 & 31,847 & 99.537 \\
 \midrule
-\multicolumn{2}{@{}l}{\emph{All exams}} & 41,988 & 105 & 152 & 41 & 36 & 334 & 41,654 & 99.205 \\
+\multicolumn{2}{@{}l}{\emph{All exams}} & 41,987 & 105 & 152 & 41 & 36 & 334 & 41,653 & 99.205 \\
 \bottomrule
 \end{tabular}
 \caption{Per-exam effect of the final length policy. Removals are attributed
