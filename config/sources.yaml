@@ -1,4 +1,5 @@
-source_root: /home/aluno_paulosantana/repositories/cemig/buckets/web-crowlers-vestibulares-a
+# source_root: /home/aluno_paulosantana/repositories/cemig/buckets/web-crowlers-vestibulares-a
+source_root: /workspace/repositories/cemig/web-crowlers-vestibulares-a
 
 sources:
   - path: afa/afa_fixed.csv

@@ -11,8 +11,16 @@ from collections import Counter
 from pathlib import Path
 
 import numpy as np
+from datasets import Dataset, Features, List, Value
 
 from mmlu_pt.mcqa_minimal import PUBLIC_FIELDS
+
+DATASET_FEATURES = Features({
+    field: List(Value("string")) if field == "choices" else Value(
+        "int64" if field == "answer" else "string"
+    )
+    for field in PUBLIC_FIELDS
+})
 
 MODEL_ID = "Octen/Octen-Embedding-8B"
 MODEL_REVISION = "5adcfa292e712091dfc30f0e97f0b2282e6cc66c"
@@ -263,6 +271,20 @@ def write_jsonl(path: Path, rows) -> None:
             stream.write(canonical_json(row) + "\n")
 
 
+def save_local_dataset(path: Path, rows) -> None:
+    """Salva os campos públicos com um schema estável, inclusive sem registros."""
+    columns = {field: [] for field in PUBLIC_FIELDS}
+    for row in rows:
+        for field in PUBLIC_FIELDS:
+            value = row[field]
+            if field not in {"answer", "choices"} and value is not None:
+                value = str(value)
+            columns[field].append(value)
+    dataset = Dataset.from_dict(columns, features=DATASET_FEATURES)
+    # Um shard explícito permite recarregar datasets vazios no datasets 5.0.1.
+    dataset.save_to_disk(str(path), num_shards=1 if not len(dataset) else None)
+
+
 def run_semantic_deduplication(input_dir: Path, output_dir: Path, work_dir: Path) -> dict:
     """Executa a etapa semântica e publica o dataset somente após validá-lo."""
     started = time.perf_counter()
@@ -301,6 +323,7 @@ def run_semantic_deduplication(input_dir: Path, output_dir: Path, work_dir: Path
             output_count = sum(1 for line in stream if set(json.loads(line)) == set(PUBLIC_FIELDS))
         if output_count != len(kept):
             raise AssertionError("Contagem ou schema do output semântico inválido")
+        save_local_dataset(staged / "huggingface", (records[index]["public"] for index in kept))
         if sorted(path.name for path in input_dir.glob("*.jsonl")) != [row["file"] for row in manifest]:
             raise RuntimeError("A lista de arquivos de entrada mudou durante a deduplicação")
         for row in manifest:
@@ -339,6 +362,7 @@ def run_semantic_deduplication(input_dir: Path, output_dir: Path, work_dir: Path
             print(f"Output semântico anterior preservado em: {backup}")
     print(
         f"Semantic: {len(records)} entradas; {len(kept)} representantes; "
-        f"{len(removals)} removidos; {summary['elapsed_seconds']:.2f}s.\nAuditoria: {run_dir}"
+        f"{len(removals)} removidos; {summary['elapsed_seconds']:.2f}s.\nAuditoria: {run_dir}\n"
+        f"Dataset Hugging Face local: {output_dir / 'huggingface'}"
     )
     return summary

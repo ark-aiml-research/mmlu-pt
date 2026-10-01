@@ -9,6 +9,17 @@ from typing import Any
 _LATEX_START = re.compile(r"(\\+)([A-Za-z])")
 _WHITESPACE = re.compile(r"\s+")
 _VALID_ANSWERS = set("ABCDE")
+_FENCED_CODE = re.compile(
+    r"^ {0,3}(?P<ticks>`{3,})[^\n]*\n.*?(?:^ {0,3}(?P=ticks)`*[ \t]*(?:\n|$)|\Z)"
+    r"|^ {0,3}(?P<tildes>~{3,})[^\n]*\n.*?(?:^ {0,3}(?P=tildes)~*[ \t]*(?:\n|$)|\Z)",
+    re.MULTILINE | re.DOTALL,
+)
+_INLINE_CODE = re.compile(r"(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)", re.DOTALL)
+_IMAGE_MARKUP = re.compile(
+    r"!\[(?:\\.|[^\]\\])*\]\s*(?:\([^)]*\)|\[[^\]]*\])"
+    r"|<img(?=[\s/>])|data:image/",
+    re.IGNORECASE,
+)
 
 PUBLIC_FIELDS = [
     "exam",
@@ -92,6 +103,23 @@ def serialize_choices(choices: list[str]) -> str:
 def serialize_question_and_choices(*, question: str, choices: list[str]) -> str:
     """Combina o enunciado e as alternativas para contagem de palavras."""
     return "\n".join([question, *choices])
+
+
+def group_question_and_choices(*, question: Any, choices: list[str]) -> list[Any]:
+    """Reúne os textos sem misturar delimitadores de código entre campos."""
+    return [question, *choices]
+
+
+def has_no_images(texts: list[Any]) -> bool:
+    """Mantém registros sem imagens fora de trechos de código Markdown."""
+    for text in texts:
+        if not isinstance(text, str):
+            continue
+        text = _FENCED_CODE.sub("\n", text)
+        text = _INLINE_CODE.sub(" ", text)
+        if _IMAGE_MARKUP.search(text):
+            return False
+    return True
 
 
 def has_matching_alternative_lengths(parsed: Any) -> bool:

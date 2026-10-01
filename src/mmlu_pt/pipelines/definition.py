@@ -16,9 +16,11 @@ from mmlu_pt.mcqa_minimal import (
     PUBLIC_FIELDS,
     extract_choices,
     group_answer_and_choices,
+    group_question_and_choices,
     has_answer_in_bounds,
     has_described_choices,
     has_matching_alternative_lengths,
+    has_no_images,
     has_supported_choice_count,
     keep_question,
     normalize_answer,
@@ -44,6 +46,7 @@ SEMANTIC_DEDUPLICATED_DIR = OUTPUT_DIR / "06 - semantic-deduplicated"
 SEMANTIC_WORK_DIR = OUTPUT_DIR / "semantic-deduplication-work"
 NORMALIZED_QUESTION_FIELD = "question_normalized"
 ANSWER_AND_CHOICES_FIELD = "answer_and_choices"
+QUESTION_AND_CHOICES_FIELD = "question_and_choices"
 SERIALIZED_CHOICES_FIELD = "choices_serialized"
 SERIALIZED_QUESTION_AND_CHOICES_FIELD = "question_and_choices_serialized"
 DEDUPLICATION_FIELDS = [*PUBLIC_FIELDS, NORMALIZED_QUESTION_FIELD]
@@ -99,6 +102,15 @@ def _structural_filter_stages() -> list:
         Filter(
             has_answer_in_bounds,
             filter_field=ANSWER_AND_CHOICES_FIELD,
+        ),
+        Modify(
+            group_question_and_choices,
+            input_fields=[["question", "choices"]],
+            output_fields=QUESTION_AND_CHOICES_FIELD,
+        ),
+        Filter(
+            has_no_images,
+            filter_field=QUESTION_AND_CHOICES_FIELD,
         ),
         JsonlWriter(
             path=str(PRE_WORD_FILTER_DIR),

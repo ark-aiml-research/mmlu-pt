@@ -19,13 +19,13 @@ flowchart LR
     A[YAML manifest] --> B[CSV or JSONL]
     B --> C[Conversion and metadata]
     C --> D[MCQA normalization]
-    D --> E[Structural validation]
+    D --> E[Structural validation and image filtering]
     E --> F[Question: 4 to 1,000 words<br/>Choices: up to 300 words<br/>Combined: up to 1,000 words]
     F --> G[Question normalization]
     G --> H[Exact deduplication]
     H --> I[Question + labeled choices<br/>Octen embeddings + cosine similarity]
     I --> J[Direct representative matching]
-    J --> K[Final JSONL]
+    J --> K[Final JSONL + local Hugging Face Dataset]
 ```
 
 The pipeline performs the following operations:
@@ -35,7 +35,11 @@ The pipeline performs the following operations:
 2. Renames `statement` to `question`, converts `alternatives` into `choices`,
    and maps answers `A`–`E` to zero-based integer indices `0`–`4`.
 3. Discards records with invalid or empty alternatives, mismatched choice and
-   label counts, or anything other than four or five choices.
+   label counts, or anything other than four or five choices. Also discards
+   records containing images in the question or any choice: Markdown images
+   (`![...](...)` or `![...][...]`), HTML `<img>` tags, or `data:image/` content,
+   matched case-insensitively. Fenced and inline Markdown code is ignored;
+   plain image URLs and textual mentions of images or figures are preserved.
 4. Keeps questions containing between 4 and 1,000 words, whose combined
    choices contain at most 300 words, and whose question plus choices contain
    at most 1,000 words. All limits are inclusive and applied in that order.
@@ -173,6 +177,10 @@ manifest is only used when starting from step 1. Starting from step 2 reuses
 `output/01 - original/` without preparing or cleaning it. Outputs from the
 selected step onward are recreated normally.
 
+To apply image filtering to existing normalized records, restart with
+`--resume-from-step 3`. Starting from steps 4–6 reuses earlier outputs and does
+not retroactively apply this filter.
+
 To rerun only semantic deduplication on GPU 0:
 
 ```bash
@@ -210,7 +218,9 @@ output/
 │   └── <fingerprint>/
 │       ├── embeddings/             # embeddings.npy and info.json (identity and token audit)
 │       └── run-*/                  # manifest.json, records.jsonl, removals.jsonl
-└── 06 - semantic-deduplicated/         # final dataset (data.jsonl)
+└── 06 - semantic-deduplicated/
+    ├── data.jsonl                  # final JSONL
+    └── huggingface/                # local Hugging Face Dataset
 ```
 
 NeMo Curator partitions intermediate data and may produce hash-based file names.
@@ -226,6 +236,26 @@ The final file `output/06 - semantic-deduplicated/data.jsonl` uses the following
 | `choices` | List containing four or five choices |
 | `answer` | Zero-based integer index of the correct answer |
 | `academic_level` | `high_school` or `undergraduate` |
+
+The pipeline also saves a single Hugging Face `Dataset`, without splits, in
+`output/06 - semantic-deduplicated/huggingface/`. It contains the same records
+in the same order as the final JSONL, with only the eight public fields.
+`answer` is an integer, `choices` is a list of strings, and the remaining
+fields are strings; numeric identifiers are converted to text and null values
+are preserved. Empty results retain the same schema.
+
+This export runs both in the full pipeline and with `--resume-from-step 6`.
+It uses `save_to_disk` locally, without authentication or upload to the Hub.
+The JSONL and Hugging Face dataset are staged together before replacement,
+so an export failure preserves the previous published output.
+
+Load the saved dataset with:
+
+```python
+from datasets import load_from_disk
+
+dataset = load_from_disk("output/06 - semantic-deduplicated/huggingface")
+```
 
 The intermediate directories make each transformation inspectable. They and
 the final output directory are ignored by Git.
