@@ -1,0 +1,643 @@
+% =============================================================================
+% Appendix: length filtering --- formalization and ablation studies.
+%
+% Usage: \input this file after \appendix in the paper.
+% Required packages: graphicx, booktabs, amsmath, amssymb.
+% Assumes UTF-8 input and T1 font encoding (both provided by the ACL template).
+%
+% Numbers come from the notebooks in ablations/filtering/. Figures are generated
+% by ablations/filtering/make_figures.py, which also prints every aggregate
+% quoted below. By default figures are read from ./figures; to change this,
+% define the macro before the \input, e.g.
+%   \newcommand{\LengthAblationFigDir}{ablations/filtering/figures}
+% =============================================================================
+\providecommand{\LengthAblationFigDir}{figures}
+
+\section{Length Filtering: Formalization and Ablation Studies}
+\label{app:len}
+
+After structural validation, the curation pipeline applies three inclusive
+word-count filters, in this order, using NeMo Curator's
+\texttt{WordCountFilter}: (i)~the question must contain between 4 and 1,000
+words; (ii)~the answer choices, taken together, at most 300 words; and
+(iii)~the question plus its choices at most 1,000 words. Lower bounds target
+truncated stems produced by extraction failures; upper bounds keep the size of
+an example under control without discarding the long, passage-based questions
+that characterize several Brazilian exams. Each threshold was selected by a
+dedicated ablation study. This appendix formalizes their common setup
+(\S\ref{app:len-setup}), reports the three studies
+(\S\ref{app:len-question}--\S\ref{app:len-total}) and a qualitative boundary
+audit (\S\ref{app:len-audit}), and quantifies the cumulative effect of the
+final policy (\S\ref{app:len-cumulative}). The studies are coverage and
+sensitivity analyses: they measure what each threshold removes and from which
+sources, not whether removal improves benchmark validity
+(\S\ref{app:len-limitations}).
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Condition & Alone & Removed & Only & Retained & $R_{\mathrm{cum}}$ \\
+\midrule
+Input $D_0$ & -- & -- & -- & 41,988 & 100.000 \\
+\midrule
+$w_q \ge 4$ & 105 & 105 & 105 & 41,883 & 99.750 \\
+$w_q \le 1{,}000$ & 152 & 152 & 0 & 41,731 & 99.388 \\
+$w_c \le 300$ & 42 & 41 & 41 & 41,690 & 99.290 \\
+$w_t \le 1{,}000$ & 188 & 36 & 36 & 41,654 & 99.205 \\
+\midrule
+Any condition & 334 & 334 & 182 & 41,654 & 99.205 \\
+\bottomrule
+\end{tabular}
+\caption{Effect of the length filters on the 41,988 structurally valid
+records. \emph{Alone}: records violating the condition; \emph{Removed}:
+records attributed to the stage in pipeline order; \emph{Only}: records
+violating this condition and no other; \emph{Retained} and
+$R_{\mathrm{cum}}$~(\%): size and cumulative retention after the stage. The
+152 records violating two or more conditions are exactly those with
+$w_q > 1{,}000$, all of which also have $w_t > 1{,}000$.}
+\label{tab:len-overview}
+\end{table}
+
+\paragraph{Summary.} The final policy removes 334 records (0.795\%;
+Table~\ref{tab:len-overview}): 105 truncated stems with fewer than four words;
+152 questions longer than 1,000 words, which share only 29 distinct reading
+passages\footnote{Here and below, items are assigned to the same passage when
+their questions share the first 25 words.} (132 of them from IME); 41 records
+whose choices exceed 300 words; and 36 records whose combined length exceeds
+1,000 words.
+
+% -----------------------------------------------------------------------------
+\subsection{Data, notation and metrics}
+\label{app:len-setup}
+
+\paragraph{Data.} All studies analyze the materialized output of the
+structural-validation stage, which retains 41,988 of the 42,237 source
+records: 17 exams (7 high-school and 10 undergraduate; every exam belongs to
+exactly one level), 1,045 exam editions, 9,992 high-school and 31,996
+undergraduate questions, and 15,309 questions with four and 26,679 with five
+choices. The snapshot is identified by the SHA-256 of its sorted files,
+\texttt{2a7ded87ec71df2f3d304e392ea3c152}\allowbreak
+\texttt{5ba432bcd9d4566f6a82525bc3360caa}.\footnote{The question-length
+notebook was executed on a byte-different materialization of the same stage
+(SHA-256 prefix \texttt{19c2e2b5}); every statistic it reports is identical
+to those re-derived on the snapshot above.} Deduplication, which reduces the
+filtered set to 39,043 (exact) and 37,885 (semantic) records, runs downstream
+and is out of scope.
+
+\paragraph{Notation.} Let $D_0$ be the snapshot. A record
+$x=(q,C,a,e,\ell)$ has question text $q$, ordered choices
+$C=(c_1,\dots,c_k)$ with $k\in\{4,5\}$, answer index $a$, exam
+$e\in\mathcal{E}$ with $|\mathcal{E}|=17$, and academic level
+$\ell\in\{\mathrm{HS},\mathrm{UG}\}$. For a string $s$, let $\tau(s)$ be the
+sequence of maximal runs of non-whitespace characters (Python's
+\texttt{str.split()}) and $w(s)=|\tau(s)|$. This is exactly the score of
+\texttt{WordCountFilter} for Portuguese in NeMo Curator~1.3.0, whose leading
+\texttt{strip()} does not alter $\tau$. We write
+\begin{equation*}
+w_q = w(q),\quad w_c = \textstyle\sum_{i=1}^{k} w(c_i),\quad w_t = w_q + w_c .
+\end{equation*}
+The filters are the predicates $F_q^{a,b} = [a \le w_q \le b]$,
+$F_c^{b} = [w_c \le b]$ and $F_t^{N} = [w_t \le N]$, all inclusive as in
+\texttt{WordCountFilter}. Identifying a predicate with the records that
+satisfy it, the pipeline computes
+\begin{align*}
+D_1 &= D_0 \cap F_q^{4,1000},\\
+D_2 &= D_1 \cap F_c^{300},\\
+D_3 &= D_2 \cap F_t^{1000}.
+\end{align*}
+Each predicate depends only on the record itself, so $D_3$ does not depend on
+the order of the filters; the order only determines the stage to which a
+removal is attributed (Table~\ref{tab:len-overview}).
+
+\medskip\noindent\textbf{Lemma~\thesection.1 (Additivity).} For strings $u,v$
+and a whitespace character $\sigma$, $\tau(u\sigma v)$ is the concatenation of
+$\tau(u)$ and $\tau(v)$. Consequently, the word counts that the pipeline
+computes on the serialized fields \texttt{"\textbackslash n".join(choices)}
+and \texttt{"\textbackslash n".join([question, *choices])} are exactly $w_c$
+and $w_t$.
+
+\noindent\emph{Proof.} A maximal non-whitespace run cannot contain $\sigma$,
+so every run of $u\sigma v$ lies inside $u$ or inside $v$. Conversely, a run
+of $u$ (or $v$) is delimited in $u\sigma v$ by $\sigma$ or by an end of the
+string, and therefore remains maximal. $\square$
+
+\smallskip\noindent Summing per-choice counts, as the ablation notebooks do,
+therefore reproduces the pipeline measurement; we verified the equality on all
+41,988 records.
+
+\medskip\noindent\textbf{Lemma~\thesection.2 (Non-empty choices).} Structural
+validation keeps only records whose choices are all non-blank, so
+$w(c_i) \ge 1$ and $w_c \ge k \ge 4$ for every $x \in D_0$. The observed
+minima are exactly 1 and 4.
+
+\paragraph{Metrics.} Given a baseline $B$ and a retained subset
+$S \subseteq B$, we report the \emph{retention}
+$R(S \mid B) = 100\,|S|/|B|$ and the \emph{group retention}
+$R_g = 100\,|S_g|/|B_g|$ for an exam or a level $g$. Because each exam belongs
+to a single level, $R_{\mathrm{HS}}$ and $R_{\mathrm{UG}}$ are size-weighted
+means of their exams' retentions. The \emph{least-retained exam} is
+$e^{*} = \arg\min_e R_e$, with $R_{\min} = R_{e^{*}}$. Representation drift is
+the \emph{share shift}
+$\Delta(S \mid B) = 100 \max_e |\pi_e(S) - \pi_e(B)|$, in percentage points,
+where $\pi_e(X) = |X_e|/|X|$. When a filter $F$ follows a filter $G$, we also
+report the \emph{incremental} removals
+$\mathrm{Inc} = |\{x \in B : G(x) \wedge \neg F(x)\}|$ and the \emph{overlap}
+$\mathrm{Ovl} = |\{x \in B : \neg G(x) \wedge \neg F(x)\}|$, so that $F$ alone
+removes $\mathrm{Inc} + \mathrm{Ovl}$ records, and the \emph{cumulative
+retention} $R(D_k \mid D_0)$. The baseline is $B = D_0$ in the question and
+choice studies and $B = D_2$ in the combined study.
+
+\medskip\noindent\textbf{Lemma~\thesection.3 (Share-shift bound).} If
+$|S| = r\,|B|$ with $0 < r \le 1$, then
+$\Delta(S \mid B) \le 100\,(1-r)/r$.
+
+\noindent\emph{Proof.} Since $|B_e| - (1-r)|B| \le |S_e| \le |B_e|$, we have
+$\pi_e(S) - \pi_e(B) \le \pi_e(B)(1/r - 1) \le (1-r)/r$ and
+$\pi_e(B) - \pi_e(S) \le \pi_e(B)(1 - 1/r) + (1-r)/r \le (1-r)/r$.
+$\square$
+
+\smallskip\noindent Every configuration retaining at least 99\% of its
+baseline thus has $\Delta \le 1.01$\,pp. Near the selected operating points
+the share shift is small by construction, and $R_{\min}$ is the subgroup
+metric that discriminates between thresholds.
+
+\paragraph{Protocol.} Each study (i)~fixes the snapshot and checks its
+fingerprint; (ii)~measures lengths with the pipeline's own filter; (iii)~sweeps
+one threshold over a grid with inclusive endpoints, keeping the other bounds
+neutral (the combined study conditions on $D_2$); (iv)~reports retention
+overall, by level and for the least-retained exam, together with the share
+shift; (v)~inspects the length bands around candidate thresholds by reading
+eight records per band, sampled deterministically with seed~42
+(\S\ref{app:len-audit}); and (vi)~selects a threshold by combining (iii)--(v).
+Percentiles use linear interpolation. Table~\ref{tab:len-percentiles}
+summarizes the three length distributions, and Figure~\ref{fig:len-lengths}
+breaks them down by exam.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+ & $w_q$ on $D_0$ & $w_c$ on $D_0$ & $w_t$ on $D_2$ \\
+\midrule
+Records & 41,988 & 41,988 & 41,690 \\
+Mean & 115.3 & 52.8 & 163.3 \\
+\midrule
+Minimum & 1 & 4 & 9 \\
+p1 & 4 & 4 & 23 \\
+p5 & 8 & 5 & 39 \\
+p25 & 31 & 16 & 86 \\
+p50 & 82 & 40 & 137 \\
+p75 & 148 & 77 & 205 \\
+p95 & 313 & 138 & 364 \\
+p99 & 746 & 196 & 727.1 \\
+p99.5 & 925.1 & 225.1 & 836.0 \\
+p99.9 & 1,625.1 & 297.1 & 992.3 \\
+Maximum & 2,620 & 595 & 1,160 \\
+\midrule
+Selected bounds & [4, 1,000] & ${\le}\,300$ & ${\le}\,1{,}000$ \\
+Within bounds (\%) & 99.388 & 99.900 & 99.914 \\
+\bottomrule
+\end{tabular}
+\caption{Word-count distributions of the three filtered quantities. $w_q$ and
+$w_c$ are measured on the structurally valid snapshot $D_0$; $w_t$ on $D_2$,
+the records that reach the combined filter.}
+\label{tab:len-percentiles}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{\LengthAblationFigDir/lengths_by_exam.pdf}
+\caption{Per-exam distributions of (a)~question words $w_q$ and (b)~total
+choice words $w_c$ on $D_0$, and (c)~combined words $w_t$ on $D_2$ (log
+scales). Boxes show the interquartile range and median; whiskers span
+p5--p95. Dots are the records that violate the panel's bounds (dashed lines;
+shaded regions are removed), coloured by the violated condition. Exams are
+grouped by academic level and sorted by median question length.}
+\label{fig:len-lengths}
+\end{figure*}
+
+% -----------------------------------------------------------------------------
+\subsection{Question length}
+\label{app:len-question}
+
+\paragraph{Motivation.} Question length is highly heterogeneous across
+sources (Figure~\ref{fig:len-lengths}a): OAB questions have a median of 20
+words and ENADE questions 152, while the 95th percentile of IME reaches 1,386
+words because its Portuguese section attaches a full reading passage to every
+item. Both tails are problematic. The lower tail concentrates stems truncated
+during extraction (\emph{Assinale}, \emph{Imunidade:}, \emph{The text}). The
+upper tail consists of legitimate passages that are extremely long and
+repeated across items: the 152 questions longer than 1,000 words share only 29
+distinct passages, and a single IME~2012 passage is attached to 13 of them.
+
+\paragraph{Results.} Table~\ref{tab:len-question} and
+Figure~\ref{fig:len-sweeps}(a--b) report the two one-sided sweeps and three
+joint candidates. The joint min--max grid of the notebook adds no information,
+because two-sided removals decompose:
+
+\medskip\noindent\textbf{Proposition~\thesection.4 (Disjoint removals).} For
+$a \le b$, the sets $\{w_q < a\}$ and $\{w_q > b\}$ are disjoint, so the
+removals of $F_q^{a,b}$, overall and within every exam or level, are the sums
+of the one-sided removals (e.g., $257 = 105 + 152$).
+
+\smallskip\noindent The minimum sweep is flat up to four words: bounds of 2,
+3 and 4 remove 3, 20 and 105 records, with $R_{\min} \ge 98.698\%$ (COMVEST)
+and $\Delta \le 0.113$\,pp. At five words the removals jump to 958, because
+the 853 four-word questions are dropped. These are concentrated in OAB
+($R_{\min} = 91.859\%$, $\Delta = 1.475$\,pp), and the loss accelerates
+afterwards: OAB retains 76.8\% at 10 words and 50.7\% at 20
+(Figure~\ref{fig:len-exam-sensitivity}a). Maximum bounds between 300 and 750
+words cut deep into passage-based exams: at 500 words IME retains 75.227\%
+and high-school retention falls to 95.126\%. Beyond 1,000 words the curves
+saturate, with bounds of 1,500 and 2,000 removing only 49 and 20 records.
+
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}rrrrrrlrr@{}}
+\toprule
+$a$ & $b$ & Removed & $R$ & $R_{\mathrm{HS}}$ & $R_{\mathrm{UG}}$ & $e^{*}$ & $R_{\min}$ & $\Delta$ (pp) \\
+\midrule
+\multicolumn{9}{@{}l}{\emph{(a) Minimum only}} \\
+1 & -- & 0 & 100.000 & 100.000 & 100.000 & -- & 100.000 & 0.000 \\
+2 & -- & 3 & 99.993 & 99.980 & 99.997 & COMVEST & 99.566 & 0.005 \\
+3 & -- & 20 & 99.952 & 99.920 & 99.962 & COMVEST & 99.349 & 0.012 \\
+\textbf{4} & -- & \textbf{105} & \textbf{99.750} & \textbf{99.850} & \textbf{99.719} & \textbf{COMVEST} & \textbf{98.698} & \textbf{0.113} \\
+5 & -- & 958 & 97.718 & 99.650 & 97.115 & OAB & 91.859 & 1.475 \\
+8 & -- & 1,792 & 95.732 & 99.239 & 94.637 & OAB & 85.906 & 2.525 \\
+10 & -- & 3,036 & 92.769 & 98.729 & 90.908 & OAB & 76.817 & 4.231 \\
+\midrule
+\multicolumn{9}{@{}l}{\emph{(b) Maximum only}} \\
+-- & 300 & 2,293 & 94.539 & 91.543 & 95.474 & IME & 63.702 & 1.414 \\
+-- & 500 & 917 & 97.816 & 95.126 & 98.656 & IME & 75.227 & 0.606 \\
+-- & 750 & 409 & 99.026 & 96.998 & 99.659 & IME & 82.305 & 0.443 \\
+-- & \textbf{1,000} & \textbf{152} & \textbf{99.638} & \textbf{98.569} & \textbf{99.972} & \textbf{IME} & \textbf{88.022} & \textbf{0.306} \\
+-- & 1,500 & 49 & 99.883 & 99.510 & 100.000 & IME & 95.554 & 0.114 \\
+-- & 2,000 & 20 & 99.952 & 99.800 & 100.000 & IME & 98.185 & 0.046 \\
+-- & 3,000 & 0 & 100.000 & 100.000 & 100.000 & -- & 100.000 & 0.000 \\
+\midrule
+\multicolumn{9}{@{}l}{\emph{(c) Joint candidates}} \\
+4 & 2,000 & 125 & 99.702 & 99.650 & 99.719 & IME & 98.185 & 0.101 \\
+\textbf{4} & \textbf{1,000} & \textbf{257} & \textbf{99.388} & \textbf{98.419} & \textbf{99.691} & \textbf{IME} & \textbf{88.022} & \textbf{0.300} \\
+4 & 500 & 1,022 & 97.566 & 94.976 & 98.375 & IME & 75.227 & 0.601 \\
+\bottomrule
+\end{tabular}
+\caption{Question-length ablation on $D_0$ ($n = 41{,}988$) for the filter
+$a \le w_q \le b$; ``--'' denotes a neutral bound. \emph{Removed}: records
+outside $[a,b]$; $R$, $R_{\mathrm{HS}}$, $R_{\mathrm{UG}}$: retention (\%)
+overall and by level; $e^{*}$, $R_{\min}$: least-retained exam and its
+retention (\%); $\Delta$: share shift. Grid points with $R < 90\%$
+($a \in \{15, 20, 30, 50\}$ and $b \in \{100, 200\}$) are omitted. Selected
+values in bold.}
+\label{tab:len-question}
+\end{table*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{\LengthAblationFigDir/threshold_sweeps.pdf}
+\caption{Retention of all records and of the least-retained exam as each
+bound varies over its ablation grid: (a)~minimum and (b)~maximum question
+length and (c)~maximum choice length on $D_0$, with the other bounds neutral;
+(d)~maximum combined length on $D_2$. Dashed lines mark the selected bounds,
+annotated with the least-retained exam and its retention (\%).}
+\label{fig:len-sweeps}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{\LengthAblationFigDir/exam_sensitivity.pdf}
+\caption{Per-exam retention (\%) under candidate bounds around each selected
+value (framed column): (a)~minimum question length and (b)~maximum choice
+length on $D_0$; (c)~maximum combined length on $D_2$. The colour scale
+saturates below 80\%. Values are rounded to one decimal; 100 means that no
+record of the exam was removed.}
+\label{fig:len-exam-sensitivity}
+\end{figure*}
+
+\paragraph{Decision: $4 \le w_q \le 1{,}000$.} The lower bound is the
+smallest value that removes the fragment band identified by the audit
+(one to three words, 105 records) while keeping the 853 four-word questions.
+Those are complete MCQA instructions whose content lies in the choices;
+\emph{Assinale a alternativa CORRETA:} alone accounts for 141 of them. A few
+three-word stems are also completed by their choices (\emph{É CORRETO
+afirmar:}), so this bound deliberately trades some terse but valid items for
+structural reliability. The upper bound lies between p99.5 (925.1) and p99.9
+(1,625.1), where the retention curve has already saturated. It is an
+operational decision: it caps example size, which matters when several
+examples are concatenated in few-shot prompts, and it prevents a handful of
+passages from being over-represented through the many items attached to
+them. It is not a quality judgment, since the removed items are legitimate
+reading-comprehension questions. The selected pair retains 41,731 records
+(99.388\%), and IME is the most affected exam (970 of 1,102, 88.022\%). In
+the final policy, the upper bound is subsumed by the combined filter
+(Proposition~\thesection.6).
+
+% -----------------------------------------------------------------------------
+\subsection{Choice length}
+\label{app:len-choices}
+
+\paragraph{Motivation.} Long choice sets arise from three sources:
+legitimately verbose options (legal propositions, accounting rules, clinical
+management plans); Markdown tables replicated in every option, where each cell
+separator counts as a word; and segmentation errors, where the text of a
+neighbouring question leaks into an option (\S\ref{app:len-audit}). The
+measured quantity is the total $w_c$, i.e., the size the choices add to an
+example (Lemma~\thesection.1). Summation does not penalize five-choice
+questions in practice: their totals are shorter than those of four-choice
+questions (median 28 vs.\ 61 words), and 27 of the 42 records above 300 words
+have four choices.
+
+\paragraph{Results.} Table~\ref{tab:len-choices} and
+Figure~\ref{fig:len-sweeps}c show that retention saturates between 200 and
+300 words. Bounds of 200 and 225 words remove 385 and 210 records and mainly
+affect ENAM ($R_{\min}$ of 91.429\% and 94.921\%), whose legal options are
+long (median $w_c = 108$). From 250 words upward the least-retained exam is
+CFCES, whose accounting questions have a 99th percentile of 350.8 words
+(Figure~\ref{fig:len-exam-sensitivity}b). The overlap with the question filter
+is negligible at the selected point (a single record).
+
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{@{}rrrrrlrrrrr@{}}
+\toprule
+$b_c$ & Removed & $R$ & $R_{\mathrm{HS}}$ & $R_{\mathrm{UG}}$ & $e^{*}$ & $R_{\min}$ & $\Delta$ (pp) & Inc & Ovl & $R_{\mathrm{cum}}$ \\
+\midrule
+125 & 3,077 & 92.672 & 97.658 & 91.115 & ENAM & 57.143 & 0.784 & 3,063 & 14 & 92.093 \\
+150 & 1,505 & 96.416 & 99.079 & 95.584 & ENAM & 70.476 & 0.216 & 1,496 & 9 & 95.825 \\
+175 & 728 & 98.266 & 99.650 & 97.834 & ENAM & 82.857 & 0.118 & 725 & 3 & 97.661 \\
+200 & 385 & 99.083 & 99.770 & 98.869 & ENAM & 91.429 & 0.087 & 382 & 3 & 98.478 \\
+225 & 210 & 99.500 & 99.900 & 99.375 & ENAM & 94.921 & 0.063 & 209 & 1 & 98.890 \\
+250 & 115 & 99.726 & 99.920 & 99.666 & CFCES & 96.814 & 0.050 & 114 & 1 & 99.116 \\
+275 & 66 & 99.843 & 99.940 & 99.812 & CFCES & 97.368 & 0.043 & 65 & 1 & 99.233 \\
+\textbf{300} & \textbf{42} & \textbf{99.900} & \textbf{99.950} & \textbf{99.884} & \textbf{CFCES} & \textbf{97.922} & \textbf{0.034} & \textbf{41} & \textbf{1} & \textbf{99.290} \\
+350 & 17 & 99.960 & 99.980 & 99.953 & CFCES & 98.892 & 0.018 & 17 & 0 & 99.347 \\
+400 & 6 & 99.986 & 99.980 & 99.987 & COMVEST & 99.566 & 0.005 & 6 & 0 & 99.374 \\
+450 & 2 & 99.995 & 100.000 & 99.994 & OAB & 99.990 & 0.001 & 2 & 0 & 99.383 \\
+500 & 2 & 99.995 & 100.000 & 99.994 & OAB & 99.990 & 0.001 & 2 & 0 & 99.383 \\
+\bottomrule
+\end{tabular}
+\caption{Choice-length ablation on $D_0$ for the filter $w_c \le b_c$.
+Columns up to $\Delta$ are as in Table~\ref{tab:len-question}.
+\emph{Inc}: records removed beyond the question filter $F_q^{4,1000}$;
+\emph{Ovl}: records that the question filter already removes;
+$R_{\mathrm{cum}}$: retention (\%) of $D_0$ after both filters. Grid points
+with $R < 90\%$ ($b_c \le 100$) are omitted. Selected value in bold.}
+\label{tab:len-choices}
+\end{table*}
+
+\paragraph{Decision: $w_c \le 300$.} The bound sits at the 99.9th percentile
+(297.1) and therefore targets only the extreme tail. On its own it removes 42
+records (99.900\% retention); after the question filter it removes 41 more
+records, with a single overlap. CFCES is the most affected exam (707 of 722,
+97.922\%), and $\Delta = 0.034$\,pp. Lower bounds would remove several times
+more records and start eroding ENAM and CFCES. Higher bounds would recover at
+most 40 of the 42 records (36 at 400 words), which the audit shows to be
+mostly legitimate long options interspersed with tables and leaked text. The
+bound is therefore a conservative size limit rather than an error detector:
+it neither removes only errors nor catches all of them (a leaked passage of
+250 words survives in a 292-word choice set; \S\ref{app:len-audit}).
+
+% -----------------------------------------------------------------------------
+\subsection{Combined length}
+\label{app:len-total}
+
+\paragraph{Motivation.} The two component bounds imply $w_t \le 1{,}300$ but
+still admit an example that combines a near-limit passage with long options.
+The third filter caps the size of the whole example at the same 1,000-word
+ceiling adopted for the question, so that no example exceeds 1,000 words
+overall. Its effect is confined to a small region of the length plane:
+
+\medskip\noindent\textbf{Proposition~\thesection.5 (Active region).} On
+$D_2$, $w_q \le 1{,}000$ and $w_c \le 300$, so $w_t \le 1{,}300$ and $F_t^{N}$
+is vacuous for $N \ge 1{,}300$ (for $N \ge 1{,}160$ in the data). For
+$N = 1{,}000$, a record of $D_2$ is removed if and only if
+$w_q + w_c > 1{,}000$, which, given $w_c \le 300$, requires $w_q > 700$.
+
+\medskip\noindent\textbf{Proposition~\thesection.6 (Implied question
+maximum).} By Lemma~\thesection.2, $w_t \ge w_q + 4$, so $F_t^{1000}$ implies
+$w_q \le 996$. Hence
+$D_3 = D_0 \cap F_q^{4,\infty} \cap F_c^{300} \cap F_t^{1000}$: the question
+maximum never removes a record that the other filters would keep.
+
+\smallskip\noindent Consistently, all 152 records with $w_q > 1{,}000$ also
+have $w_t > 1{,}000$ (column \emph{Only} in Table~\ref{tab:len-overview}). We
+keep the question maximum as a first-stage guard. It implements the decision
+of \S\ref{app:len-question}, defines the population on which the choice and
+combined studies were measured, and would become binding if the combined cap
+were ever relaxed; it does not change the released data.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\LengthAblationFigDir/question_vs_choices.pdf}
+\caption{Joint distribution of question and choice words on $D_2$ (hexagonal
+bins, log colour scale). The frame is the region admitted by the first two
+filters; the dashed line is $w_q + w_c = 1{,}000$, and the shaded triangle is
+the only region where the combined filter can act
+(Proposition~\thesection.5). Dots mark the 36 removed records.}
+\label{fig:len-joint}
+\end{figure}
+
+\paragraph{Results.} In the upper tail the question contributes most of the
+combined length (Figure~\ref{fig:len-joint}): the question share
+$w_q/w_t$ has a median of 0.673 on $D_2$ and exceeds 0.84 in each of the 20
+longest examples. The combined sweep therefore behaves like a finer
+question-length cap that only reaches passage-based exams
+(Table~\ref{tab:len-total}). For $N \le 950$ the least-retained exam is AFA,
+which retains 89.517\% at $N = 750$ and 96.992\% at $N = 950$
+(Figure~\ref{fig:len-exam-sensitivity}c).
+
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}rrrrrrlrr@{}}
+\toprule
+$N$ & Removed & $R(\cdot \mid D_2)$ & $R(\cdot \mid D_0)$ & $R_{\mathrm{HS}}$ & $R_{\mathrm{UG}}$ & $e^{*}$ & $R_{\min}$ & $\Delta$ (pp) \\
+\midrule
+300 & 3,568 & 91.442 & 90.793 & 90.315 & 91.789 & AFA & 66.180 & 2.099 \\
+400 & 1,590 & 96.186 & 95.503 & 94.232 & 96.789 & AFA & 71.741 & 0.962 \\
+500 & 933 & 97.762 & 97.068 & 95.799 & 98.368 & AFA & 77.940 & 0.636 \\
+600 & 648 & 98.446 & 97.747 & 97.019 & 98.886 & AFA & 83.865 & 0.468 \\
+700 & 455 & 98.909 & 98.207 & 97.854 & 99.234 & AFA & 88.149 & 0.286 \\
+750 & 390 & 99.065 & 98.361 & 98.047 & 99.379 & AFA & 89.517 & 0.254 \\
+800 & 293 & 99.297 & 98.592 & 98.311 & 99.601 & AFA & 91.340 & 0.211 \\
+850 & 173 & 99.585 & 98.878 & 98.830 & 99.818 & AFA & 93.710 & 0.155 \\
+900 & 124 & 99.703 & 98.995 & 99.054 & 99.903 & AFA & 94.895 & 0.127 \\
+950 & 77 & 99.815 & 99.107 & 99.390 & 99.947 & AFA & 96.992 & 0.074 \\
+\textbf{1,000} & \textbf{36} & \textbf{99.914} & \textbf{99.205} & \textbf{99.756} & \textbf{99.962} & \textbf{IME} & \textbf{98.763} & \textbf{0.027} \\
+1,050 & 9 & 99.978 & 99.269 & 99.969 & 99.981 & IME & 99.794 & 0.012 \\
+1,100 & 3 & 99.993 & 99.283 & 100.000 & 99.991 & BNDES & 99.926 & 0.006 \\
+1,150 & 1 & 99.998 & 99.288 & 100.000 & 99.997 & BNDES & 99.975 & 0.002 \\
+1,200 & 0 & 100.000 & 99.290 & 100.000 & 100.000 & -- & 100.000 & 0.000 \\
+\bottomrule
+\end{tabular}
+\caption{Combined-length ablation for the filter $w_t \le N$ on $D_2$
+($n = 41{,}690$), the records retained by the question and choice filters.
+\emph{Removed}, $R_{\mathrm{HS}}$, $R_{\mathrm{UG}}$, $e^{*}$, $R_{\min}$ and
+$\Delta$ are relative to $D_2$; $R(\cdot \mid D_0)$ is the cumulative
+retention of the three filters. Selected value in bold.}
+\label{tab:len-total}
+\end{table*}
+
+\paragraph{Decision: $w_t \le 1{,}000$.} The bound lies just above the 99.9th
+percentile of $D_2$ (992.3) and matches the question ceiling. It removes 36
+of 41,690 records (0.086\%), 12 each from AFA, BNDES and IME, all with
+$w_q \ge 888$. Relative to $D_2$, IME is the least-retained exam (98.763\%)
+and $\Delta = 0.027$\,pp. Cumulative retention is 99.205\%.
+
+% -----------------------------------------------------------------------------
+\subsection{Boundary audit}
+\label{app:len-audit}
+
+Table~\ref{tab:len-audit} summarizes the manual inspection of the length
+bands around each candidate threshold. The audit supports the lower question
+bound: the bands below four words are dominated by truncated stems, whereas
+four- and five-word questions are complete. Every upper-tail band, in
+contrast, consists mostly of legitimate items (reading passages, verbose legal
+or accounting options, tables), with occasional segmentation errors on both
+sides of the choice bound. The upper bounds are therefore size-control
+decisions, not quality filters.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrlp{0.45\textwidth}p{0.25\textwidth}@{}}
+\toprule
+Band (words) & $n$ & Fate & Representative items & Assessment \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Question length $w_q$ on $D_0$}} \\
+1--2 & 20 & removed & COMVEST 2014 ``Assinale''; OAB-SP 2003 ``Imunidade:''; AFA 2016 ``The text''; FUVEST 2002 ``Os vírus'' & Truncated stems; the question body was lost in extraction. \\
+3 & 85 & removed & BACEN 2006 ``Os crimes culposos''; BNDES 2002 ``Nos contratos bancários,''; OAB-MG 2007 ``É CORRETO afirmar:'' & Mostly incomplete (64 from OAB); 28 end with a colon, several of which are completed by the choices. \\
+4 & 853 & kept & OAB ``Não constitui ato administrativo:'', ``É correto afirmar que:'', ``Assinale a assertiva incorreta.'' & Complete MCQA instructions. \\
+5 & 183 & kept & FUVEST 2001 ``O barroco no Brasil foi''; OAB-SP 2007 ``O interesse de agir é'' & Complete stems. \\
+501--1,000 & 765 & kept & IME 2024 (English article on forensic drones); AFA 2023 (\emph{Gulliver's Travels}); BNDES 2009 (Spanish, \emph{El País}) & Legitimate passage-based items. \\
+1,001--2,000 & 132 & removed & IME 2016--2022 (``A crise ambiental'', ``A condição humana''); AFA 2018 (English); BNDES 2008 (Spanish) & Legitimate; long passages repeated across items. \\
+$>$2,000 & 20 & removed & IME 2012 (``A importância do número zero'', 13 items); IME 2021, 2022 and 2024 & Legitimate; extreme length and repetition. \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Choice length $w_c$ on $D_0$}} \\
+201--250 & 270 & kept & ENADE 2019 Medicine (five management plans of 42--55 words); ENADE 2022 Law; OAB & Legitimate verbose options. \\
+251--300 & 73 & kept & BACEN, ENADE and OAB (long parallel options); BLUEX USP 2024 (one option holds 250 of 292 words) & Mostly legitimate; includes a leaked passage of the next question. \\
+301--350 & 25 & removed & OAB-DF 2003 (``Assinale a opção errada:'' with multi-part legal propositions); CFCES accounting standards; POSCOMP 2002 & Legitimate but atypically long. \\
+$>$350 & 17 & removed & ENADE 2017 and 2015 (truth and cost tables in Markdown in every option); COMVEST 2015 and 2016 (text of other questions inside an option); CFCES & Mixed: tables inflated by cell separators, segmentation errors, long accounting options. \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Combined length $w_t$ on $D_2$}} \\
+701--800 & 162 & kept & AFA 2021 (``A verdadeira lei de Gérson''); AFA 2012 and BNDES 2008--2024 (English and Spanish texts) & Legitimate passages with short options. \\
+801--900 & 169 & kept & BACEN 2006 (``O segredo da acumulação primitiva neoliberal''); IME 2022; AFA 2015 and 2019 & Legitimate; question share 0.87--0.99. \\
+901--1,000 & 88 & kept & FUVEST 2015 (``O operário no mar''); IME 2018 (``Becos de Goiás''); BNDES 2011 and 2013 & Legitimate. \\
+1,001--1,050 & 27 & removed & IME 2018 (``Becos de Goiás''); AFA 2018 (``Why do supervillains fascinate us?''); IME 2020 & Legitimate; same passage families as the kept bands. \\
+$>$1,050 & 9 & removed & BNDES 2024 (six items sharing ``O consumo como forma de expressão\ldots''); IME 2020 and 2022; AFA 2018 & Legitimate; long shared passage. \\
+\bottomrule
+\end{tabular}
+\caption{Boundary audit. For each band, $n$ is the number of records in the
+band, and eight records were sampled deterministically (seed~42) and read in
+full; the table lists representative items (exam, edition and truncated text
+or passage title) and the resulting assessment.}
+\label{tab:len-audit}
+\end{table*}
+
+% -----------------------------------------------------------------------------
+\subsection{Cumulative effect and final policy}
+\label{app:len-cumulative}
+
+Applied in sequence, the three filters retain 41,654 of 41,988 records
+(99.205\%): 98.139\% of the high-school questions (9,806 of 9,992) and
+99.537\% of the undergraduate ones (31,848 of 31,996). The share shift is
+0.325\,pp, well below the bound of 0.80\,pp given by
+Lemma~\thesection.3. Removals are concentrated in a few exams
+(Table~\ref{tab:len-exams}, Figure~\ref{fig:len-removals}). IME loses 144
+records (13.067\%), 132 of which are questions longer than 1,000 words, i.e.,
+its long Portuguese reading passages. AFA (2.516\%) and CFCES (2.078\%)
+follow, and three exams (CNU, OBI and REVALIDA) lose no record. The final
+policy is
+\begin{equation}
+\begin{aligned}
+x \in D_3 \iff{} & 4 \le w_q(x) \le 1{,}000,\ w_c(x) \le 300,\\
+& \text{and } w_t(x) \le 1{,}000,
+\end{aligned}
+\end{equation}
+implemented as three NeMo Curator \texttt{ScoreFilter} stages applying
+\texttt{WordCountFilter} (\texttt{lang="pt"}) to the question, to the
+newline-joined choices and to the newline-joined question and choices, in
+this order.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\LengthAblationFigDir/removals_by_exam.pdf}
+\caption{End-to-end removals per exam as a percentage of the exam's records,
+stacked by the stage that removed them (pipeline order). Labels give removed
+and total records.}
+\label{fig:len-removals}
+\end{figure}
+
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}llrrrrrrrr@{}}
+\toprule
+Level & Exam & $|D_0|$ & $w_q < 4$ & $w_q > 1{,}000$ & $w_c > 300$ & $w_t > 1{,}000$ & Removed & $|D_3|$ & $R$ (\%) \\
+\midrule
+High school & ENEM & 2,689 & 0 & 0 & 1 & 0 & 1 & 2,688 & 99.963 \\
+ & OBI & 2,301 & 0 & 0 & 0 & 0 & 0 & 2,301 & 100.000 \\
+ & FUVEST & 1,662 & 3 & 0 & 0 & 0 & 3 & 1,659 & 99.819 \\
+ & AFA & 1,113 & 5 & 11 & 0 & 12 & 28 & 1,085 & 97.484 \\
+ & IME & 1,102 & 0 & 132 & 0 & 12 & 144 & 958 & 86.933 \\
+ & BLUEX & 664 & 1 & 0 & 0 & 0 & 1 & 663 & 99.849 \\
+ & COMVEST & 461 & 6 & 0 & 3 & 0 & 9 & 452 & 98.048 \\
+ & \emph{Subtotal} & 9,992 & 15 & 143 & 4 & 24 & 186 & 9,806 & 98.139 \\
+\midrule
+Undergraduate & ENADE & 10,793 & 1 & 0 & 7 & 0 & 8 & 10,785 & 99.926 \\
+ & OAB & 10,331 & 73 & 0 & 7 & 0 & 80 & 10,251 & 99.226 \\
+ & BNDES & 4,075 & 4 & 9 & 2 & 12 & 27 & 4,048 & 99.337 \\
+ & Res.\ USP/Unicamp & 1,575 & 0 & 0 & 1 & 0 & 1 & 1,574 & 99.937 \\
+ & POSCOMP & 1,311 & 4 & 0 & 2 & 0 & 6 & 1,305 & 99.542 \\
+ & REVALIDA & 1,195 & 0 & 0 & 0 & 0 & 0 & 1,195 & 100.000 \\
+ & BACEN & 1,188 & 8 & 0 & 2 & 0 & 10 & 1,178 & 99.158 \\
+ & CFCES & 722 & 0 & 0 & 15 & 0 & 15 & 707 & 97.922 \\
+ & CNU & 491 & 0 & 0 & 0 & 0 & 0 & 491 & 100.000 \\
+ & ENAM & 315 & 0 & 0 & 1 & 0 & 1 & 314 & 99.683 \\
+ & \emph{Subtotal} & 31,996 & 90 & 9 & 37 & 12 & 148 & 31,848 & 99.537 \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{All exams}} & 41,988 & 105 & 152 & 41 & 36 & 334 & 41,654 & 99.205 \\
+\bottomrule
+\end{tabular}
+\caption{Per-exam effect of the final length policy. Removals are attributed
+to the first violated condition in pipeline order (question, choices,
+combined), so each record is counted once.}
+\label{tab:len-exams}
+\end{table*}
+
+% -----------------------------------------------------------------------------
+\subsection{Limitations}
+\label{app:len-limitations}
+
+\emph{No semantic labels or downstream evaluation.} Retention is not quality:
+apart from the manual audit, no annotation estimates how many removed or
+retained items are defective, and the studies do not measure the effect of
+the filters on model accuracy or calibration.
+\emph{Whitespace words are not tokens.} The metric reproduces the pipeline
+exactly but ignores tokenization; Markdown tables and formulas inflate it
+(every cell separator counts as a word), and it does not predict context
+usage for any specific model.
+\emph{Post-hoc thresholds.} Bounds were chosen after inspecting the sweeps and
+the audit, favouring round values in the far tail; they are operating points,
+not optima of an objective.
+\emph{Conditioning and passages.} The combined study is conditional on the
+first two filters. Because the filters act on items, they can split items
+that share a reading passage: the question maximum splits 20 passages, and the
+combined bound removes 24 items whose passage remains attached to 62 retained
+items, so a passage may be only partially represented.
+\emph{Source imbalance.} Aggregate retention is dominated by ENADE and OAB,
+and $R_{\min}$ is coarse for small exams (a single ENAM record weighs
+0.32\,pp). The policy removes 13.1\% of IME, which slightly under-represents
+long Portuguese reading passages in the high-school split; this should be
+considered when interpreting results on that exam.
