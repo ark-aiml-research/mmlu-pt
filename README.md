@@ -200,6 +200,25 @@ outputs are retained in a `.semantic-backup-*` directory whose path is printed
 after replacement. Failures preserve the previous published dataset. Historical
 fuzzy outputs are not modified.
 
+## Knowledge classification
+
+An independent CLI adds `subject` with `Qwen/Qwen3.5-122B-A10B-FP8` and derives
+`macro_area` from the project's versioned taxonomy. It supports local Hugging
+Face datasets or Hub IDs, all splits, native offline vLLM 0.19.1 DP/TP,
+checkpoints, and validated local export. STEM is available at both academic
+levels, and Law has its own macroarea for undergraduate questions.
+
+```bash
+CUDA_VISIBLE_DEVICES=0,1,2 uv run python -m mmlu_pt.classification.cli \
+  --dataset-path "output/06 - semantic-deduplicated/huggingface" \
+  --output-dir output/knowledge-classification \
+  --data-parallel-size 3 --tensor-parallel-size 1
+```
+
+See [the classification guide](docs/knowledge_classification.md) for the taxonomy,
+Python API, methodology, configuration, and resume instructions. This command
+does not alter the NeMo pipeline or publish to the Hub.
+
 ## Outputs
 
 ```text
@@ -401,6 +420,7 @@ and their SHA-256 hash is recorded with each execution.
 
 ```text
 src/mmlu_pt/
+├── classification/                # subject inference, taxonomy, checkpoints and CLI
 ├── pipeline_minimal.py             # CLI arguments and orchestration
 ├── pipelines/
 │   ├── definition.py               # NeMo Curator stages and workflows

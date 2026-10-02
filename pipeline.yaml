@@ -1,0 +1,7 @@
+image: nvcr.io/nvidia/pytorch:25.08-py3
+gpus: 1
+vram: 60
+max_time: 30m
+cpus: 28
+
+workspace: repositories/mmlu-pt
