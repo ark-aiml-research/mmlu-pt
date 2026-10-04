@@ -1,7 +1,5 @@
 set -e
 export UCX_CUDA_COPY_MAX_REG_RATIO=0.1
-export HF_HOME=/workspace/cache/hf
-export UV_CACHE_DIR=/workspace/cache/uv
 pwd
 uv sync
 source .venv/bin/activate

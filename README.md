@@ -348,6 +348,171 @@ removal, and audits references to items that are themselves marked for removal.
 The labels and production corpus are never modified. Results describe a
 lexically enriched, LLM-labeled sample rather than corpus-wide performance.
 
+## TS-Guessing contamination study
+
+[`ablations/contamination/ts_guessing/`](ablations/contamination/ts_guessing/) samples
+10% of each exam, rounded up, without replacement, using seed 42 and stable hashes.
+The default input is the knowledge-annotated dataset
+[`bench-temp/mmlu-pt-knowledge-annotated`](https://huggingface.co/datasets/bench-temp/mmlu-pt-knowledge-annotated),
+configuration `default`, split `train`, revision `9a578d25fb50b093b71591a19ad67ec3e8c1b37c`.
+Existing fields are consumed directly, without MCQA or classification prevalidation.
+Every incorrect alternative is masked separately. Portuguese prompts request its literal
+text, with and without exam/edition/question-number hints. Area annotations are retained
+for analysis and excluded from prompts. All models receive the same sample and tasks.
+
+[`config.json`](ablations/contamination/ts_guessing/config.json) contains the 19 open-weight
+checkpoints in the Direct matrix of [`docs/experimental_evaluation.md`](docs/experimental_evaluation.md#21-matriz-direct-e-elegibilidade-para-estudos-posteriores),
+all below 40B: Qwen3.5 (0.8B, 2B, 4B, 9B, 27B, 35B-A3B), Llama (1B, 3B, 8B),
+Tucano2 (0.5B, 1.5B, 3.7B), Gemma 4 (E2B, E4B, 12B, 26B-A4B, 31B),
+and Nemotron 3 Nano (4B BF16, 30B-A3B BF16). Each entry has identifiers and necessary
+runtime overrides. Family/nominal/active/effective parameter metadata is snapshotted from
+the Direct table and its PLE footnote. Stored parameter totals come from Hugging Face.
+Each model's `metadata.json` fixes its weight, tokenizer and remote-code revisions on first
+use; subsequent attempts reuse those pins. Gated checkpoints require existing access.
+
+Download the configured checkpoints before generation:
+
+```bash
+uv run --no-project --with 'huggingface-hub>=0.36,<2' python \
+  ablations/contamination/ts_guessing/download_models.py
+```
+
+The downloader reads `models` from the adjacent `config.json` and calls
+`snapshot_download` for each repository, using the default Hugging Face cache.
+The Sauron job in `download_models.sauron` sets `HF_HUB_CACHE` to
+`$PWD/output/huggingface/hub` to avoid permission conflicts in the shared cache.
+Set the same variable when running generation to reuse the downloaded weights.
+
+The generator uses **vLLM 0.25.0 / Transformers 5.14.1** in an isolated `uv` environment.
+The Transformers pin avoids the incompatible Gemma 4 per-layer configuration access;
+see the [upstream issue](https://github.com/vllm-project/vllm/issues/51744).
+The classification environment remains separate. Models run sequentially through
+`LLM.generate()` with official templates and token IDs, tokenized once per task attempt.
+There are no HTTP inference calls. Each launch's processes are cleaned up before the next
+model, including on failures and interruptions.
+
+Run from the repository root:
+
+```bash
+uv sync
+CUDA_VISIBLE_DEVICES=0 uv run python ablations/contamination/ts_guessing/generate_results.py
+
+# Four replicas, 128 tasks per batch and at most 50 active sequences per replica.
+CUDA_VISIBLE_DEVICES=0,1,2,3 uv run python ablations/contamination/ts_guessing/generate_results.py \
+  --data-parallel-size 4 --batch-size 128 --concurrency 50
+
+# Two replicas, each using two GPUs with tensor parallelism.
+CUDA_VISIBLE_DEVICES=0,1,2,3 uv run python ablations/contamination/ts_guessing/generate_results.py \
+  --data-parallel-size 2 --tensor-parallel-size 2
+
+# Explicit local annotated input and model subset.
+uv run python ablations/contamination/ts_guessing/generate_results.py \
+  --input output/knowledge-classification/dataset --models tucano2-0.5b qwen3.5-2b
+```
+
+Local input accepts a saved Hugging Face Dataset/DatasetDict, Parquet or JSONL.
+`--config` selects a configuration and `--output-dir` selects the artifact root;
+relative paths resolve from the repository root. Selecting models runs a subset of the
+recorded full panel, which can be completed with later invocations.
+
+| Setting / CLI flag | Default | Meaning |
+|---|---:|---|
+| `data_parallel_size` / `--data-parallel-size` | 1 | Local replicas/ranks |
+| `tensor_parallel_size` / `--tensor-parallel-size` | 1 | GPUs per replica/rank |
+| `concurrency` / `--concurrency` | 50 | Engine `max_num_seqs` per replica |
+| `batch_size` / `--batch-size` | 128 | Tasks submitted together per replica |
+
+The historical configuration key `server` contains these offline settings. The four
+settings and `max_model_len` accept per-model overrides; CLI flags override their
+corresponding global and model values. `DP × TP` GPUs must be visible through
+`CUDA_VISIBLE_DEVICES` or a per-model `cuda_visible_devices` string. Dense models use
+independent replicas; MoE models use synchronized native DP without expert parallelism.
+Empty MoE ranks participate through one-token auxiliary requests, excluded from response
+and token counts and all reconstruction metrics. Their overhead remains in runtime cost.
+The partitioning, rounds and scheduler settings are preserved by the simplification.
+
+Defaults are BF16 without quantization, greedy decoding, 8,192 context tokens and up to
+512 output tokens. Tucano uses its native 4,096 context limit, reserving 512 for output.
+Oversized prompts are recorded as `context_overflow` and never truncated. Qwen/Gemma
+use text-only mode and `enable_thinking=false`; Nemotron uses that thinking control,
+remote code pinned to the checkpoint revision and an FP32 Mamba SSM cache with BF16 weights.
+HTTP-only configuration options produce an explanatory error.
+
+The `tqdm` bar advances after the sole response writer persists each rank's batch and
+confirms it to the rank. It starts at previously completed tasks and context overflows,
+shows response/error/context counts, and excludes engine startup from its processing ETA.
+Failed tasks remain pending for future attempts. A 100% bar reports tasks processed in
+that pass and can include operational errors. Known transient failures get up to three
+retries; OOM, access, configuration and incompatibility errors are not automatically retried.
+Initialization and batch inactivity timeouts default to 1,800 seconds.
+
+Version-2 artifacts are stored under `ablations/contamination/ts_guessing/output/<fingerprint>/`:
+
+```text
+manifest.json                 # data source, counts, versions, code hashes and panel
+sample.jsonl                  # original annotated questions, IDs and source row positions
+tasks.jsonl                   # prompts, masks, targets and predictability diagnostics
+operations.jsonl              # isolated runtime preparation
+models/<model>/
+    metadata.json             # authoritative checkpoint pins and resolved engine settings
+    responses.jsonl           # append-only responses, tokens, native output and errors
+    operations.jsonl          # launch/execution/initialization/batch/error/attempt/session
+    rank-0000.log             # vLLM log per rank
+```
+
+Responses are flushed and synced before a batch is acknowledged. A temporary file
+communicates each attempt's outcome to the controller and is removed afterwards.
+Repeating the same command resumes compatible pending tasks. Data, source order,
+configuration, library or generator/worker/artifact-helper changes create a new identity.
+Question and task IDs retain their original hash formulas. Source row positions are
+zero-based before sampling; for local files they refer to the concatenated input in sorted
+file order. The position and record hash must be interpreted against the recorded snapshot.
+
+After generation, open [`analysis.ipynb`](ablations/contamination/ts_guessing/analysis.ipynb):
+
+```bash
+uv sync --group notebook
+uv run --group notebook jupyter lab ablations/contamination/ts_guessing/analysis.ipynb
+```
+
+Set `RUN_DIR` to the printed directory; it is selected automatically only when there is
+exactly one version-2 run. `ANALYSIS_MODELS=None` uses the recorded full panel; an explicit
+list selects the analysis panel. The notebook accepts only the new format. It performs
+local analysis and exports tables/JSONL and PNG/PDF figures under `<fingerprint>/analysis/`.
+
+It retains strict/normalized/label-tolerant EM, token F1, output diagnostics, question-first
+aggregation, exam/subject/macro-area coverage, macro and population weighting, paired
+contrasts, 2,000 exam-stratified bootstrap draws, length/predictability diagnostics and costs.
+Failures and missing generations are not assigned incorrect-answer scores.
+
+Question review exports are:
+
+- `panel.json`: exact selected models, families and scoring rule.
+- `question_catalog.jsonl`: original questions, alternatives, annotations, source/revision,
+  snapshot/order/record hashes, row positions and question IDs.
+- `question_evidence.csv/.jsonl`: each mask's target, raw response, status, metrics and
+  diagnostics, linked to its question and model/condition.
+- `question_model_scores.csv` and `question_family_scores.csv`: component scores and coverage.
+- `question_review_coverage.csv/.jsonl`: every sampled question, eligibility and family scores.
+- `question_ranking.csv/.jsonl`: eligible questions ordered by equal-family reconstruction score.
+
+The consensus averages distractor normalized EMs per question/model/prompt, the two prompts
+per model, checkpoints within each family, then families with equal weights. Ranking requires
+all masks in both prompts for **every selected model**. Incomplete items retain coverage but
+no consensus score/rank; incomplete families also have no score. Ties use `question_id`.
+Predictable short/numeric/context-visible targets are reported alongside the ranking.
+The files provide traceability for later review and removal tooling. No automatic threshold,
+contamination verdict or dataset deletion is implemented.
+
+Costs use processing wall time per attempt for tasks/s and tokens/s. Rank phase durations
+are derived from batch records; their sums can exceed wall time with DP. Session wall time
+includes startup, shutdown and retries. Batch duration is not individual task latency.
+GPU-hours are estimates from session wall time times DP × TP, not measured utilization.
+
+This refactor is checked statically only. Generation, model loading and notebook execution
+are left to the user; actual throughput equivalence requires a GPU run under the same
+conditions. Existing classification code and jobs are not modified or interrupted.
+
 ## LLM-as-a-Judge annotation
 
 The annotation CLI classifies candidate question pairs as `duplicate`,
