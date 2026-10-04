@@ -1,0 +1,5 @@
+set -e
+source .env
+echo $USER
+uv run --no-project --with 'huggingface-hub>=0.36,<2' python \
+  ablations/contamination/ts_guessing/download_models.py

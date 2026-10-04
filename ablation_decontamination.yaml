@@ -1,0 +1,17 @@
+image: nvcr.io/nvidia/pytorch:25.08-py3
+gpus: 1
+vram: 89
+max_time: 24h
+cpus: 4
+
+workspace: repositories/mmlu-pt
+
+# Opcionais: descomente e preencha o que precisar.
+# workspace: meuprojeto  # subpasta do seu código; o job já começa dentro dela
+# workdir: /workspace/meuprojeto  # diretório inicial; o padrão já é a subpasta
+# env:                   # variáveis NÃO secretas (ficam em claro)
+#   HF_TOKEN: token
+# volumes:               # dados extras (origem sob a sua pasta ou o cache)
+#   - /caminho/na/maquina:/workspace/meuprojeto/dados:ro
+# cpus: 2                # limite de CPUs
+# memory: 16g            # limite de memória
