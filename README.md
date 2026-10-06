@@ -78,14 +78,14 @@ prints the input, output, and removal counts for every stage.
 - an environment compatible with `nemo-curator[text_cuda12]==1.3.0`;
 - an NVIDIA/CUDA GPU with enough memory for the 8B Octen encoder in BF16.
 
-The lockfile includes the CUDA 12 variant of NeMo Curator and pins
-`vllm==0.15.1` on Linux x86-64. This is therefore the project's primary target
-environment.
+The `nemo-curator` dependency group includes CUDA 12 NeMo Curator and
+`vllm==0.19.1`. The mutually exclusive `annotation` group uses `vllm==0.25.0`.
+Both use the same `.venv`; select the group when synchronizing and running commands.
 
 Install the dependencies from the repository root:
 
 ```bash
-uv sync
+uv sync --group nemo-curator
 ```
 
 ## Configuring sources
@@ -141,7 +141,7 @@ source.
 Run the pipeline from the repository root:
 
 ```bash
-uv run python -m mmlu_pt.pipeline_minimal \
+uv run --group nemo-curator python -m mmlu_pt.pipeline_minimal \
   --config config/sources.yaml
 ```
 
@@ -159,7 +159,7 @@ Use `--resume-from-step` to reuse a materialized output and rerun that step and
 the following ones:
 
 ```bash
-uv run python -m mmlu_pt.pipeline_minimal --resume-from-step 5
+uv run --group nemo-curator python -m mmlu_pt.pipeline_minimal --resume-from-step 5
 ```
 
 | Starting step | Reused input | First operation executed |
@@ -184,7 +184,7 @@ not retroactively apply this filter.
 To rerun only semantic deduplication on GPU 0:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 uv run python -m mmlu_pt.pipeline_minimal --resume-from-step 6
+CUDA_VISIBLE_DEVICES=0 uv run --group nemo-curator python -m mmlu_pt.pipeline_minimal --resume-from-step 6
 ```
 
 Step 6 runs after the earlier Ray context has closed. It records every removal,
@@ -202,22 +202,24 @@ fuzzy outputs are not modified.
 
 ## Knowledge classification
 
-An independent CLI adds `subject` with `Qwen/Qwen3.5-122B-A10B-FP8` and derives
-`macro_area` from the project's versioned taxonomy. It supports local Hugging
-Face datasets or Hub IDs, all splits, native offline vLLM 0.19.1 DP/TP,
-checkpoints, and validated local export. STEM is available at both academic
-levels, and Law has its own macroarea for undergraduate questions.
+An independent CLI assigns exam-restricted `subject` labels with
+`Qwen/Qwen3.5-122B-A10B-FP8` through a local vLLM OpenAI-compatible API, then
+derives `macro_area` from taxonomy 1.1. It uses two independent passes,
+adjudication, 50 concurrent requests, SQLite checkpoints, audit manifests and
+Hugging Face/Parquet/JSONL exports. The answer key never enters model prompts.
+The Python job starts vLLM, waits for readiness and stops it on completion or interruption.
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1,2 uv run python -m mmlu_pt.classification.cli \
-  --dataset-path "output/06 - semantic-deduplicated/huggingface" \
-  --output-dir output/knowledge-classification \
-  --data-parallel-size 3 --tensor-parallel-size 1
+uv sync --group annotation
+uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli inspect
+# One job on the B200 inference host:
+CUDA_VISIBLE_DEVICES=0 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
+  --run-dir output/knowledge-annotation-work/full
 ```
 
-See [the classification guide](docs/knowledge_classification.md) for the taxonomy,
-Python API, methodology, configuration, and resume instructions. This command
-does not alter the NeMo pipeline or publish to the Hub.
+See [the annotation guide](src/mmlu_pt/annotation/knowledge_area/README.md)
+for methodology, inference settings, dry run, resume, reports and manual review.
+Switch back to curating with `uv sync --group nemo-curator`.
 
 ## Outputs
 
@@ -237,9 +239,12 @@ output/
 │   └── <fingerprint>/
 │       ├── embeddings/             # embeddings.npy and info.json (identity and token audit)
 │       └── run-*/                  # manifest.json, records.jsonl, removals.jsonl
-└── 06 - semantic-deduplicated/
-    ├── data.jsonl                  # final JSONL
-    └── huggingface/                # local Hugging Face Dataset
+├── 06 - semantic-deduplicated/
+│   ├── data.jsonl                  # final JSONL
+│   └── huggingface/                # local Hugging Face Dataset
+└── knowledge-annotation-work/
+    ├── inspection/                # schema and taxonomy validation
+    └── <run>/                     # source snapshot, checkpoints, server logs, exports and reports
 ```
 
 NeMo Curator partitions intermediate data and may produce hash-based file names.
