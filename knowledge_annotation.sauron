@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -e
+source .env
+export HF_TOKEN
+pwd
+source .venv/bin/activate
+uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli inspect
+# uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
+#   --dry-run --samples-per-exam 5 \
+#   --run-dir output/knowledge-annotation-work/dry-run \
+#   --server-manifest output/knowledge-annotation-work/server-manifest.json

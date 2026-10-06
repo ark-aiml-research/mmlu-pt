@@ -82,6 +82,15 @@ including additional columns in later revisions, are preserved.
 
 ## One Python job on the B200 inference host
 
+The repository-root `knowledge_annotation.yaml` and `knowledge_annotation.sauron`
+define the Sauron job: one GPU with 179 GB VRAM, eight CPUs and a 24-hour limit.
+The script switches the existing `.venv` to the `annotation` group and executes
+this Python CLI directly, which manages vLLM. It runs two passes with thinking,
+disagreement adjudication and 50 concurrent requests, writing to
+`output/knowledge-annotation-work/full`. Resubmitting the same job resumes that
+directory. `.env` is loaded if present; Hugging Face caches default to
+`output/knowledge-annotation-work/cache/huggingface` unless already configured.
+
 Run this job on the host with one B200:
 
 ```bash
