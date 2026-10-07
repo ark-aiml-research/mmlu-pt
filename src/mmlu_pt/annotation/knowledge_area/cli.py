@@ -1,18 +1,18 @@
-"""Command-line interface; all server access occurs only through annotate."""
+"""Command-line interface for offline annotation and model-free inspection/reports."""
 
 import argparse
-import asyncio
 import json
 import os
+import sys
 from dataclasses import fields
 from pathlib import Path
 
 from .checkpoint import run_lock
 from .config import DEFAULT_ALIASES, DEFAULT_OUTPUT_DIR, DEFAULT_TAXONOMY, RunConfig, digest, write_json
 from .dataset import inspect_dataset, load_source
-from .pipeline import annotate, print_validation, read_run
+from .pipeline import AnnotationTerminated, annotate, print_validation, read_run
 from .reporting import export_review, generate_report
-from .server import ServerConfig
+from .inference import InferenceError, OfflineConfig
 from .taxonomy import load_taxonomy
 
 
@@ -45,20 +45,16 @@ def add_config_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--exam-aliases", type=Path, default=Path(os.environ.get("MMLU_ANNOTATION_EXAM_ALIASES", DEFAULT_ALIASES)))
 
 
-def add_server_options(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--server-mode", choices=("managed", "external"),
-                        default=environment_default("server_mode", "managed"),
-                        help="managed starts/stops vLLM within this Python job (default)")
-    for field in fields(ServerConfig):
+def add_offline_options(parser: argparse.ArgumentParser) -> None:
+    for field in fields(OfflineConfig):
         name, default = field.name, field.default
-        option = "server_" + name if name in ("startup_timeout", "shutdown_timeout", "poll_interval") else name
-        kwargs = {"dest": "server_" + name, "default": environment_default("server_" + name, default),
-                  "help": f"managed vLLM; default: {default}"}
+        kwargs = {"dest": "offline_" + name, "default": environment_default(name, default),
+                  "help": f"offline vLLM; default: {default}"}
         if isinstance(default, bool):
             kwargs["action"] = argparse.BooleanOptionalAction
         else:
             kwargs["type"] = type(default)
-        parser.add_argument("--" + option.replace("_", "-"), **kwargs)
+        parser.add_argument("--" + name.replace("_", "-"), **kwargs)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -67,12 +63,11 @@ def build_parser() -> argparse.ArgumentParser:
     inspect = commands.add_parser("inspect", help="Inspect schema and taxonomy mappings without inference")
     add_config_options(inspect)
     inspect.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR / "inspection")
-    run = commands.add_parser("annotate", help="Start vLLM and annotate in one Python job")
+    run = commands.add_parser("annotate", help="Annotate with local offline vLLM engines")
     add_config_options(run)
-    add_server_options(run)
+    add_offline_options(run)
     run.add_argument("--run-dir", type=Path)
     run.add_argument("--force", action="store_true")
-    run.add_argument("--server-manifest", type=Path)
     run.add_argument("--push-to-hub")
     for name in ("report", "export-review"):
         command = commands.add_parser(name)
@@ -87,7 +82,16 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
-    args = parser.parse_args(argv)
+    arguments = list(argv) if argv is not None else sys.argv[1:]
+    removed = {"--endpoint", "--api-key", "--server-mode", "--server-manifest", "--concurrency", "--timeout",
+               "--backoff-initial", "--backoff-max", "--server-startup-timeout", "--server-shutdown-timeout",
+               "--server-poll-interval"}
+    obsolete = sorted({arg.split("=", 1)[0] for arg in arguments} & removed)
+    if obsolete:
+        parser.error(f"Removed HTTP options: {', '.join(obsolete)}. Offline annotation uses --max-num-seqs "
+                     "and --batch-size; lifecycle uses --startup-timeout, --shutdown-timeout and optional "
+                     "--batch-timeout. Choose a new --run-dir for offline runs.")
+    args = parser.parse_args(arguments)
     try:
         if args.command in ("report", "export-review"):
             with run_lock(args.run_dir):
@@ -110,25 +114,23 @@ def main(argv: list[str] | None = None) -> int:
             write_json(args.output_dir / "inspection.json", {"source": source, "taxonomy_version": taxonomy.version,
                        "taxonomy_hash": taxonomy.checksum, "validation": validation})
             return 0 if validation["valid"] else 2
+        settings = OfflineConfig(**{field.name: getattr(args, "offline_" + field.name)
+                                    for field in fields(OfflineConfig)})
         run_dir = args.run_dir or DEFAULT_OUTPUT_DIR / (
-            ("dry-run-" if config.dry_run else "run-") + digest(config.methodology())[:12])
-        if args.server_mode not in ("managed", "external"):
-            raise ValueError("server_mode must be managed or external")
-        server_config = ServerConfig(**{field.name: getattr(args, "server_" + field.name)
-                                        for field in fields(ServerConfig)}) if args.server_mode == "managed" else None
-        report = asyncio.run(annotate(config, run_dir, args.taxonomy, args.exam_aliases,
-                                      args.force, args.push_to_hub, args.server_manifest,
-                                      server_config=server_config))
+            ("dry-run-offline-" if config.dry_run else "run-offline-")
+            + digest({"methodology": config.methodology(), "offline": settings.identity()})[:12])
+        report = annotate(config, run_dir, args.taxonomy, args.exam_aliases,
+                          args.force, args.push_to_hub, offline_config=settings)
         return 2 if report["errors"] else 0
+    except AnnotationTerminated:
+        print("Terminated. Repeat the same annotate command to resume.")
+        return 143
     except KeyboardInterrupt:
         print("Interrupted. Repeat the same annotate command to resume.")
         return 130
-    except asyncio.CancelledError:
-        print("Terminated. Repeat the same annotate command to resume.")
-        return 143
     except Exception as exc:
         # Exception groups and third-party exceptions may contain model output; never print them.
-        if isinstance(exc, (ValueError, FileNotFoundError)):
+        if isinstance(exc, (ValueError, FileNotFoundError, InferenceError)):
             print(f"Error: {exc}")
         else:
             print(f"Execution failed ({type(exc).__name__}); inspect the manifest and sanitized checkpoint errors.")

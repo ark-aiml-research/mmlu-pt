@@ -1,33 +1,33 @@
-"""Preflight, audit manifests and bounded asynchronous annotation orchestration."""
+"""Preflight, audit manifests and crash-safe offline annotation orchestration."""
 
-import asyncio
 import hashlib
 import json
 import os
 import shutil
 import signal
 import subprocess
-from dataclasses import asdict
+from dataclasses import asdict, fields
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
+from itertools import islice
+from threading import current_thread, main_thread
 
 from datasets import Dataset, load_from_disk
 from tqdm.auto import tqdm
 
 from .checkpoint import Checkpoint, run_lock
-from .client import classify, make_client
-from .config import PACKAGE_DIR, RunConfig, canonical_json, digest, timestamp, write_json
+from .config import PACKAGE_DIR, RunConfig, canonical_json, digest, request_seed, timestamp, write_json
 from .dataset import annotation_id, inspect_dataset, load_source, metadata, sample_indices
 from .export import ANNOTATION_FEATURES, build_annotated, needs_adjudication, publish_exports, push_dataset
 from .prompts import QuestionInput, adjudication_prompt, classification_prompt, prompt_identity, question_input
 from .reporting import generate_report
-from .server import ServerConfig, managed_server, prepare_server, run_while_server_alive
+from .inference import OfflineConfig, OfflineWorkers, prepare_inference
 from .taxonomy import Taxonomy, load_taxonomy
 
 
 def versions() -> dict:
     values = {}
-    for name in ("datasets", "huggingface-hub", "openai", "pydantic", "httpx", "vllm", "pyarrow", "tqdm"):
+    for name in ("datasets", "huggingface-hub", "pydantic", "vllm", "torch", "transformers", "pyarrow", "tqdm"):
         try:
             values[name] = version(name)
         except PackageNotFoundError:
@@ -69,12 +69,12 @@ def print_validation(report: dict) -> None:
 
 
 def initialize_run(run_dir: Path, data: Dataset, source: dict, taxonomy: Taxonomy,
-                   config: RunConfig, validation: dict, indices: list[int], server_metadata: dict | None) -> dict:
+                   config: RunConfig, validation: dict, indices: list[int], inference_metadata: dict | None) -> dict:
     code = code_metadata()
     identity = {"source": source, "methodology": config.methodology(), "taxonomy_hash": taxonomy.checksum,
                 "aliases_hash": digest(taxonomy.aliases), "code_hashes": code["file_hashes"],
                 "selected_indices_hash": digest(indices),
-                "server_metadata": {k: v for k, v in server_metadata.items() if k != "created_at"} if server_metadata else None}
+                "inference_metadata": {k: v for k, v in inference_metadata.items() if k != "created_at"} if inference_metadata else None}
     fingerprint = digest(identity)
     path = run_dir / "manifest.json"
     if path.exists():
@@ -100,15 +100,14 @@ def initialize_run(run_dir: Path, data: Dataset, source: dict, taxonomy: Taxonom
     write_json(run_dir / "taxonomy.json", taxonomy.document)
     write_json(run_dir / "exam_aliases.json", taxonomy.aliases)
     write_json(run_dir / "validation.json", validation)
-    manifest = {"format_version": 1, "run_id": fingerprint[:16], "identity_hash": fingerprint,
+    manifest = {"format_version": 2, "run_id": fingerprint[:16], "identity_hash": fingerprint,
                 "identity": identity, "created_at": timestamp(), "config": asdict(config),
                 "source": source, "selected_rows": len(indices), "selected_indices": indices,
                 "selected_source_hash": source_digest(selected),
                 "taxonomy_version": taxonomy.version, "prompt": prompt_identity(), "code": code,
-                "dependencies": versions(), "model_revision": (server_metadata or {}).get("revision") or config.model_revision,
-                "model_revision_status": ("managed_server" if server_metadata.get("mode") == "managed" else "server_manifest")
-                    if server_metadata else "declared" if config.model_revision else "unknown",
-                "server_metadata": server_metadata, "sessions": []}
+                "dependencies": versions(), "model_revision": (inference_metadata or {}).get("revision") or config.model_revision,
+                "model_revision_status": "resolved_offline" if inference_metadata else "declared" if config.model_revision else "unknown",
+                "inference_metadata": inference_metadata, "sessions": []}
     write_json(path, manifest)
     return manifest
 
@@ -122,59 +121,67 @@ def checkpoint_rows(source: Dataset, indices: list[int], config: RunConfig, taxo
     return rows
 
 
-async def run_stage(checkpoint: Checkpoint, config: RunConfig, taxonomy: Taxonomy, client,
-                    kind: str, pass_number: int, show_progress: bool = True) -> None:
-    queue = asyncio.Queue(maxsize=config.concurrency * 2)
-    semaphore = asyncio.Semaphore(config.concurrency)
+def task_messages(task: dict, checkpoint: Checkpoint, config: RunConfig, taxonomy: Taxonomy) -> list[dict]:
+    question = QuestionInput(**json.loads(task["input_json"]))
+    candidates = json.loads(task["candidates_json"])
+    if task["kind"] == "adjudication":
+        proposals = [t["result"] for t in checkpoint.tasks(task["annotation_id"]) if t["kind"] == "independent"]
+        return adjudication_prompt(question, candidates, taxonomy, proposals)
+    return classification_prompt(question, candidates, taxonomy)
+
+
+def run_stage(checkpoint: Checkpoint, config: RunConfig, taxonomy: Taxonomy, workers,
+              kind: str, pass_number: int, inference_metadata: dict, show_progress: bool = True) -> None:
     pending = checkpoint.pending(kind, pass_number)
     count = checkpoint.connection.execute(
         "SELECT COUNT(*), SUM(status='success') FROM tasks WHERE generation=? AND kind=? AND pass_number=?",
         (checkpoint.generation, kind, pass_number)).fetchone()
     progress = tqdm(total=count[0], initial=count[1] or 0, desc=f"{kind} {pass_number}", disable=not show_progress)
-
-    async def producer():
-        for task in pending:
-            await queue.put(dict(task))
-        for _ in range(config.concurrency):
-            await queue.put(None)
-
-    async def worker():
-        while True:
-            task = await queue.get()
-            try:
-                if task is None:
-                    return
-                input_data = json.loads(task["input_json"])
-                input_data["choices"] = tuple(input_data["choices"])
-                question = QuestionInput(**input_data)
-                candidates = json.loads(task["candidates_json"])
-                if kind == "adjudication":
-                    proposals = [t["result"] for t in checkpoint.tasks(task["annotation_id"]) if t["kind"] == "independent"]
-                    messages = adjudication_prompt(question, candidates, taxonomy, proposals)
-                else:
-                    messages = classification_prompt(question, candidates, taxonomy)
-                offset = checkpoint.mark_running(task)
-                outcome = await classify(client, config, semaphore, messages, candidates,
-                                         task["annotation_id"], kind, pass_number, offset,
-                                         lambda attempt: checkpoint.persist_attempt(task, attempt),
-                                         start_attempt=lambda attempt, seed: checkpoint.start_attempt(
-                                             task, attempt, seed, {"requested_model": config.model,
-                                                                  "model_revision": config.model_revision,
-                                                                  "generation": config.generation(), "thinking": config.thinking}))
-                if outcome.error:
-                    checkpoint.finish_error(task, outcome.error)
-                if config.dry_run and progress.n - (count[1] or 0) < 2:
-                    print("EXAMPLE PROMPT:", canonical_json(messages))
-                    print("EXAMPLE RESULT:", canonical_json(outcome.result or {"error": outcome.error}))
-                progress.update(1)
-            finally:
-                queue.task_done()
-
+    examples = 0
+    capacity = workers.settings.batch_size * workers.settings.data_parallel_size
     try:
-        async with asyncio.TaskGroup() as group:
-            group.create_task(producer())
-            for _ in range(config.concurrency):
-                group.create_task(worker())
+        while batch := list(islice(pending, capacity)):
+            tasks = {task["annotation_id"]: dict(task) for task in batch}
+            local_attempts = {identity: 0 for identity in tasks}
+            retry_tasks = list(tasks.values())
+            while retry_tasks:
+                items = []
+                for task in retry_tasks:
+                    identity = task["annotation_id"]
+                    local_attempts[identity] += 1
+                    attempt = checkpoint.mark_running(task) + 1
+                    seed = request_seed(config.seed, identity, kind, pass_number, local_attempts[identity])
+                    checkpoint.start_attempt(task, attempt, seed, {
+                        "backend": "vllm_offline", "requested_model": config.model,
+                        "model_revision": inference_metadata["revision"], "generation": config.generation(),
+                        "thinking": config.thinking, "settings": workers.settings.identity()})
+                    items.append({"annotation_id": identity, "attempt": attempt, "seed": seed,
+                                  "messages": task_messages(task, checkpoint, config, taxonomy),
+                                  "candidates": json.loads(task["candidates_json"])})
+                retry_tasks = []
+                for event in workers.generate(items):
+                    for outcome in event["results"]:
+                        identity = outcome["annotation_id"]
+                        task = tasks[identity]
+                        outcome["metadata"].update({"dp_rank": event["rank"], "round": event["round"],
+                                                   "batch_id": f"{workers.state['started_at']}:{event['round']}:{event['rank']}",
+                                                   "batch_duration_seconds": event["batch_duration_seconds"],
+                                                   "batch_completed_at": event["batch_completed_at"],
+                                                   "duration_scope": "batch_only"})
+                        checkpoint.persist_attempt(task, outcome | {"duration_seconds": None})
+                        retry = (outcome["error"] is not None and outcome["error"] != "context_overflow"
+                                 and local_attempts[identity] < config.max_attempts
+                                 and local_attempts[identity] <= config.format_retries)
+                        if retry:
+                            retry_tasks.append(task)
+                            continue
+                        if outcome["error"]:
+                            checkpoint.finish_error(task, outcome["error"])
+                        if config.dry_run and examples < 2:
+                            print("EXAMPLE PROMPT:", canonical_json(task_messages(task, checkpoint, config, taxonomy)))
+                            print("EXAMPLE RESULT:", canonical_json(outcome["result"] or {"error": outcome["error"]}))
+                            examples += 1
+                        progress.update(1)
     finally:
         pending.close()
         progress.close()
@@ -196,26 +203,34 @@ def requires_inference(checkpoint: Checkpoint, config: RunConfig) -> bool:
         (checkpoint.generation,)).fetchone() is not None
 
 
-async def execute_stages(checkpoint: Checkpoint, config: RunConfig, taxonomy: Taxonomy,
-                         client, show_progress: bool = True) -> None:
+def execute_stages(checkpoint: Checkpoint, config: RunConfig, taxonomy: Taxonomy,
+                   workers, inference_metadata: dict, show_progress: bool = True) -> None:
     for number in range(1, config.num_independent_passes + 1):
-        await run_stage(checkpoint, config, taxonomy, client, "independent", number, show_progress)
+        run_stage(checkpoint, config, taxonomy, workers, "independent", number, inference_metadata, show_progress)
     prepare_adjudications(checkpoint, config)
-    if not config.adjudicate_disagreements or config.num_independent_passes == 1:
-        return
-    await run_stage(checkpoint, config, taxonomy, client, "adjudication", 0, show_progress)
+    if config.adjudicate_disagreements and config.num_independent_passes > 1:
+        run_stage(checkpoint, config, taxonomy, workers, "adjudication", 0, inference_metadata, show_progress)
 
 
-async def annotate(config: RunConfig, run_dir: Path, taxonomy_path: Path, aliases_path: Path,
-                   force: bool = False, push_to_hub: str | None = None, server_manifest: Path | None = None,
-                   transport=None, show_progress: bool = True, server_config: ServerConfig | None = None) -> dict:
-    if server_config is not None and server_manifest is not None:
-        raise ValueError("--server-manifest is only supported with --server-mode external")
+class AnnotationTerminated(KeyboardInterrupt):
+    """A SIGTERM interrupted the job after persisting completed batches."""
+
+
+def terminated(signum, frame) -> None:
+    raise AnnotationTerminated()
+
+
+def annotate(config: RunConfig, run_dir: Path, taxonomy_path: Path, aliases_path: Path,
+             force: bool = False, push_to_hub: str | None = None, show_progress: bool = True,
+             offline_config: OfflineConfig | None = None) -> dict:
+    settings = offline_config or OfflineConfig()
     if push_to_hub and (config.dry_run or push_to_hub.strip().rstrip("/") == config.dataset.strip().rstrip("/")):
         raise ValueError("Refusing dry-run publishing or overwriting the source dataset")
     with run_lock(run_dir):
         manifest_path = run_dir / "manifest.json"
         previous = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else None
+        if previous and (previous.get("inference_metadata") or {}).get("backend") != "vllm_offline":
+            raise ValueError("Existing run used the HTTP backend; choose a new --run-dir for offline annotation")
         if previous and config.dataset_revision and config.dataset_revision != previous["source"]["revision"]:
             raise ValueError("Dataset revision differs from the existing run")
         taxonomy = load_taxonomy(taxonomy_path, aliases_path)
@@ -232,36 +247,27 @@ async def annotate(config: RunConfig, run_dir: Path, taxonomy_path: Path, aliase
         if not validation["valid"]:
             write_json(run_dir / "validation-failed.json", validation)
             raise ValueError(f"Preflight failed; unmapped exams: {validation['unmapped_exams']}; see validation-failed.json")
-        server = (prepare_server(config, server_config, previous) if server_config is not None else
-                  json.loads(server_manifest.read_text(encoding="utf-8")) if server_manifest else None)
-        if server_config is None and server and (server.get("model") != config.model or
-                       config.model_revision and server.get("revision") != config.model_revision):
-            raise ValueError("Server manifest does not match the requested model/revision")
-        manifest = initialize_run(run_dir, data, source_info, taxonomy, config, validation, indices, server)
+        inference_metadata = prepare_inference(config, settings, previous)
+        manifest = initialize_run(run_dir, data, source_info, taxonomy, config, validation, indices, inference_metadata)
         source = load_from_disk(str(run_dir / "source"))
         checkpoint = Checkpoint(run_dir / "checkpoint.sqlite3")
-        api_key = os.environ.get("MMLU_ANNOTATION_API_KEY", "EMPTY")
-        client = make_client(config, api_key, transport, trust_env=server_config is None)
         session = {"started_at": timestamp(), "config": asdict(config), "dependencies": versions(),
-                   "server_metadata": server, "server_operational_settings": asdict(server_config) if server_config else None,
-                   "status": "running"}
-        loop = asyncio.get_running_loop()
-        current_task = asyncio.current_task()
-        installed_signal = False
+                   "inference_metadata": inference_metadata, "offline_settings": asdict(settings), "status": "running"}
+        install_handler = current_thread() is main_thread()
+        old_handler = signal.signal(signal.SIGTERM, terminated) if install_handler else None
         try:
-            loop.add_signal_handler(signal.SIGTERM, current_task.cancel)
-            installed_signal = True
             if force:
                 checkpoint.new_generation()
             checkpoint.prepare(checkpoint_rows(source, indices, config, taxonomy), config.num_independent_passes)
             session["generation"] = checkpoint.generation
             manifest["sessions"].append(session)
             write_json(manifest_path, manifest)
-            if server_config is not None and requires_inference(checkpoint, config):
-                async with managed_server(server, server_config, run_dir, api_key) as process:
-                    await run_while_server_alive(process, execute_stages(checkpoint, config, taxonomy, client, show_progress))
-            else:
-                await execute_stages(checkpoint, config, taxonomy, client, show_progress)
+            if requires_inference(checkpoint, config):
+                with OfflineWorkers(config, settings, inference_metadata, run_dir) as workers:
+                    try:
+                        execute_stages(checkpoint, config, taxonomy, workers, inference_metadata, show_progress)
+                    finally:
+                        session["worker_lifecycle"] = workers.state
             annotated, audits = build_annotated(source, checkpoint, config, taxonomy, manifest["run_id"])
             destination = publish_exports(annotated, source, run_dir, checkpoint.generation)
             report = generate_report(annotated, audits, validation, run_dir / "reports",
@@ -273,7 +279,7 @@ async def annotate(config: RunConfig, run_dir: Path, taxonomy_path: Path, aliase
                 session["pushed_to_hub"] = push_to_hub
             print(f"Exported {len(annotated)} rows to {destination}; errors={report['errors']}")
             return report
-        except (asyncio.CancelledError, KeyboardInterrupt):
+        except KeyboardInterrupt:
             session["status"] = "interrupted"
             raise
         except BaseException:
@@ -281,18 +287,26 @@ async def annotate(config: RunConfig, run_dir: Path, taxonomy_path: Path, aliase
             raise
         finally:
             session["finished_at"] = timestamp()
-            write_json(manifest_path, manifest)
-            if installed_signal:
-                loop.remove_signal_handler(signal.SIGTERM)
+            if install_handler:
+                signal.signal(signal.SIGTERM, old_handler)
             try:
-                await client.close()
+                write_json(manifest_path, manifest)
             finally:
                 checkpoint.close()
 
 
+def stored_config(values: dict) -> RunConfig:
+    """Read HTTP-era manifests without importing their transport or loading CUDA."""
+    legacy = {"endpoint", "concurrency", "timeout", "backoff_initial", "backoff_max"}
+    known = {field.name for field in fields(RunConfig)}
+    if set(values) - known - legacy:
+        raise ValueError("Manifest has unsupported annotation configuration fields")
+    return RunConfig(**{k: v for k, v in values.items() if k in known})
+
+
 def read_run(run_dir: Path) -> tuple[Dataset, list[dict], dict, int]:
     manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
-    config = RunConfig(**manifest["config"])
+    config = stored_config(manifest["config"])
     taxonomy = load_taxonomy(run_dir / "taxonomy.json", run_dir / "exam_aliases.json")
     if taxonomy.checksum != manifest["identity"]["taxonomy_hash"] or digest(taxonomy.aliases) != manifest["identity"]["aliases_hash"]:
         raise ValueError("Taxonomy/aliases snapshot failed integrity check")

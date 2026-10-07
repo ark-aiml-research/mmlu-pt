@@ -7,7 +7,6 @@ import os
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlsplit
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 DEFAULT_TAXONOMY = PACKAGE_DIR / "mmlu_pt_taxonomy_v1_1.json"
@@ -49,7 +48,6 @@ class RunConfig:
     dataset_revision: str | None = None
     dataset_config: str | None = None
     split: str = "train"
-    endpoint: str = "http://localhost:8000/v1"
     model: str = DEFAULT_MODEL
     model_revision: str | None = None
     num_independent_passes: int = 2
@@ -66,35 +64,28 @@ class RunConfig:
     presence_penalty: float = 1.5
     repetition_penalty: float = 1.0
     max_tokens: int = 8192
-    concurrency: int = 50
-    timeout: float = 600.0
     max_attempts: int = 5
     format_retries: int = 2
-    backoff_initial: float = 1.0
-    backoff_max: float = 30.0
     dry_run: bool = False
     samples_per_exam: int = 5
 
     def __post_init__(self):
-        endpoint = urlsplit(self.endpoint)
-        if endpoint.scheme not in ("http", "https") or not endpoint.netloc or endpoint.username or endpoint.password or endpoint.query:
-            raise ValueError("Endpoint must be HTTP(S), without embedded credentials or query parameters")
         if self.num_independent_passes not in (1, 2):
             raise ValueError("num_independent_passes must be 1 or 2")
         if self.structured_output not in ("json_schema", "none"):
             raise ValueError("structured_output must be json_schema or none")
         if self.prompt_version != PROMPT_VERSION:
             raise ValueError(f"Only {PROMPT_VERSION} is implemented")
-        for name in ("concurrency", "max_tokens", "max_attempts", "samples_per_exam"):
+        for name in ("max_tokens", "max_attempts", "samples_per_exam"):
             if getattr(self, name) < 1:
                 raise ValueError(f"{name} must be positive")
         if self.top_k != -1 and self.top_k < 1:
             raise ValueError("top_k must be positive or -1")
-        for name in ("timeout", "backoff_initial", "backoff_max", "repetition_penalty"):
+        for name in ("repetition_penalty",):
             value = getattr(self, name)
             if not math.isfinite(value) or value <= 0:
                 raise ValueError(f"{name} must be finite and positive")
-        if self.format_retries < 0 or self.backoff_max < self.backoff_initial:
+        if self.format_retries < 0:
             raise ValueError("Invalid retry configuration")
         for name, low, high in (("temperature", 0, 2), ("top_p", 0, 1),
                                 ("min_p", 0, 1), ("presence_penalty", -2, 2)):
@@ -103,8 +94,7 @@ class RunConfig:
                 raise ValueError(f"{name} must be in [{low}, {high}]")
 
     def methodology(self) -> dict:
-        operational = {"concurrency", "timeout", "max_attempts", "format_retries",
-                       "backoff_initial", "backoff_max"}
+        operational = {"max_attempts", "format_retries"}
         return {k: v for k, v in asdict(self).items() if k not in operational}
 
     def generation(self) -> dict:

@@ -5,7 +5,9 @@ export HF_TOKEN
 pwd
 source .venv/bin/activate
 #uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli inspect
-uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
   --dry-run --samples-per-exam 5 \
-  --concurrency 50 \
-  --run-dir output/knowledge-annotation-work/dry-run 
+  --data-parallel-size 1 --tensor-parallel-size 1 \
+  --batch-size 128 --max-num-seqs 50 \
+  --no-enforce-eager \
+  --run-dir output/knowledge-annotation-work/dry-run-offline

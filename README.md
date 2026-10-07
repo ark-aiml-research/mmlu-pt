@@ -203,18 +203,19 @@ fuzzy outputs are not modified.
 ## Knowledge classification
 
 An independent CLI assigns exam-restricted `subject` labels with
-`Qwen/Qwen3.5-122B-A10B-FP8` through a local vLLM OpenAI-compatible API, then
+`Qwen/Qwen3.5-122B-A10B-FP8` through local offline vLLM engines, then
 derives `macro_area` from taxonomy 1.1. It uses two independent passes,
-adjudication, 50 concurrent requests, SQLite checkpoints, audit manifests and
+adjudication, up to 50 active sequences per DP rank, SQLite checkpoints, audit manifests and
 Hugging Face/Parquet/JSONL exports. The answer key never enters model prompts.
-The Python job starts vLLM, waits for readiness and stops it on completion or interruption.
+The Python job owns the engines, processes bounded batches and stops workers on
+completion or interruption. DP and TP default to 1; CUDA Graphs are enabled.
 
 ```bash
 uv sync --group annotation
 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli inspect
 # One job on the B200 inference host:
 CUDA_VISIBLE_DEVICES=0 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --run-dir output/knowledge-annotation-work/full
+  --run-dir output/knowledge-annotation-work/full-offline
 ```
 
 See [the annotation guide](src/mmlu_pt/annotation/knowledge_area/README.md)

@@ -23,7 +23,6 @@ nemo-curator = [
 ]
 annotation = [
     "openai>=2.53.0",
-    "httpx>=0.28,<1",
     "pandas>=2.3.3",
     "vllm==0.25.0; platform_machine == 'x86_64' and platform_system == 'Linux'",
 ]

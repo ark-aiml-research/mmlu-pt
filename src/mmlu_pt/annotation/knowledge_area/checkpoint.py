@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 CREATE TABLE IF NOT EXISTS attempts (
  generation INTEGER NOT NULL, annotation_id TEXT NOT NULL, kind TEXT NOT NULL, pass_number INTEGER NOT NULL,
  attempt INTEGER NOT NULL, seed INTEGER NOT NULL, result_json TEXT, error TEXT,
- model_metadata_json TEXT NOT NULL, duration_seconds REAL NOT NULL, timestamp TEXT NOT NULL,
+ model_metadata_json TEXT NOT NULL, duration_seconds REAL, timestamp TEXT NOT NULL,
  request_status TEXT NOT NULL, started_at TEXT NOT NULL,
  PRIMARY KEY (generation, annotation_id, kind, pass_number, attempt)
 );

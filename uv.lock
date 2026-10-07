@@ -2832,7 +2832,6 @@ dependencies = [
 
 [package.dev-dependencies]
 annotation = [
-    { name = "httpx" },
     { name = "openai" },
     { name = "pandas" },
     { name = "vllm", version = "0.25.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
@@ -2865,7 +2864,6 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 annotation = [
-    { name = "httpx", specifier = ">=0.28,<1" },
     { name = "openai", specifier = ">=2.53.0" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "vllm", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'", specifier = "==0.25.0" },

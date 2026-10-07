@@ -1,7 +1,6 @@
 # Reproducible academic subject annotation
 
-This CLI annotates `bench-temp/mmlu-pt-filtered` through a local OpenAI-compatible
-server. The source `answer` is preserved in exports but never passed to the model.
+This CLI annotates `bench-temp/mmlu-pt-filtered` with offline `vllm.LLM.generate`. The source `answer` is preserved in exports but never passed to the model.
 Questions and **all choices** determine the required discipline. Candidates and
 their definitions come directly from the authoritative taxonomy. `macro_area`
 is derived from `subject`, never generated.
@@ -10,9 +9,9 @@ is derived from `subject`, never generated.
 
 Python 3.12 and uv are required. Run commands from the repository root.
 All default artifacts are written inside `output/knowledge-annotation-work/`:
-inspection uses `inspection/`, and annotation uses a separate `run-<hash>/`
-or `dry-run-<hash>/` directory. The examples below name these run directories
-explicitly. Reports, review exports, checkpoints and server logs stay within
+inspection uses `inspection/`, and annotation uses a separate `run-offline-<hash>/`
+or `dry-run-offline-<hash>/` directory. The examples below name these run directories
+explicitly. Reports, review exports, checkpoints and worker logs stay within
 the selected run directory.
 
 ```bash
@@ -40,8 +39,8 @@ There were no null fields or duplicate identifying-content hashes.
 |---|---:|---:|
 | AFA | 1,085 | 4 |
 | BACEN | 1,178 | 18 |
-| BLUEX | 663 | 9 |
-| BNDES | 4,048 | 29 |
+| BLUEX | 663 | 10 |
+| BNDES | 4,048 | 30 |
 | CFCES | 707 | 11 |
 | CNU | 491 | 50 |
 | COMVEST | 452 | 11 |
@@ -56,7 +55,9 @@ There were no null fields or duplicate identifying-content hashes.
 | RESIDENCIA_USP_UNICAMP | 1,574 | 5 |
 | REVALIDA | 1,195 | 5 |
 
-These are observations, not hard-coded validation assumptions. Every invocation
+Dataset counts were observed on 2026-10-06; candidate counts reflect the current
+taxonomy snapshot, including Literature for BLUEX and Public Policy and Public
+Administration for BNDES. These are observations, not hard-coded validation assumptions. Every invocation
 discovers the schema and validates the entire selected split before inference.
 
 The default `mmlu_pt_taxonomy_v1_1.json` contains 70 subjects in 11 macro areas.
@@ -74,195 +75,184 @@ uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli inspec
 ```
 
 Inspection writes `output/knowledge-annotation-work/inspection/inspection.json` and
-never contacts an inference endpoint. `--dataset-path PATH` accepts a local
+never loads an inference engine. `--dataset-path PATH` accepts a local
 `save_to_disk` Dataset or DatasetDict. `--dataset`, `--dataset-config`,
 `--dataset-revision` and `--split` configure Hub loading. `train` is the default
 split, validated against the splits actually present. All original fields,
 including additional columns in later revisions, are preserved.
 
-## One Python job on the B200 inference host
+## Offline inference: one Python job on the B200 host
 
-The repository-root `knowledge_annotation.yaml` and `knowledge_annotation.sauron`
-define the Sauron job: one GPU with 179 GB VRAM, eight CPUs and a 24-hour limit.
-The script switches the existing `.venv` to the `annotation` group and executes
-this Python CLI directly, which manages vLLM. It runs two passes with thinking,
-disagreement adjudication and 50 concurrent requests, writing to
-`output/knowledge-annotation-work/full`. Resubmitting the same job resumes that
-directory. `.env` is loaded if present; Hugging Face caches default to
-`output/knowledge-annotation-work/cache/huggingface` unless already configured.
+No HTTP server, endpoint, API key or second terminal is required. Python creates
+one spawned worker per DP rank; each worker loads `vllm.LLM` once and reuses it
+across independent passes, formatting retries and adjudication. Imports of vLLM
+and CUDA happen only when annotation has pending tasks. Inspection, reports,
+review exports and completed resumes do not load the model.
 
-Run this job on the host with one B200:
+Defaults are DP=1, TP=1, 128 questions per batch per rank, and at most 50 active
+sequences per rank. Each question has its own prompt and `SamplingParams`;
+`LLM.generate` performs batching. A round contains at most `DP × batch_size`
+questions, distributed evenly in deterministic order. Only one round is in flight.
+The next round starts after all ranks complete the current round. With thinking,
+one long generation can prolong a batch; offline mode does not eliminate that cost.
 
-```bash
-uv sync --locked --group annotation
-CUDA_VISIBLE_DEVICES=0 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --run-dir output/knowledge-annotation-work/full \
-  --concurrency 50 --max-num-seqs 50 \
-  --max-model-len 16384 --gpu-memory-utilization 0.90
-```
+DP follows the [vLLM 0.25.0 offline MoE example](https://github.com/vllm-project/vllm/blob/v0.25.0/examples/features/data_parallel/data_parallel_offline.py).
+Ranks obtain their DP identity from environment variables. The engines allocate
+TP workers from the scheduler-visible devices. `CUDA_VISIBLE_DEVICES` is preserved,
+including GPU UUIDs; when absent, all CUDA-visible GPUs remain available. The job
+checks for at least `DP × TP` visible GPUs. Expert parallel is disabled. For this
+MoE, ranks participate in shared expert-layer collectives; an empty rank supplies
+one short auxiliary request whose output is discarded and never checkpointed.
 
-`annotate` defaults to `--server-mode managed`. After dataset/taxonomy validation,
-Python resolves an immutable model revision, records the launch configuration in
-`manifest.json`, and starts vLLM as a supervised subprocess using the same Python
-interpreter and `.venv`. No launch script or second terminal is required. The
-annotation client remains an independent `AsyncOpenAI` client; vLLM owns batching.
+Engine configuration uses pinned model/tokenizer revisions, text-only inference,
+`generation_config="vllm"`, no prefix caching, and xgrammar with the `qwen3`
+reasoning parser. Grammar constraints apply to the final JSON, including in
+non-thinking mode. CUDA Graphs/compilation are allowed by default
+(`enforce_eager=False`); use `--enforce-eager` for an explicit ablation.
 
-The job waits for `/health` and `/v1/models` to confirm the expected model before
-sending annotations. Startup has a configurable 1,800-second deadline. Server
-stdout/stderr go to `vllm.log`; lifecycle status goes to `server-session.json`.
-The job monitors unexpected server exits, cancels in-flight work and leaves the
-checkpoint resumable. Completion, startup failure and SIGINT/SIGTERM stop the
-owned process group; shutdown escalates to SIGKILL after 30 seconds. The server
-is stopped before exports and reports are built. A fully completed resume skips
-model startup entirely.
+| Offline option | Default |
+|---|---:|
+| `--data-parallel-size` / `--tensor-parallel-size` | 1 / 1 |
+| `--batch-size` | 128 per rank |
+| `--max-num-seqs` | 50 per rank |
+| `--max-model-len` | 16384 |
+| `--max-num-batched-tokens` | 4096 |
+| `--gpu-memory-utilization` | 0.90 |
+| `--enforce-eager` | false |
+| `--startup-timeout` / `--shutdown-timeout` | 1800 / 30 seconds |
+| `--batch-timeout` | 0: disabled |
 
-Managed launch uses one GPU, `--language-model-only`, the `qwen3` reasoning parser,
-`--generation-config vllm`, xgrammar for final structured output, and eager
-execution. Prefix caching and request/output logging are disabled. Both model
-and tokenizer use the resolved revision. `CUDA_VISIBLE_DEVICES` defaults to `0`.
-
-The Python entrypoint was checked against the [vLLM 0.25.0 API server source](https://github.com/vllm-project/vllm/blob/v0.25.0/vllm/entrypoints/openai/api_server.py).
-Flags were checked against the [vLLM 0.25.0 CLI reference](https://docs.vllm.ai/en/v0.25.0/cli/serve/)
-and [structured-output documentation](https://docs.vllm.ai/en/v0.25.0/features/structured_outputs/).
-The Qwen parser separates thinking from final content; grammar enforcement is
-reserved for final output. Client requests set `enable_thinking` explicitly.
-
-The settings reduce context, prefill work and CUDA-graph overhead while keeping
-50 active sequences available. GPU memory fit and performance have not been
-measured on this development host. vLLM schedules tokens and may preempt
-sequences according to available cache; 50 pending client requests does not
-reserve 50 full contexts in advance. All limits are configurable in the same job:
-`--max-model-len`, `--gpu-memory-utilization`, `--max-num-seqs`,
-`--max-num-batched-tokens` (default 4096), `--no-enforce-eager`,
-`--server-startup-timeout`, `--server-shutdown-timeout` and
-`--server-poll-interval` (default one second). Environment equivalents use
-`MMLU_ANNOTATION_SERVER_<FIELD>`, for example
-`MMLU_ANNOTATION_SERVER_MAX_MODEL_LEN` or `MMLU_ANNOTATION_SERVER_STARTUP_TIMEOUT`.
-Use `--model-revision` to request a specific Hub revision.
-
-The default endpoint is `http://localhost:8000/v1`. Managed mode requires a
-loopback HTTP address with an unused port; use `--endpoint http://127.0.0.1:8001/v1`
-for another local port. It bypasses HTTP proxy environment settings. For an
-already running server, explicitly select `--server-mode external`; that mode
-never starts or stops a server. Its optional `--server-manifest PATH` records
-externally supplied model/revision metadata. The Python `annotate()` API accepts
-`server_config=ServerConfig()` for managed operation and defaults to external
-operation for embedding.
+`--batch-timeout`, when positive, applies to the entire DP round. Exceeding it
+stops every worker and leaves unfinished tasks resumable. Engine/CUDA errors and
+worker deaths also stop the job. They do not trigger automatic full-batch retries.
+No per-request HTTP timeout or exponential network backoff remains. Polling detects
+unexpected worker exits even when the batch deadline is disabled. SIGINT/SIGTERM
+stop worker groups and their descendants; graceful shutdown escalates if necessary.
 
 ## Dry run, full annotation and resume
 
-Run a stratified dry run first; it manages its own server:
+Run these commands on the inference host, from the repository root:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
+# Stratified dry run, with thinking
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
   --dry-run --samples-per-exam 5 \
-  --run-dir output/knowledge-annotation-work/dry-run
-```
+  --batch-size 128 --max-num-seqs 50 \
+  --run-dir output/knowledge-annotation-work/dry-run-offline
 
-The entire split is validated, then up to five questions per exam are chosen by
-a stable seeded hash. Original row positions remain intact. A few safe prompts
-and validated results are printed. The sample gets the same checkpointing,
-adjudication, exports and QC as a full run. Dry and full runs cannot share a run
-directory or be pushed interchangeably.
+# Separate no-thinking ablation; other sampling parameters remain explicit
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
+  --dry-run --samples-per-exam 5 --no-thinking --max-tokens 512 \
+  --run-dir output/knowledge-annotation-work/dry-run-offline-no-thinking
 
-```bash
 # Full annotation
-CUDA_VISIBLE_DEVICES=0 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --run-dir output/knowledge-annotation-work/full
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
+  --run-dir output/knowledge-annotation-work/full-offline
 
-# Resume after interruption: repeat exactly the same command
-CUDA_VISIBLE_DEVICES=0 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --run-dir output/knowledge-annotation-work/full
+# Resume: repeat the same command, without --force
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
+  --run-dir output/knowledge-annotation-work/full-offline
+
+# DP=2, TP=1: requires two GPUs on the same machine
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
+  --dry-run --samples-per-exam 5 \
+  --data-parallel-size 2 --tensor-parallel-size 1 \
+  --batch-size 128 --max-num-seqs 50 \
+  --run-dir output/knowledge-annotation-work/dry-run-offline-dp2
 ```
 
-Completed requests are skipped, interrupted work is recovered, and failed tasks
-are retried with a bounded budget in the next invocation. Resume uses the verified
-local source snapshot without reloading the dataset from Hugging Face. Managed
-resume also reuses the immutable model revision instead of resolving a moving
-Hub branch again; vLLM loads those weights from its cache or downloads them if
-needed. Both source and model revisions remain recorded in the manifest.
+DP=2 with `max_num_seqs=50` permits up to 100 active sequences across both ranks;
+DP=2/TP=2 requires four GPUs. There is no separate client concurrency setting.
+GPU memory fit, multi-GPU communication and throughput require measurement on the
+inference machine. Passing simulated checks is not a GPU performance guarantee.
 
-SQLite uses WAL, `synchronous=FULL`, one event-loop writer, transaction-per-attempt
-durability and an exclusive process lock. Every attempt and seed is committed
-before its HTTP request; interrupted attempts remain auditable. Use a local filesystem, not a network
-filesystem. The queue is limited to twice concurrency, with fixed workers and
-a semaphore. Progress advances only after results or terminal errors persist.
-SIGINT/SIGTERM cancels workers and closes resources. A lost in-flight response
-may be repeated, but persisted successful work is not duplicated.
+`knowledge_annotation.sauron` runs the thinking dry-run above using the same
+`.venv`. `knowledge_annotation.yaml` keeps one GPU, eight CPUs and a 24-hour limit.
+For DP=2/TP=1 change `gpus: 1` to `gpus: 2` and the command's DP size to 2.
+In general request `gpus = DP × TP`; the job duration must be assessed from measurements.
 
-Changing source, taxonomy, aliases, methodology, server launch settings or annotation
-code requires a new run directory. Operational settings such as concurrency,
-timeout, retry budgets and server readiness/shutdown deadlines can change and
-are recorded per session.
-`--force` reruns the current methodology in a new checkpoint generation,
-preserving prior attempts and invalidating dependent adjudications.
+The whole split is validated before selecting up to five questions per exam by a
+stable seeded hash. Dry-run prints at most two safe prompt/result pairs per stage
+and uses the same validation, checkpoint, export and report pipeline. It cannot
+publish to the Hub or share a directory with a full run.
+
+## Durability, timing and HTTP-era migration
+
+SQLite uses WAL, `synchronous=FULL`, an exclusive run lock and one writer: the
+coordinator. Every attempt and seed is committed before dispatch. Each rank returns
+its validated results when its batch completes; the coordinator saves them while
+other ranks may still be running. Unreturned results can be lost on interruption
+and regenerated. Successful persisted tasks are always skipped on resume.
+An interrupted run reuses its source snapshot and immutable model revision.
+
+Formatting failures alone receive up to `format_retries` independent retries,
+bounded also by `max_attempts`. New seeds are used without replaying malformed
+responses. Only failed rows are regenerated. Context overflow is a terminal row
+error: prompts are tokenized and checked against `max_model_len` before generation;
+no truncation occurs. A resumed invocation gives failed tasks a new bounded budget,
+retaining the previous audit attempts. `--force` creates a new checkpoint generation.
+
+Offline attempt `duration_seconds` is null because `LLM.generate` returns completed
+batches, not individual response timings. Attempt metadata records `dp_rank`, round, a session-unique `batch_id`,
+`batch_completed_at` and `batch_duration_seconds` with `duration_scope="batch_only"`.
+The batch duration is shared metadata, not an individual latency or a quantity to
+sum across rows. Auxiliary outputs do not contribute to annotation token counts.
+Startup, GPU information, exit codes and worker lifecycle are separately recorded.
+
+Existing HTTP runs require a **new run directory** for offline annotation. Changing
+code, taxonomy, source, scientific parameters, batch size or DP/TP/engine settings
+also requires a new directory. Operational startup/shutdown/batch deadlines and
+retry budgets may change on resume; their values remain recorded per session.
+
+`report` and `export-review` still understand old manifests and SQLite checkpoints;
+they do not import the removed HTTP client or load CUDA. Old `--endpoint`,
+`--api-key`, `--server-mode`, `--server-manifest`, `--concurrency`, `--timeout`,
+backoff and server-lifecycle flags fail with migration guidance. New environment
+variables use `MMLU_ANNOTATION_<FIELD>`, for example
+`MMLU_ANNOTATION_DATA_PARALLEL_SIZE` and `MMLU_ANNOTATION_STARTUP_TIMEOUT`.
+Old HTTP/server environment variables are no longer used.
 
 ## Scientific defaults and ablations
 
 | Setting | Default |
 |---|---|
-| Model / endpoint | Qwen/Qwen3.5-122B-A10B-FP8 / http://localhost:8000/v1 |
-| Independent passes | 2 |
-| Adjudication | Disagreement or either pass UNCERTAIN |
-| Thinking / exam edition | Enabled / included |
-| Concurrency / timeout | 50 / 600 seconds |
-| Server lifecycle | Managed by Python; startup 1,800 seconds / shutdown 30 seconds |
-| Server context / GPU memory / active sequences | 16,384 / 0.90 / 50 |
+| Model | Qwen/Qwen3.5-122B-A10B-FP8 |
+| Independent passes / adjudication | 2 / disagreement or either pass UNCERTAIN |
+| Thinking / exam edition | enabled / included |
 | Seed | 42 |
 | Temperature / top-p / top-k | 1.0 / 0.95 / 20 |
 | Min-p / presence penalty / repetition penalty | 0.0 / 1.5 / 1.0 |
-| Generation budget | 8,192 tokens including thinking |
-| Structured output | JSON Schema required |
-| Attempts / formatting retries | At most 5 / at most 2 |
-| Exponential backoff | 1 second initially, capped at 30 seconds |
-| Automatic confidence cutoff | None |
+| Generation budget | 8192 tokens including thinking |
+| Structured output | JSON Schema plus strict local validation |
+| Attempts / additional formatting retries | at most 5 / at most 2 |
+| Automatic confidence cutoff | none |
 
-Sampling defaults follow the [model's general thinking guidance](https://huggingface.co/Qwen/Qwen3.5-122B-A10B-FP8).
-These are methodological choices, not accuracy guarantees. Separate requests
-with distinct pass seeds do not make one model statistically independent of itself.
-Seeds are derived from the base seed, annotation ID, stage, pass and local attempt.
-On a resumed retry session the local attempt sequence restarts; all actual seeds
-are recorded. vLLM scheduling/hardware can affect bitwise reproducibility.
+Sampling defaults follow the [model's thinking guidance](https://huggingface.co/Qwen/Qwen3.5-122B-A10B-FP8).
+Changing `--thinking` does not silently change temperature or sampling settings.
+No separate thinking-token budget is added by this migration. `--max-tokens`
+limits the combined reasoning and final generation. Model confidence is not
+calibrated, and agreement is not a substitute for human validity checks.
 
-Pass 2 never receives pass 1 results. Adjudication receives only each prior
-label and concise validated justification. It may choose another allowed label.
-For an agreed subject, final confidence is the minimum pass confidence and the
-first pass provides the short justification/alternative. Each complete parsed
-pass result remains in SQLite for analysis.
+Pass 2 never receives pass 1 results. Adjudication receives only prior labels and
+concise validated justifications and can select another allowed subject. For an
+agreed subject, confidence is the minimum pass confidence and the first pass
+supplies the final justification/alternative. Complete parsed pass results remain
+in SQLite. Seeds derive from base seed, annotation ID, stage, pass and local attempt.
+The local attempt sequence restarts on resumed retries, with all actual seeds
+recorded. Batch composition, scheduling, DP/TP and hardware may affect reproducibility.
 
-Examples (use a NEW run directory for every methodological ablation):
-
-```bash
-uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --num-independent-passes 1 --no-thinking --temperature 0.7 --top-p 0.8 \
-  --run-dir output/knowledge-annotation-work/one-pass-no-thinking
-
-uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --no-adjudicate-disagreements --no-include-exam-edition \
-  --run-dir output/knowledge-annotation-work/no-adjudication-no-edition
-```
-
-Every `RunConfig` option has a CLI flag and a `MMLU_ANNOTATION_<UPPERCASE_NAME>`
-environment variable. Precedence is CLI, environment, default. Boolean environment
-values are `true`, `false`, `1`, `0`. API authentication uses
-`MMLU_ANNOTATION_API_KEY`, default `EMPTY`, never recorded. Taxonomy/alias overrides
-use `--taxonomy`, `--exam-aliases`. Use `annotate --help` for all parameters.
-Non-thinking does not silently change sampling values. `--structured-output none`
-is an explicit compatibility ablation; strict local validation remains mandatory.
-
-Transient HTTP/connection failures use bounded backoff. Invalid final schemas
-get bounded independent reformulations using the same answer-free prompt and a
-new attempt seed, without replaying raw output. Authentication, missing model,
-model-name mismatch and server configuration errors stop the run. Context
-overflow is a terminal row error; inputs are never silently truncated.
+All options have CLI/environment equivalents, with precedence CLI, environment,
+default. Boolean environment values are `true`, `false`, `1`, `0`. Taxonomy/alias
+paths remain configurable. `--structured-output none` disables grammar enforcement
+as an explicit ablation; strict final validation still applies.
 
 ## Outputs and statuses
 
 ```text
-output/knowledge-annotation-work/full/
+output/knowledge-annotation-work/full-offline/
 ├── manifest.json
-├── server-session.json          # last managed server lifecycle
-├── vllm.log                     # appended server diagnostics; response logging disabled
+├── inference-session.json       # last offline worker lifecycle and GPU information
+├── vllm-rank-0000.log            # appended rank diagnostics; no completion printing
 ├── taxonomy.json
 ├── exam_aliases.json
 ├── validation.json
@@ -313,8 +303,8 @@ share annotation work while retaining separate source rows. Source order and
 values are checked after reloading the staged Hugging Face export; Parquet count
 is also checked before the latest-export pointer changes. Prior exports are retained.
 
-The manifest captures dataset revision/fingerprint/schema, model endpoint and
-immutable revision for managed jobs (when supplied for external servers), prompt/version, taxonomy snapshots/checksums,
+The manifest captures dataset revision/fingerprint/schema, offline backend,
+immutable model/tokenizer revision, DP/TP and engine settings, prompt/version, taxonomy snapshots/checksums,
 generation/strategy/thinking settings, actual seeds in SQLite, dependencies,
 timestamps, commit/dirty state and annotation-code hashes. All successful parsed
 results, attempts and token usage are audit-ready. Raw model output and reasoning
@@ -324,10 +314,10 @@ fields are discarded, including on failed parses.
 
 ```bash
 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli report \
-  --run-dir output/knowledge-annotation-work/full
+  --run-dir output/knowledge-annotation-work/full-offline
 
 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli export-review \
-  --run-dir output/knowledge-annotation-work/full \
+  --run-dir output/knowledge-annotation-work/full-offline \
   --confidence-below 0.7 --include-disagreements
 ```
 
@@ -348,7 +338,7 @@ To push explicitly to a new repository after annotation:
 
 ```bash
 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --run-dir output/knowledge-annotation-work/full \
+  --run-dir output/knowledge-annotation-work/full-offline \
   --push-to-hub YOUR_NAMESPACE/mmlu-pt-subject-annotated
 ```
 
