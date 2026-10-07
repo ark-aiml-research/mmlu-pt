@@ -198,6 +198,11 @@ batches, not individual response timings. Attempt metadata records `dp_rank`, ro
 The batch duration is shared metadata, not an individual latency or a quantity to
 sum across rows. Auxiliary outputs do not contribute to annotation token counts.
 Startup, GPU information, exit codes and worker lifecycle are separately recorded.
+Worker failures include the rank, execution phase and stack locations in the rank
+log and `inference-session.json`. Exception messages, source lines, local values
+and model completions are excluded from these diagnostics. Tokenization explicitly
+uses `return_dict=False` and `return_tensors=None` so Transformers 5 returns the
+flat token ID list expected by vLLM, including for auxiliary requests.
 
 Existing HTTP runs require a **new run directory** for offline annotation. Changing
 code, taxonomy, source, scientific parameters, batch size or DP/TP/engine settings

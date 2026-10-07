@@ -1,5 +1,6 @@
 """Bounded offline vLLM batches coordinated across local MoE DP ranks."""
 
+import json
 import math
 import multiprocessing as mp
 import os
@@ -105,6 +106,17 @@ def sampling_arguments(config: RunConfig, item: dict) -> dict:
     return values
 
 
+def tokenize_messages(tokenizer, messages: list[dict], thinking: bool) -> list[int]:
+    # Transformers 5 defaults to BatchEncoding; vLLM needs a flat token ID list.
+    token_ids = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True,
+                                             enable_thinking=thinking, truncation=False,
+                                             return_dict=False, return_tensors=None)
+    if (not isinstance(token_ids, list) or not token_ids
+            or any(type(token) is not int or token < 0 for token in token_ids)):
+        raise InferenceError("offline_tokenizer_invalid_token_ids")
+    return token_ids
+
+
 def generate_batch(llm, config: RunConfig, settings: OfflineConfig, items: list[dict]) -> list[dict]:
     """Return validated results and token counts, never completion text."""
     from vllm import SamplingParams
@@ -112,9 +124,7 @@ def generate_batch(llm, config: RunConfig, settings: OfflineConfig, items: list[
     tokenizer = llm.get_tokenizer()
     inputs, sampling, active, results = [], [], [], []
     for item in items:
-        token_ids = tokenizer.apply_chat_template(item["messages"], tokenize=True,
-                                                 add_generation_prompt=True, enable_thinking=config.thinking,
-                                                 truncation=False)
+        token_ids = tokenize_messages(tokenizer, item["messages"], config.thinking)
         if len(token_ids) + config.max_tokens > settings.max_model_len:
             results.append({"annotation_id": item["annotation_id"], "attempt": item["attempt"],
                             "result": None, "error": "context_overflow",
@@ -125,9 +135,7 @@ def generate_batch(llm, config: RunConfig, settings: OfflineConfig, items: list[
         active.append(item)
     if not active:
         # Empty ranks must enter generate too: expert-layer collectives span all DP ranks.
-        token_ids = tokenizer.apply_chat_template([{"role": "user", "content": "Reply briefly."}],
-                                                 tokenize=True, add_generation_prompt=True,
-                                                 enable_thinking=False, truncation=False)
+        token_ids = tokenize_messages(tokenizer, [{"role": "user", "content": "Reply briefly."}], False)
         inputs = [{"prompt_token_ids": token_ids}]
         sampling = [SamplingParams(temperature=0, max_tokens=1, seed=config.seed)]
     outputs = llm.generate(inputs, sampling_params=sampling, use_tqdm=False)
@@ -155,6 +163,19 @@ def generate_batch(llm, config: RunConfig, settings: OfflineConfig, items: list[
     return results
 
 
+def worker_failure(exc: BaseException, rank: int, phase: str) -> dict:
+    """Keep stack locations without exception text, source lines or local values."""
+    frames = []
+    trace = exc.__traceback__
+    while trace is not None:
+        code = trace.tb_frame.f_code
+        frames.append({"file": Path(code.co_filename).name, "line": trace.tb_lineno,
+                       "function": code.co_name})
+        trace = trace.tb_next
+    return {"kind": "error", "rank": rank, "error": f"offline_worker_failed:{type(exc).__name__}",
+            "phase": phase, "frames": frames[-16:]}
+
+
 def offline_worker(rank: int, config: RunConfig, settings: OfflineConfig, metadata: dict,
                    port: int, incoming, events, log_path: str) -> None:
     os.setsid()
@@ -167,18 +188,22 @@ def offline_worker(rank: int, config: RunConfig, settings: OfflineConfig, metada
     with open(log_path, "a", encoding="utf-8", buffering=1) as log:
         os.dup2(log.fileno(), 1)
         os.dup2(log.fileno(), 2)
+        phase = "engine_initialization"
         try:
             from vllm import LLM
 
             llm = LLM(**metadata["engine_arguments"])
             events.put({"kind": "ready", "rank": rank, "pid": os.getpid(), "ready_at": timestamp()})
             while True:
+                phase = "awaiting_batch"
                 job = incoming.get()
                 if job is None:
+                    phase = "engine_shutdown"
                     # Let collective-processing loops pause before all ranks tear down.
                     time.sleep(1)
                     llm.llm_engine.engine_core.shutdown(timeout=settings.shutdown_timeout)
                     return
+                phase = "generate_batch"
                 started = time.monotonic()
                 results = generate_batch(llm, config, settings, job["items"])
                 events.put({"kind": "batch", "rank": rank, "round": job["round"], "results": results,
@@ -186,7 +211,9 @@ def offline_worker(rank: int, config: RunConfig, settings: OfflineConfig, metada
                             "batch_completed_at": timestamp()})
         except BaseException as exc:
             # Third-party exception messages can echo prompts or completions.
-            events.put({"kind": "error", "rank": rank, "error": f"offline_worker_failed:{type(exc).__name__}"})
+            failure = worker_failure(exc, rank, phase)
+            print("OFFLINE_WORKER_ERROR " + json.dumps(failure), flush=True)
+            events.put(failure)
 
 
 def balanced_batches(items: list[dict], size: int) -> list[list[dict]]:
@@ -253,7 +280,13 @@ class OfflineWorkers:
                     raise InferenceError("offline_worker_exited")
                 continue
             if event["kind"] == "error":
-                raise InferenceError(event["error"])
+                self.state["failure"] = event
+                self.save_state()
+                location = event["frames"][-1] if event.get("frames") else None
+                detail = f"rank={event['rank']}, phase={event.get('phase', 'unknown')}"
+                if location:
+                    detail += f", {location['file']}:{location['line']} in {location['function']}"
+                raise InferenceError(f"{event['error']} ({detail})")
             return event
 
     def generate(self, items: list[dict]):
