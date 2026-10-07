@@ -38,33 +38,69 @@ There were no null fields or duplicate identifying-content hashes.
 | Exam | Rows | Allowed subjects |
 |---|---:|---:|
 | AFA | 1,085 | 4 |
-| BACEN | 1,178 | 18 |
-| BLUEX | 663 | 10 |
-| BNDES | 4,048 | 30 |
+| BACEN | 1,178 | 26 |
+| BLUEX | 663 | 11 |
+| BNDES | 4,048 | 36 |
 | CFCES | 707 | 11 |
 | CNU | 491 | 50 |
 | COMVEST | 452 | 11 |
-| ENADE | 10,785 | 70 |
+| ENADE | 10,785 | 78 |
 | ENAM | 314 | 11 |
 | ENEM | 2,688 | 15 |
 | FUVEST | 1,659 | 13 |
 | IME | 958 | 5 |
 | OAB | 10,251 | 16 |
 | OBI | 2,301 | 3 |
-| POSCOMP | 1,304 | 9 |
-| RESIDENCIA_USP_UNICAMP | 1,574 | 5 |
+| POSCOMP | 1,304 | 12 |
+| RESIDENCIA_USP_UNICAMP | 1,574 | 11 |
 | REVALIDA | 1,195 | 5 |
 
-Dataset counts were observed on 2026-10-06; candidate counts reflect the current
-taxonomy snapshot, including Literature for BLUEX and Public Policy and Public
-Administration for BNDES. These are observations, not hard-coded validation assumptions. Every invocation
+Dataset counts were observed on 2026-10-06; candidate counts reflect taxonomy 1.2.
+These are observations, not hard-coded validation assumptions. Every invocation
 discovers the schema and validates the entire selected split before inference.
 
-The default `mmlu_pt_taxonomy_v1_1.json` contains 70 subjects in 11 macro areas.
+The default `mmlu_pt_taxonomy_v1_2.json` contains 78 subjects in nine macro areas.
+The preserved `mmlu_pt_taxonomy_v1_1.json` contains 70 subjects in 11 macro areas.
 Version 1.0 lacks ENEM and IME and therefore cannot cover the dataset. The only
 alias is explicitly recorded in `exam_aliases.json`:
 `RESIDENCIA_USP_UNICAMP` → `USP_UNICAMP_MEDICAL_RESIDENCY`.
 Unknown exams fail preflight and are all listed; there is no fuzzy matching.
+
+See [the 1.2 change history](TAXONOMY_CHANGELOG.md) for the added disciplines,
+candidate restrictions, evidence and projected macro-area counts. The full-run
+audit is in `output/knowledge-annotation-work/taxonomy-v1.2-audit/`. Its assessed
+cases are engineering reviews, not human gold labels; remaining cases are
+explicitly pending. No existing annotation was relabelled or regenerated.
+
+Select an older taxonomy explicitly with
+`--taxonomy src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_1.json`.
+Reports and review exports use the taxonomy snapshot stored in their run, not
+the current CLI default. Annotation resume still requires the original run
+identity, including code hashes; selecting an old taxonomy alone does not bypass
+that check. Use a new run directory for 1.2.
+
+**Context size for 1.2:** the added definitions increase prompt length. With the
+existing output budget of 8,192 tokens, use `--max-model-len 20480` for this dataset.
+The default engine context remains 16,384; it is insufficient for the longest
+ENADE questions with taxonomy 1.2. `context_check.json` in the audit directory
+records tokenizer-only checks; no model performance or semantic accuracy has
+been validated for 1.2. Runtime context checks still apply to every request.
+
+```bash
+# On the inference host; new directory, same generation budget as the baseline:
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
+  --taxonomy src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_2.json \
+  --dry-run --samples-per-exam 5 --no-thinking --no-enforce-eager \
+  --max-model-len 20480 \
+  --run-dir output/knowledge-annotation-work/dry-run-offline-taxonomy-v1.2
+```
+
+For a full run, replace `--dry-run --samples-per-exam 5` with `--no-dry-run`
+and use a new directory such as `full-run-taxonomy-v1.2`. Macro-area counts in
+the change history project **old subject labels**; revalidate the 2,000-row
+minimum after the new annotation. Do not change subject labels merely to meet
+that threshold. All exams receive changed annotation policies in their prompts,
+so a uniformly annotated 1.2 dataset requires reannotation of all rows.
 
 ```bash
 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli inspect
@@ -137,28 +173,32 @@ Run these commands on the inference host, from the repository root:
 # Stratified dry run, with thinking
 uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
   --dry-run --samples-per-exam 5 \
+  --max-model-len 20480 \
   --batch-size 128 --max-num-seqs 50 \
-  --run-dir output/knowledge-annotation-work/dry-run-offline
+  --run-dir output/knowledge-annotation-work/dry-run-offline-thinking-taxonomy-v1.2
 
 # Separate no-thinking ablation; other sampling parameters remain explicit
 uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
   --dry-run --samples-per-exam 5 --no-thinking --max-tokens 512 \
-  --run-dir output/knowledge-annotation-work/dry-run-offline-no-thinking
+  --run-dir output/knowledge-annotation-work/dry-run-offline-no-thinking-taxonomy-v1.2
 
 # Full annotation
 uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --run-dir output/knowledge-annotation-work/full-offline
+  --max-model-len 20480 \
+  --run-dir output/knowledge-annotation-work/full-offline-taxonomy-v1.2
 
 # Resume: repeat the same command, without --force
 uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --run-dir output/knowledge-annotation-work/full-offline
+  --max-model-len 20480 \
+  --run-dir output/knowledge-annotation-work/full-offline-taxonomy-v1.2
 
 # DP=2, TP=1: requires two GPUs on the same machine
 uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
   --dry-run --samples-per-exam 5 \
+  --max-model-len 20480 \
   --data-parallel-size 2 --tensor-parallel-size 1 \
   --batch-size 128 --max-num-seqs 50 \
-  --run-dir output/knowledge-annotation-work/dry-run-offline-dp2
+  --run-dir output/knowledge-annotation-work/dry-run-offline-dp2-taxonomy-v1.2
 ```
 
 DP=2 with `max_num_seqs=50` permits up to 100 active sequences across both ranks;
@@ -166,8 +206,10 @@ DP=2/TP=2 requires four GPUs. There is no separate client concurrency setting.
 GPU memory fit, multi-GPU communication and throughput require measurement on the
 inference machine. Passing simulated checks is not a GPU performance guarantee.
 
-`knowledge_annotation.sauron` runs the thinking dry-run above using the same
-`.venv`. `knowledge_annotation.yaml` keeps one GPU, eight CPUs and a 24-hour limit.
+`knowledge_annotation.sauron` is the job template using the same `.venv`.
+Before submitting it for 1.2, select the new taxonomy and a new run directory,
+and set `--max-model-len 20480` when retaining the 8,192-token generation budget.
+`knowledge_annotation.yaml` keeps one GPU, eight CPUs and a 24-hour limit.
 For DP=2/TP=1 change `gpus: 1` to `gpus: 2` and the command's DP size to 2.
 In general request `gpus = DP × TP`; the job duration must be assessed from measurements.
 
@@ -343,7 +385,8 @@ To push explicitly to a new repository after annotation:
 
 ```bash
 uv run --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --run-dir output/knowledge-annotation-work/full-offline \
+  --max-model-len 20480 \
+  --run-dir output/knowledge-annotation-work/full-offline-taxonomy-v1.2 \
   --push-to-hub YOUR_NAMESPACE/mmlu-pt-subject-annotated
 ```
 
@@ -369,6 +412,6 @@ This is an interface example, not a change to the authoritative taxonomy.
 Selectors can use `exam_edition`, `course`, `specialization`, `block`; never answer.
 All selector fields must match exactly; no match uses the exam list, multiple
 matches fail preflight. Lists must be nonempty subsets of the exam list.
-ENADE has 471 course-bearing editions, but taxonomy 1.1 does not yet define
-course lists. The pipeline therefore uses its authoritative 70 candidates, and
+ENADE has 471 course-bearing editions, but taxonomy 1.2 does not yet define
+audited course lists. The pipeline therefore uses its authoritative 78 candidates, and
 does not infer narrower lists from edition names. BNDES/BACEN/CNU work the same way.

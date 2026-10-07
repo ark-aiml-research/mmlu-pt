@@ -9,6 +9,7 @@ uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.c
   --dry-run --samples-per-exam 5 \
   --data-parallel-size 1 --tensor-parallel-size 1 \
   --batch-size 128 --max-num-seqs 50 \
+  --max-model-len 20480 \
   --no-enforce-eager \
   --no-thinking \
   --run-dir output/knowledge-annotation-work/dry-run-offline
