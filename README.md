@@ -219,6 +219,8 @@ CUDA_VISIBLE_DEVICES=0 uv run --group annotation python -m mmlu_pt.annotation.kn
 
 See [the annotation guide](src/mmlu_pt/annotation/knowledge_area/README.md)
 for methodology, inference settings, dry run, resume, reports and manual review.
+The Sauron job is defined by [knowledge_annotation.yaml](knowledge_annotation.yaml)
+and [knowledge_annotation.sauron](knowledge_annotation.sauron).
 Switch back to curating with `uv sync --group nemo-curator`.
 
 ## Outputs
