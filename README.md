@@ -221,7 +221,8 @@ CUDA_VISIBLE_DEVICES=0 uv run --group annotation python -m mmlu_pt.annotation.kn
 See [the annotation guide](src/mmlu_pt/annotation/knowledge_area/README.md)
 for methodology, inference settings, dry run, resume, reports and manual review.
 The Sauron job is defined by [knowledge_annotation.yaml](knowledge_annotation.yaml)
-and [knowledge_annotation.sauron](knowledge_annotation.sauron).
+and [knowledge_annotation.sauron](knowledge_annotation.sauron); it runs the full
+annotation over the revised dataset with the CLI defaults (latest taxonomy).
 Taxonomy 1.3 is experimental and must be selected with `--taxonomy`; the
 `prepare-subset` and `compare-subset` commands build a local dataset with the
 final `UNCERTAIN` rows of a run and compare a re-annotation against it. The job

@@ -418,8 +418,8 @@ does not infer narrower lists from edition names. BNDES/BACEN/CNU work the same 
 
 ## Taxonomia 1.3: experimento com os 23 UNCERTAIN da full-run-2
 
-A versão 1.3 é experimental e deve ser selecionada explicitamente por `--taxonomy`.
-O padrão continua na 1.2. Ela mantém 78 disciplinas e nove macroáreas; as alterações,
+A versão 1.3 foi experimental e selecionada explicitamente por `--taxonomy`; o padrão da
+CLI era a 1.2 e hoje é a 1.4. Ela mantém 78 disciplinas e nove macroáreas; as alterações,
 IDs de evidência e pendências estão no [histórico](TAXONOMY_CHANGELOG.md) e no
 [registro de evidências](mmlu_pt_taxonomy_v1_3_evidence.json). Esses registros não entram
 nos prompts e não constituem um padrão-ouro humano.
@@ -536,29 +536,20 @@ A comparação parte dos 23 UNCERTAIN da baseline. Os oito itens marcados como
 comparação; qualquer outro ID ausente continua sendo `missing`. Avalie os 15 casos presentes em
 `cases.csv`.
 
-Após avaliar o experimento, execute a futura full run sobre o dataset revisado completo
-(`bench-temp-2/mmlu-pt-revised`, publicado por `python -m mmlu_pt.revision publish`), sem
-`--dataset-path`, em uma nova pasta. O comando abaixo mantém a configuração da baseline:
+Após avaliar o experimento, execute a full run sobre o dataset revisado completo
+(`bench-temp-2/mmlu-pt-revised`, 41.636 linhas, publicado por `python -m mmlu_pt.revision publish`),
+sem `--dataset-path`, em uma nova pasta. O job `knowledge_annotation.sauron` (com
+`knowledge_annotation.yaml` no scheduler) faz isso usando os padrões da CLI: dataset
+`bench-temp-2/mmlu-pt-revised` na revisão mais recente do Hub (o sha resolvido fica no manifesto),
+taxonomia 1.4, duas passagens com adjudicação, seed 42 e a mesma amostragem da full-run-2;
+o script fixa apenas thinking desligado, contexto 20.480, DP=TP=1, lote 128 e 50 sequências:
 
 ```bash
-uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --dataset bench-temp-2/mmlu-pt-revised \
-  --dataset-revision <sha registrado em "output/04 - revised/manifest.json" após o publish> \
-  --taxonomy src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_4.json \
-  --exam-aliases src/mmlu_pt/annotation/knowledge_area/exam_aliases.json \
-  --model Qwen/Qwen3.5-122B-A10B-FP8 \
-  --model-revision a099dee70ccfcd8d5dda56aaa0b60cb8ecadabc9 \
-  --num-independent-passes 2 --adjudicate-disagreements --include-exam-edition \
-  --structured-output json_schema --prompt-version subject_annotation_v1 \
-  --seed 42 --temperature 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 \
-  --presence-penalty 1.5 --repetition-penalty 1.0 --max-tokens 8192 \
-  --max-attempts 5 --format-retries 2 \
-  --no-thinking --no-enforce-eager \
-  --data-parallel-size 1 --tensor-parallel-size 1 \
-  --batch-size 128 --max-num-seqs 50 --max-num-batched-tokens 4096 \
-  --max-model-len 20480 --gpu-memory-utilization 0.90 \
-  --run-dir output/knowledge-annotation-work/full-run-taxonomy-v1.4
+bash knowledge_annotation.sauron
 ```
+
+Para retomar, repita o comando. Para fixar uma revisão específica do dataset, acrescente
+`--dataset-revision 0e8b69a1d3ba429903b199cb48f40b813b874f43` ao script.
 
 O limite de 2.000 registros por macroárea deverá ser conferido nessa full run;
 ele não se aplica ao subset. Nenhum resultado experimental é mesclado automaticamente

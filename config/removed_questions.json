@@ -5,7 +5,8 @@
   "categories": {
     "self_referential_block": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
     "stem_replaced_by_latex_instruction": "O enunciado foi substituído, durante o pré-processamento, por uma instrução de conversão de expressões matemáticas para LaTeX com um exemplo de função. As alternativas são de outra questão (literatura, história ou gramática) e ficaram órfãs; o enunciado original não é recuperável a partir do dataset.",
-    "truncated_stem": "A extração do PDF manteve apenas o cabeçalho 'INSTRUÇÕES' e a pergunta, sem os dados ou o algoritmo que definem o tempo de cálculo. Sem esse contexto a questão não é respondível."
+    "truncated_stem": "A extração do PDF manteve apenas o cabeçalho 'INSTRUÇÕES' e a pergunta, sem os dados ou o algoritmo que definem o tempo de cálculo. Sem esse contexto a questão não é respondível.",
+    "missing_supporting_text": "Enunciado fragmentário ('What task below could Lammert B. Otten be legally in charge of?') que depende de um texto de apoio ausente; sem ele a questão não é respondível. As cópias de 2010 e 2011 são idênticas e, nos experimentos 1.3 e 1.4, a anotação oscilou entre English Language e UNCERTAIN para o mesmo conteúdo."
   },
   "removals": [
     {
@@ -142,6 +143,25 @@
       "category": "truncated_stem",
       "reason": "A extração do PDF manteve apenas o cabeçalho 'INSTRUÇÕES' e a pergunta, sem os dados ou o algoritmo que definem o tempo de cálculo. Sem esse contexto a questão não é respondível.",
       "evidence": "full-run-2 UNCERTAIN"
+    },
+    {
+      "annotation_id": "a74eac0818f2b9373ae39707e628bbdefa5e72729d56980eb39e4cd43356d6ce",
+      "exam": "IME",
+      "exam_edition": "IME 2010 - Portugues",
+      "num": "36",
+      "category": "missing_supporting_text",
+      "reason": "Enunciado fragmentário ('What task below could Lammert B. Otten be legally in charge of?') que depende de um texto de apoio ausente; sem ele a questão não é respondível. As cópias de 2010 e 2011 são idênticas e, nos experimentos 1.3 e 1.4, a anotação oscilou entre English Language e UNCERTAIN para o mesmo conteúdo.",
+      "evidence": "full-run-2 UNCERTAIN; experimentos 1.3 e 1.4 com resultados divergentes entre cópias idênticas"
+    },
+    {
+      "annotation_id": "2495ad0959037a7a9d3428b8f280bcd51c0e47ab797ca32dbb964438f436b12b",
+      "exam": "IME",
+      "exam_edition": "IME 2011 - Portugues",
+      "num": "36",
+      "category": "missing_supporting_text",
+      "reason": "Enunciado fragmentário ('What task below could Lammert B. Otten be legally in charge of?') que depende de um texto de apoio ausente; sem ele a questão não é respondível. As cópias de 2010 e 2011 são idênticas e, nos experimentos 1.3 e 1.4, a anotação oscilou entre English Language e UNCERTAIN para o mesmo conteúdo.",
+      "evidence": "full-run-2 UNCERTAIN; experimentos 1.3 e 1.4 com resultados divergentes entre cópias idênticas"
     }
-  ]
+  ],
+  "updated_at": "2026-10-08"
 }

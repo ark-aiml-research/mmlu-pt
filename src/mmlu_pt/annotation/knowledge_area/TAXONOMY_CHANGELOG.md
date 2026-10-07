@@ -199,7 +199,7 @@ O mínimo de 2.000 registros por macroárea não é aplicável ao subset. O mapa
 
 ## Version 1.4 — após o experimento 1.3 e a revisão do dataset
 
-Experimental: 78 disciplinas, nove macroáreas, candidatos e aliases idênticos à 1.3. A versão padrão permanece 1.2; selecionar com `--taxonomy`.
+78 disciplinas, nove macroáreas, candidatos e aliases idênticos à 1.3. Desde 8 de outubro de 2026 é a taxonomia padrão da CLI (`DEFAULT_TAXONOMY`); as versões anteriores continuam disponíveis por `--taxonomy`.
 
 Resultado do experimento 1.3 (run `9f4f7174e7631904`, 23 UNCERTAIN da full-run-2): 14 receberam disciplina, 9 continuaram UNCERTAIN, 0 erros. Dos 9, oito são itens sem enunciado recuperável e foram **removidos do dataset** ([docs/dataset_revision.md](../../../../docs/dataset_revision.md), [config/removed_questions.json](../../../../config/removed_questions.json)), junto com sete linhas com o mesmo defeito que haviam recebido rótulo. O único UNCERTAIN restante é o AFA 2019 item 45. As evidências estão em [mmlu_pt_taxonomy_v1_4_evidence.json](mmlu_pt_taxonomy_v1_4_evidence.json); não são gabaritos humanos.
 
@@ -212,4 +212,6 @@ Resultado do experimento 1.3 (run `9f4f7174e7631904`, 23 UNCERTAIN da full-run-2
 
 Nenhuma definição foi alargada para os 14 casos que receberam disciplina na 1.3; eles permanecem como estão. Pendências: os 14 rótulos novos ainda carecem de revisão humana de adequação, sobretudo COMVEST 2015 item 38 (infográfico ausente) e os dois IME (texto de apoio ausente). O efeito de English Language no CNU continua sem medição até a próxima full run.
 
-Próxima base de anotação: `bench-temp-2/mmlu-pt-revised` (04 revisado, 41.638 linhas), com revisão fixada no comando da full run. O mínimo de 2.000 registros por macroárea deve ser conferido nessa execução.
+Próxima base de anotação: `bench-temp-2/mmlu-pt-revised` (04 revisado, 41.636 linhas após a remoção dos dois IME item 36), com revisão fixada no comando da full run. O mínimo de 2.000 registros por macroárea deve ser conferido nessa execução.
+
+Resultado do experimento 1.4 (run `130ddfa5eae044b3`, 15 casos): 14 receberam disciplina, 1 UNCERTAIN, 0 erros. Os 13 rótulos da 1.3 repetiram-se com concordância das duas passagens; AFA 2019 item 45 recebeu English Language por adjudicação. IME 2011 item 36 voltou a UNCERTAIN enquanto a cópia idêntica de 2010 recebeu English Language, evidenciando ruído de amostragem em item sem texto de apoio; as duas cópias foram removidas do dataset em 8 de outubro de 2026 (`missing_supporting_text`). Não há pendências de taxonomia antes da full run 1.4.
