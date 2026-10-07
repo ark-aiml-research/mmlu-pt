@@ -468,14 +468,10 @@ O job usa os parâmetros científicos da full-run-2: pesos na mesma revisão imu
 thinking desligado, duas passagens e adjudicação, seed 42, amostragem igual,
 CUDA Graphs habilitados, DP=TP=1, lote 128, 50 sequências e contexto 20.480.
 **Não acrescente `--dry-run`: o dataset já contém todos os casos do experimento**;
-a amostragem por exame excluiria parte das questões. Thinking permanece configurável,
-mas alterá-lo cria outro experimento e exige outra pasta:
-
-```bash
-ANNOTATION_THINKING=true \
-ANNOTATION_RUN_DIR=output/knowledge-annotation-work/uncertain-taxonomy-v1.3-thinking \
-bash knowledge_annotation_uncertain.sauron
-```
+a amostragem por exame excluiria parte das questões. O job aponta sempre para o subset e a
+taxonomia mais recentes e para a pasta de saída do experimento corrente; para outro experimento
+(outra taxonomia, thinking ligado), edite esses três valores no próprio arquivo e use uma pasta nova.
+O experimento 1.3 foi executado com o subset original de 23 casos e a taxonomia 1.3.
 
 Para retomar, repita exatamente o comando da execução interrompida, com os mesmos
 arquivos e parâmetros. Não use `--force`: os resultados bem-sucedidos serão reutilizados.
@@ -516,13 +512,12 @@ permitido, mesmo sem a passagem. Candidatos e aliases são os da 1.3; mudanças 
 
 O subset revisado, com os 15 casos restantes, já está em
 `output/knowledge-annotation-work/subsets/full-run-2-uncertain-revised/huggingface` (gerado por
-`python -m mmlu_pt.revision revise` a partir do subset original). Copie a pasta para a máquina de
-inferência e rode o mesmo job apontando subset, taxonomia e pasta de saída:
+`python -m mmlu_pt.revision revise` a partir do subset original). O job
+`knowledge_annotation_uncertain.sauron` já aponta para esse subset, para a taxonomia 1.4 e para
+`output/knowledge-annotation-work/uncertain-taxonomy-v1.4`. Copie a pasta do subset para a máquina
+de inferência e execute:
 
 ```bash
-ANNOTATION_DATASET_PATH=output/knowledge-annotation-work/subsets/full-run-2-uncertain-revised/huggingface \
-ANNOTATION_TAXONOMY=src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_4.json \
-ANNOTATION_RUN_DIR=output/knowledge-annotation-work/uncertain-taxonomy-v1.4 \
 bash knowledge_annotation_uncertain.sauron
 ```
 
