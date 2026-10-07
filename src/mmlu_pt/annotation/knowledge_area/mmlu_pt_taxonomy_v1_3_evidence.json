@@ -1,0 +1,1014 @@
+{
+  "taxonomy_version": "1.3",
+  "baseline_run_id": "4e053d1ce260f6ae",
+  "baseline_taxonomy_version": "1.2",
+  "status": "Experimental; no v1.3 inference or semantic accuracy measurement yet.",
+  "reviewer": "Codex engineering assessment; not human gold labels.",
+  "changes": [
+    {
+      "kind": "candidates",
+      "target": "CNU: English Language",
+      "motivation_and_expected_impact": "Allow English tasks instead of forcing Portuguese. Not exercised by the 23-row subset.",
+      "evidence": [
+        {
+          "annotation_id": "13c6b98a7c693d65643696ebdc79e908708de5be5660b6a9e31dfdf259085b9b",
+          "annotation_row_index": 4392,
+          "exam": "CNU",
+          "exam_edition": "CNU 2024 - bloco_6 - tarde",
+          "num": "41"
+        },
+        {
+          "annotation_id": "892b2abd2b0d9308db3e19f3180cde574fb3142fafa7ded4d36f2895ac50e305",
+          "annotation_row_index": 4393,
+          "exam": "CNU",
+          "exam_edition": "CNU 2024 - bloco_6 - tarde",
+          "num": "42"
+        },
+        {
+          "annotation_id": "17ea0cbc8520cd940c94c4203b6ec1a28541d6f71788f7099c995664a2ee324d",
+          "annotation_row_index": 4394,
+          "exam": "CNU",
+          "exam_edition": "CNU 2024 - bloco_6 - tarde",
+          "num": "43"
+        },
+        {
+          "annotation_id": "d352e9f80fc6c9a79db184180b2effd7b1be237eda584ad4e6d32539ae558a72",
+          "annotation_row_index": 4395,
+          "exam": "CNU",
+          "exam_edition": "CNU 2024 - bloco_6 - tarde",
+          "num": "44"
+        },
+        {
+          "annotation_id": "fdf29b6d4346d4f8e156439cc2798563b088f4d8bf7a81816324a71974e4df88",
+          "annotation_row_index": 4396,
+          "exam": "CNU",
+          "exam_edition": "CNU 2024 - bloco_6 - tarde",
+          "num": "45"
+        },
+        {
+          "annotation_id": "779f986adf8679cf8bb032e7a5c6c62fcd43511ce5a321c9fa38436e7b30488c",
+          "annotation_row_index": 4397,
+          "exam": "CNU",
+          "exam_edition": "CNU 2024 - bloco_6 - tarde",
+          "num": "46"
+        },
+        {
+          "annotation_id": "069cae7f25b33055c3d9fc579b26fded67a6189148b99c70266555d683b5aa16",
+          "annotation_row_index": 4398,
+          "exam": "CNU",
+          "exam_edition": "CNU 2024 - bloco_6 - tarde",
+          "num": "47"
+        },
+        {
+          "annotation_id": "1dd7811fc56b4ba218bb35adf71a8c85a90d2dc7e23484674c7854fdeeb1a6f5",
+          "annotation_row_index": 4399,
+          "exam": "CNU",
+          "exam_edition": "CNU 2024 - bloco_6 - tarde",
+          "num": "48"
+        },
+        {
+          "annotation_id": "d25fa830278ac946fc55abf4f6c748033aba0530cc000da1c70a1d3c0345891c",
+          "annotation_row_index": 4400,
+          "exam": "CNU",
+          "exam_edition": "CNU 2024 - bloco_6 - tarde",
+          "num": "49"
+        },
+        {
+          "annotation_id": "135b3eb9346273d97b5e75a91937f9f644edb2dec08aed58e8b4c42b8d53273a",
+          "annotation_row_index": 4401,
+          "exam": "CNU",
+          "exam_edition": "CNU 2024 - bloco_6 - tarde",
+          "num": "50"
+        }
+      ]
+    },
+    {
+      "kind": "candidates",
+      "target": "REVALIDA: Professional Ethics",
+      "motivation_and_expected_impact": "Allow profession-specific ethical knowledge instead of clinical proxy labels.",
+      "evidence": [
+        {
+          "annotation_id": "97545148e8a6c16654d28759d30ad8c8d1ae2bdd4cdf308a1fd78f35628151a1",
+          "annotation_row_index": 40510,
+          "exam": "REVALIDA",
+          "exam_edition": "2011",
+          "num": "57"
+        },
+        {
+          "annotation_id": "aaada860474ea2aa5e774c083cb031e65ee1ef35ef8e1617be35f5d400281c67",
+          "annotation_row_index": 40910,
+          "exam": "REVALIDA",
+          "exam_edition": "2015",
+          "num": "24"
+        }
+      ]
+    },
+    {
+      "kind": "candidates",
+      "target": "USP_UNICAMP_MEDICAL_RESIDENCY: Professional Ethics; Social Security Law",
+      "motivation_and_expected_impact": "Cover medical codes and legal eligibility for BPC/LOAS.",
+      "evidence": [
+        {
+          "annotation_id": "6b67ee9f2b917d4fe27b3b19a07d788cda0fdcc4f3d1d7654e8550e4e60a54d0",
+          "annotation_row_index": 36658,
+          "exam": "RESIDENCIA_USP_UNICAMP",
+          "exam_edition": "Residência Médica USP - Medicina Paliativa - 2024",
+          "num": "10"
+        },
+        {
+          "annotation_id": "beb3e86bd1018fdee835cdd7f12343349ad61192efdb1cb19a8cac98a1a41429",
+          "annotation_row_index": 36985,
+          "exam": "RESIDENCIA_USP_UNICAMP",
+          "exam_edition": "Residência Médica USP - Psiquiatria Forense - 2024",
+          "num": "28"
+        }
+      ]
+    },
+    {
+      "kind": "definition",
+      "target": "Architecture and Urban Planning",
+      "motivation_and_expected_impact": "Clarify CAD drawing operations without equating software use with development.",
+      "evidence": [
+        {
+          "annotation_id": "9ecd327fd87aa949436a29544d934ea42b36878a1786da184f856041f982ceb4",
+          "annotation_row_index": 1933,
+          "exam": "BNDES",
+          "exam_edition": "BNDES 2008_2 - Arquiteto",
+          "num": "60"
+        }
+      ]
+    },
+    {
+      "kind": "definition",
+      "target": "Internal Medicine",
+      "motivation_and_expected_impact": "Clarify non-surgical ophthalmology and clinical toxicology; preserve Physics/Chemistry boundaries.",
+      "evidence": [
+        {
+          "annotation_id": "853fe1fd6a71ff0b325e1d6d4579dc4196ada2e84c84419efcc63c689bbc94eb",
+          "annotation_row_index": 37061,
+          "exam": "RESIDENCIA_USP_UNICAMP",
+          "exam_edition": "Residência Médica USP - Psiquiatria- 2024",
+          "num": "34"
+        },
+        {
+          "annotation_id": "75b863c0b2a7d07ad9b03021958473733a6679007696b42a52e8cf4dcfa3fdc5",
+          "annotation_row_index": 37076,
+          "exam": "RESIDENCIA_USP_UNICAMP",
+          "exam_edition": "Residência Médica USP - Transplante de Córnea - Oftalmologia - 2024",
+          "num": "10"
+        },
+        {
+          "annotation_id": "ecc247d095f0fe7f6c202c08f014a6f9cf28c643ab25a234a9beb9b6a56a0a24",
+          "annotation_row_index": 37078,
+          "exam": "RESIDENCIA_USP_UNICAMP",
+          "exam_edition": "Residência Médica USP - Transplante de Córnea - Oftalmologia - 2024",
+          "num": "12"
+        }
+      ]
+    },
+    {
+      "kind": "definition",
+      "target": "Family and Community Medicine and Public Health",
+      "motivation_and_expected_impact": "Clarify health-system allocation and access, without absorbing specialist legal interpretation.",
+      "evidence": [
+        {
+          "annotation_id": "14d3a48c22cba84effa7e2df6079d378b146db35ec8352a2ce841c47fd65a4b8",
+          "annotation_row_index": 36419,
+          "exam": "RESIDENCIA_USP_UNICAMP",
+          "exam_edition": "Residência Médica USP - Cirurgia Torácica - 2024",
+          "num": "4"
+        },
+        {
+          "annotation_id": "27c52625bc36ebf4820b8a0040b7f7da63950e8b6bf29867f02e4ee8bc78141b",
+          "annotation_row_index": 36877,
+          "exam": "RESIDENCIA_USP_UNICAMP",
+          "exam_edition": "Residência Médica USP - Pneumologia - 2024",
+          "num": "26"
+        }
+      ]
+    },
+    {
+      "kind": "definition",
+      "target": "Labor Law and Labor Procedure",
+      "motivation_and_expected_impact": "Separate legal occupational duties from engineering and population health.",
+      "evidence": [
+        {
+          "annotation_id": "3b7ab188017bc3aa0d2b461cb3d8c92bd4b110071e9bb913d7fdcef14f4475a5",
+          "annotation_row_index": 18217,
+          "exam": "ENADE",
+          "exam_edition": "ENADE 2013 - nutricao",
+          "num": "21"
+        },
+        {
+          "annotation_id": "8ca856789705dfaa666b8b160a3a3aec0ad5abea3a5435ee17171ee4ae88d5cb",
+          "annotation_row_index": 16770,
+          "exam": "ENADE",
+          "exam_edition": "ENADE 2010 - tecnologia_em_gestao_hospitalar",
+          "num": "29"
+        },
+        {
+          "annotation_id": "f0fbb52f5b3ea33a26667622378a729e65ef57a74670ef74ee77ea08a9f60ce4",
+          "annotation_row_index": 17580,
+          "exam": "ENADE",
+          "exam_edition": "ENADE 2011 - tecnologia_em_saneamento_basico",
+          "num": "33"
+        },
+        {
+          "annotation_id": "56c76cdcab0e06c0f3816f73dfbb189f7a2d752c844100c1f9293ae129f71050",
+          "annotation_row_index": 22561,
+          "exam": "ENADE",
+          "exam_edition": "ENADE 2019 - tecnologia_em_seguranca_do_trabalho",
+          "num": "10"
+        }
+      ]
+    },
+    {
+      "kind": "definition",
+      "target": "Social Security Law",
+      "motivation_and_expected_impact": "Make non-contributory statutory assistance and BPC/LOAS explicit.",
+      "evidence": [
+        {
+          "annotation_id": "beb3e86bd1018fdee835cdd7f12343349ad61192efdb1cb19a8cac98a1a41429",
+          "annotation_row_index": 36985,
+          "exam": "RESIDENCIA_USP_UNICAMP",
+          "exam_edition": "Residência Médica USP - Psiquiatria Forense - 2024",
+          "num": "28"
+        }
+      ]
+    },
+    {
+      "kind": "definition",
+      "target": "Civil Law and Civil Procedure",
+      "motivation_and_expected_impact": "Make civil capacity and curatela explicit, distinct from criminal imputability.",
+      "evidence": [
+        {
+          "annotation_id": "e4c517262c72b2da362f792d14af08d96a58038adb5203629560a0e05afec5c3",
+          "annotation_row_index": 36992,
+          "exam": "RESIDENCIA_USP_UNICAMP",
+          "exam_edition": "Residência Médica USP - Psiquiatria Forense - 2024",
+          "num": "36"
+        }
+      ]
+    },
+    {
+      "kind": "definition",
+      "target": "Professional Ethics",
+      "motivation_and_expected_impact": "Explicit coverage of medical codes and professional duties.",
+      "evidence": [
+        {
+          "annotation_id": "6b67ee9f2b917d4fe27b3b19a07d788cda0fdcc4f3d1d7654e8550e4e60a54d0",
+          "annotation_row_index": 36658,
+          "exam": "RESIDENCIA_USP_UNICAMP",
+          "exam_edition": "Residência Médica USP - Medicina Paliativa - 2024",
+          "num": "10"
+        },
+        {
+          "annotation_id": "97545148e8a6c16654d28759d30ad8c8d1ae2bdd4cdf308a1fd78f35628151a1",
+          "annotation_row_index": 40510,
+          "exam": "REVALIDA",
+          "exam_edition": "2011",
+          "num": "57"
+        },
+        {
+          "annotation_id": "aaada860474ea2aa5e774c083cb031e65ee1ef35ef8e1617be35f5d400281c67",
+          "annotation_row_index": 40910,
+          "exam": "REVALIDA",
+          "exam_edition": "2015",
+          "num": "24"
+        }
+      ]
+    },
+    {
+      "kind": "definition",
+      "target": "Administrative Law; Environmental Law",
+      "motivation_and_expected_impact": "Separate sanitary administrative regulation from environmental legal obligations.",
+      "evidence": [
+        {
+          "annotation_id": "2eefb51524d246eb3a5d827c3ec30453815700fcd27f9d992d47bc3106581eb0",
+          "annotation_row_index": 22449,
+          "exam": "ENADE",
+          "exam_edition": "ENADE 2019 - tecnologia_em_agronegocio",
+          "num": "26"
+        }
+      ]
+    },
+    {
+      "kind": "policy",
+      "target": "missing_context_rule",
+      "motivation_and_expected_impact": "Identify a recognizable domain without inventing missing passages or solving the question.",
+      "evidence": [
+        {
+          "annotation_id": "e0c57dfc854608f6eead84138fc69ff471272ddf6901fd04ba3e14e934ed4d32",
+          "annotation_row_index": 7234,
+          "exam": "AFA",
+          "exam_edition": "AFA_2019",
+          "num": "45"
+        },
+        {
+          "annotation_id": "a74eac0818f2b9373ae39707e628bbdefa5e72729d56980eb39e4cd43356d6ce",
+          "annotation_row_index": 11758,
+          "exam": "IME",
+          "exam_edition": "IME 2010 - Portugues",
+          "num": "36"
+        },
+        {
+          "annotation_id": "2495ad0959037a7a9d3428b8f280bcd51c0e47ab797ca32dbb964438f436b12b",
+          "annotation_row_index": 11820,
+          "exam": "IME",
+          "exam_edition": "IME 2011 - Portugues",
+          "num": "36"
+        },
+        {
+          "annotation_id": "470869dad67ac45eb148c112834c489662aa3cb51c1e37f7bfac965ec0d63ca7",
+          "annotation_row_index": 24928,
+          "exam": "COMVEST",
+          "exam_edition": "COMVEST 2015",
+          "num": "38"
+        }
+      ]
+    },
+    {
+      "kind": "policy",
+      "target": "source_integrity_rule",
+      "motivation_and_expected_impact": "Do not classify formatting demonstrations as the original question.",
+      "evidence": [
+        {
+          "annotation_id": "ffa1528bf8148169364106ef0f6d0a6c5e3c77b48f14890a56e5421c62bc2b2a",
+          "annotation_row_index": 12549,
+          "exam": "BLUEX",
+          "exam_edition": "UNICAMP_2018",
+          "num": "2"
+        },
+        {
+          "annotation_id": "6a8315ca1d35b655cc6897b5a3f7efcacad5a2a50bec177a8aff4a41cc5004bf",
+          "annotation_row_index": 12872,
+          "exam": "BLUEX",
+          "exam_edition": "UNICAMP_2024",
+          "num": "12"
+        }
+      ]
+    },
+    {
+      "kind": "policy",
+      "target": "label_justification_consistency_rule",
+      "motivation_and_expected_impact": "Require the chosen label to match the decisive knowledge described; use UNCERTAIN instead of an unrelated proxy.",
+      "evidence": [
+        {
+          "annotation_id": "e4cb969f883f9f33b28116a1e108749e9a38e281bebc650b311c2a141ec15656",
+          "annotation_row_index": 22374,
+          "exam": "ENADE",
+          "exam_edition": "ENADE 2019 - medicina_veterinaria",
+          "num": "25"
+        },
+        {
+          "annotation_id": "9bd2c23e2d46606fa3d3e290dc04eb2996351c7656ddf4639fe87409d6bbcbef",
+          "annotation_row_index": 4266,
+          "exam": "CNU",
+          "exam_edition": "CNU 2024 - bloco_1 - tarde",
+          "num": "43"
+        },
+        {
+          "annotation_id": "a9ec533b647b68b83922c151dd9e684cf4f48c36cd03f2d5a7f05446d802f32e",
+          "annotation_row_index": 40707,
+          "exam": "REVALIDA",
+          "exam_edition": "2013",
+          "num": "35"
+        },
+        {
+          "annotation_id": "e4c517262c72b2da362f792d14af08d96a58038adb5203629560a0e05afec5c3",
+          "annotation_row_index": 36992,
+          "exam": "RESIDENCIA_USP_UNICAMP",
+          "exam_edition": "Residência Médica USP - Psiquiatria Forense - 2024",
+          "num": "36"
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "annotation_id": "73276723608a1955b824c1fdaa1e167da5b18ce52ca17554032e6f7d4839288f",
+      "annotation_row_index": 1792,
+      "exam": "BNDES",
+      "exam_edition": "BNDES 2008_2 - Técnico Administrativo",
+      "num": "49",
+      "category": "new_subject_boundary",
+      "suggested_subjects": [
+        "Theology and Religious Studies"
+      ],
+      "assessment": "A pergunta solicita o fundamento de uma prática religiosa de consumo/abate, explicitamente incluída no novo rótulo. As duas passagens escolheram History com 0,85; recuperar também o gráfico ausente.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "9ecd327fd87aa949436a29544d934ea42b36878a1786da184f856041f982ceb4",
+      "annotation_row_index": 1933,
+      "exam": "BNDES",
+      "exam_edition": "BNDES 2008_2 - Arquiteto",
+      "num": "60",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Architecture and Urban Planning"
+      ],
+      "assessment": "Comando operacional de AutoCAD: revisar a cobertura de ferramentas CAD em Arquitetura/Design antes de concluir que falta uma disciplina global. Não confundir uso de software com desenvolvimento de software.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "f9b5234b5faea8f442e58a8932a89796fd705693e15dad5e1bdf64265261fae7",
+      "annotation_row_index": 2588,
+      "exam": "BNDES",
+      "exam_edition": "BNDES 2010 - Técnico Administrativo",
+      "num": "46",
+      "category": "context_overweighting_review",
+      "suggested_subjects": [
+        "Portuguese Language",
+        "International Relations"
+      ],
+      "assessment": "O texto fornece os teores de enriquecimento e as alternativas permitem inferência textual. Revisar se conhecimento geopolítico externo é necessário; não considerar automaticamente a sugestão anterior como padrão-ouro.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "5d56e77cac8423d800cce5adbe4a8cca08961f7925de93c8f096211273f61662",
+      "annotation_row_index": 3593,
+      "exam": "BNDES",
+      "exam_edition": "BNDES 2024 - Analista Administração (manhã)",
+      "num": "35",
+      "category": "high_confidence_model_error",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "Enunciado, alternativas e conector for instance estão em inglês. As duas passagens escolheram Português com 0,95, contrariando a regra explícita de competência linguística.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "9bd2c23e2d46606fa3d3e290dc04eb2996351c7656ddf4639fe87409d6bbcbef",
+      "annotation_row_index": 4266,
+      "exam": "CNU",
+      "exam_edition": "CNU 2024 - bloco_1 - tarde",
+      "num": "43",
+      "category": "label_justification_contradiction",
+      "suggested_subjects": [
+        "Geography",
+        "Engineering",
+        "Earth and Environmental Sciences"
+      ],
+      "assessment": "Distorções de sensor em sensoriamento remoto foram adjudicadas como Redes de Computadores com confiança 0,10; a justificativa não sustenta esse rótulo. A figura também está ausente; revisar geotecnologias e recuperar a fonte.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "13c6b98a7c693d65643696ebdc79e908708de5be5660b6a9e31dfdf259085b9b",
+      "annotation_row_index": 4392,
+      "exam": "CNU",
+      "exam_edition": "CNU 2024 - bloco_6 - tarde",
+      "num": "41",
+      "category": "missing_candidate_and_forced_label",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "Questão de compreensão, vocabulário ou gramática em inglês no CNU bloco 6 (41–50). English Language está ausente dos candidatos; Português é um substituto semanticamente inadequado. Sob a versão atual, a saída deveria abster-se. Algumas fontes também omitem o texto/termo de apoio.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "892b2abd2b0d9308db3e19f3180cde574fb3142fafa7ded4d36f2895ac50e305",
+      "annotation_row_index": 4393,
+      "exam": "CNU",
+      "exam_edition": "CNU 2024 - bloco_6 - tarde",
+      "num": "42",
+      "category": "missing_candidate_and_forced_label",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "Questão de compreensão, vocabulário ou gramática em inglês no CNU bloco 6 (41–50). English Language está ausente dos candidatos; Português é um substituto semanticamente inadequado. Sob a versão atual, a saída deveria abster-se. Algumas fontes também omitem o texto/termo de apoio.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "17ea0cbc8520cd940c94c4203b6ec1a28541d6f71788f7099c995664a2ee324d",
+      "annotation_row_index": 4394,
+      "exam": "CNU",
+      "exam_edition": "CNU 2024 - bloco_6 - tarde",
+      "num": "43",
+      "category": "missing_candidate_and_forced_label",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "Questão de compreensão, vocabulário ou gramática em inglês no CNU bloco 6 (41–50). English Language está ausente dos candidatos; Português é um substituto semanticamente inadequado. Sob a versão atual, a saída deveria abster-se. Algumas fontes também omitem o texto/termo de apoio.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "d352e9f80fc6c9a79db184180b2effd7b1be237eda584ad4e6d32539ae558a72",
+      "annotation_row_index": 4395,
+      "exam": "CNU",
+      "exam_edition": "CNU 2024 - bloco_6 - tarde",
+      "num": "44",
+      "category": "missing_candidate_and_forced_label",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "Questão de compreensão, vocabulário ou gramática em inglês no CNU bloco 6 (41–50). English Language está ausente dos candidatos; Português é um substituto semanticamente inadequado. Sob a versão atual, a saída deveria abster-se. Algumas fontes também omitem o texto/termo de apoio.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "fdf29b6d4346d4f8e156439cc2798563b088f4d8bf7a81816324a71974e4df88",
+      "annotation_row_index": 4396,
+      "exam": "CNU",
+      "exam_edition": "CNU 2024 - bloco_6 - tarde",
+      "num": "45",
+      "category": "missing_candidate_and_forced_label",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "Questão de compreensão, vocabulário ou gramática em inglês no CNU bloco 6 (41–50). English Language está ausente dos candidatos; Português é um substituto semanticamente inadequado. Sob a versão atual, a saída deveria abster-se. Algumas fontes também omitem o texto/termo de apoio.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "779f986adf8679cf8bb032e7a5c6c62fcd43511ce5a321c9fa38436e7b30488c",
+      "annotation_row_index": 4397,
+      "exam": "CNU",
+      "exam_edition": "CNU 2024 - bloco_6 - tarde",
+      "num": "46",
+      "category": "missing_candidate_and_forced_label",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "Questão de compreensão, vocabulário ou gramática em inglês no CNU bloco 6 (41–50). English Language está ausente dos candidatos; Português é um substituto semanticamente inadequado. Sob a versão atual, a saída deveria abster-se. Algumas fontes também omitem o texto/termo de apoio.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "069cae7f25b33055c3d9fc579b26fded67a6189148b99c70266555d683b5aa16",
+      "annotation_row_index": 4398,
+      "exam": "CNU",
+      "exam_edition": "CNU 2024 - bloco_6 - tarde",
+      "num": "47",
+      "category": "missing_candidate_and_forced_label",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "Questão de compreensão, vocabulário ou gramática em inglês no CNU bloco 6 (41–50). English Language está ausente dos candidatos; Português é um substituto semanticamente inadequado. Sob a versão atual, a saída deveria abster-se. Algumas fontes também omitem o texto/termo de apoio.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "1dd7811fc56b4ba218bb35adf71a8c85a90d2dc7e23484674c7854fdeeb1a6f5",
+      "annotation_row_index": 4399,
+      "exam": "CNU",
+      "exam_edition": "CNU 2024 - bloco_6 - tarde",
+      "num": "48",
+      "category": "missing_candidate_and_forced_label",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "Questão de compreensão, vocabulário ou gramática em inglês no CNU bloco 6 (41–50). English Language está ausente dos candidatos; Português é um substituto semanticamente inadequado. Sob a versão atual, a saída deveria abster-se. Algumas fontes também omitem o texto/termo de apoio.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "d25fa830278ac946fc55abf4f6c748033aba0530cc000da1c70a1d3c0345891c",
+      "annotation_row_index": 4400,
+      "exam": "CNU",
+      "exam_edition": "CNU 2024 - bloco_6 - tarde",
+      "num": "49",
+      "category": "missing_candidate_and_forced_label",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "Questão de compreensão, vocabulário ou gramática em inglês no CNU bloco 6 (41–50). English Language está ausente dos candidatos; Português é um substituto semanticamente inadequado. Sob a versão atual, a saída deveria abster-se. Algumas fontes também omitem o texto/termo de apoio.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "135b3eb9346273d97b5e75a91937f9f644edb2dec08aed58e8b4c42b8d53273a",
+      "annotation_row_index": 4401,
+      "exam": "CNU",
+      "exam_edition": "CNU 2024 - bloco_6 - tarde",
+      "num": "50",
+      "category": "missing_candidate_and_forced_label",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "Questão de compreensão, vocabulário ou gramática em inglês no CNU bloco 6 (41–50). English Language está ausente dos candidatos; Português é um substituto semanticamente inadequado. Sob a versão atual, a saída deveria abster-se. Algumas fontes também omitem o texto/termo de apoio.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "e0c57dfc854608f6eead84138fc69ff471272ddf6901fd04ba3e14e934ed4d32",
+      "annotation_row_index": 7234,
+      "exam": "AFA",
+      "exam_edition": "AFA_2019",
+      "num": "45",
+      "category": "over_abstention_with_missing_source",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "A estrutura do enunciado e das alternativas indica compreensão de inglês, embora falte o texto de apoio. A política 1.2 distingue identificar o domínio de resolver a questão. Rótulo provável; a fonte continua incompleta.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "ae9112e39ab9e145663963cbb08cc6f5295d7b69d2cfce0651a1210af478662c",
+      "annotation_row_index": 8062,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+      "num": "1",
+      "category": "source_recovery",
+      "suggested_subjects": [],
+      "assessment": "Questões mutuamente referenciadas, isoladas no dataset. Recuperar o bloco completo de lógica antes de validar a classificação; não inventar as relações ausentes.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "497aa0d7274d3e9035ed3f1349eb12c4bb9f638ea69fb2b553ad2c936eff460b",
+      "annotation_row_index": 8063,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+      "num": "2",
+      "category": "source_recovery",
+      "suggested_subjects": [],
+      "assessment": "Questões mutuamente referenciadas, isoladas no dataset. Recuperar o bloco completo de lógica antes de validar a classificação; não inventar as relações ausentes.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "1219a99e8a70dfa209f51e3958ebef90f6a0a69ad912aa28a1f116e3dff9f207",
+      "annotation_row_index": 8064,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+      "num": "3",
+      "category": "source_recovery",
+      "suggested_subjects": [],
+      "assessment": "Questões mutuamente referenciadas, isoladas no dataset. Recuperar o bloco completo de lógica antes de validar a classificação; não inventar as relações ausentes.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "b801de0e7a26e147cb97df0b22dae480d35ca79a3288a48c923f2b0615db969b",
+      "annotation_row_index": 8087,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+      "num": "1",
+      "category": "source_recovery",
+      "suggested_subjects": [],
+      "assessment": "Questões mutuamente referenciadas, isoladas no dataset. Recuperar o bloco completo de lógica antes de validar a classificação; não inventar as relações ausentes.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "c2f873ef67ebb9ae1620966264861549f3aeb48fb10577e816c973661b84a480",
+      "annotation_row_index": 8088,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+      "num": "2",
+      "category": "source_recovery",
+      "suggested_subjects": [],
+      "assessment": "Questões mutuamente referenciadas, isoladas no dataset. Recuperar o bloco completo de lógica antes de validar a classificação; não inventar as relações ausentes.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "339bef16f6aeb5a29d3a9b1ba6116f291273b7d8945f0e129bea1881591ab50d",
+      "annotation_row_index": 8089,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+      "num": "3",
+      "category": "source_recovery",
+      "suggested_subjects": [],
+      "assessment": "Questões mutuamente referenciadas, isoladas no dataset. Recuperar o bloco completo de lógica antes de validar a classificação; não inventar as relações ausentes.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "a74eac0818f2b9373ae39707e628bbdefa5e72729d56980eb39e4cd43356d6ce",
+      "annotation_row_index": 11758,
+      "exam": "IME",
+      "exam_edition": "IME 2010 - Portugues",
+      "num": "36",
+      "category": "over_abstention_with_missing_source",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "A estrutura do enunciado e das alternativas indica compreensão de inglês, embora falte o texto de apoio. A política 1.2 distingue identificar o domínio de resolver a questão. Rótulo provável; a fonte continua incompleta.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "2495ad0959037a7a9d3428b8f280bcd51c0e47ab797ca32dbb964438f436b12b",
+      "annotation_row_index": 11820,
+      "exam": "IME",
+      "exam_edition": "IME 2011 - Portugues",
+      "num": "36",
+      "category": "over_abstention_with_missing_source",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "A estrutura do enunciado e das alternativas indica compreensão de inglês, embora falte o texto de apoio. A política 1.2 distingue identificar o domínio de resolver a questão. Rótulo provável; a fonte continua incompleta.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "ffa1528bf8148169364106ef0f6d0a6c5e3c77b48f14890a56e5421c62bc2b2a",
+      "annotation_row_index": 12549,
+      "exam": "BLUEX",
+      "exam_edition": "UNICAMP_2018",
+      "num": "2",
+      "category": "source_recovery",
+      "suggested_subjects": [],
+      "assessment": "O enunciado foi substituído por instruções e exemplo de conversão para LaTeX; as alternativas são literárias. A abstenção é defensável e a fonte precisa ser restaurada.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "6a8315ca1d35b655cc6897b5a3f7efcacad5a2a50bec177a8aff4a41cc5004bf",
+      "annotation_row_index": 12872,
+      "exam": "BLUEX",
+      "exam_edition": "UNICAMP_2024",
+      "num": "12",
+      "category": "source_contamination_and_model_error",
+      "suggested_subjects": [],
+      "assessment": "As duas passagens classificaram o exemplo de formatação LaTeX como Matemática, apesar de alternativas literárias. A justificativa inverte os papéis do exemplo e da questão. Restaurar a fonte; até lá a abstenção é mais defensável.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "8ca856789705dfaa666b8b160a3a3aec0ad5abea3a5435ee17171ee4ae88d5cb",
+      "annotation_row_index": 16770,
+      "exam": "ENADE",
+      "exam_edition": "ENADE 2010 - tecnologia_em_gestao_hospitalar",
+      "num": "29",
+      "category": "new_subject_boundary",
+      "suggested_subjects": [
+        "Labor Law and Labor Procedure",
+        "Engineering",
+        "Family and Community Medicine and Public Health"
+      ],
+      "assessment": "O tema é saúde/segurança ocupacional e normas NR. Public Safety and Physical Security foi definido para proteção física de pessoas e instalações. Rever essa fronteira, sem assumir que todo tipo de segurança pertence ao novo rótulo.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "f0fbb52f5b3ea33a26667622378a729e65ef57a74670ef74ee77ea08a9f60ce4",
+      "annotation_row_index": 17580,
+      "exam": "ENADE",
+      "exam_edition": "ENADE 2011 - tecnologia_em_saneamento_basico",
+      "num": "33",
+      "category": "new_subject_boundary",
+      "suggested_subjects": [
+        "Labor Law and Labor Procedure",
+        "Engineering",
+        "Family and Community Medicine and Public Health"
+      ],
+      "assessment": "O tema é saúde/segurança ocupacional e normas NR. Public Safety and Physical Security foi definido para proteção física de pessoas e instalações. Rever essa fronteira, sem assumir que todo tipo de segurança pertence ao novo rótulo.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "3b7ab188017bc3aa0d2b461cb3d8c92bd4b110071e9bb913d7fdcef14f4475a5",
+      "annotation_row_index": 18217,
+      "exam": "ENADE",
+      "exam_edition": "ENADE 2013 - nutricao",
+      "num": "21",
+      "category": "existing_candidate_ignored",
+      "suggested_subjects": [
+        "Labor Law and Labor Procedure"
+      ],
+      "assessment": "O núcleo inclui obrigações do empregador e normas de saúde e segurança no trabalho. Labor Law está disponível no ENADE; a alegação de ausência de disciplina adequada precisa ser revista, sem criar uma nova disciplina automaticamente.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "e4cb969f883f9f33b28116a1e108749e9a38e281bebc650b311c2a141ec15656",
+      "annotation_row_index": 22374,
+      "exam": "ENADE",
+      "exam_edition": "ENADE 2019 - medicina_veterinaria",
+      "num": "25",
+      "category": "label_justification_contradiction",
+      "suggested_subjects": [
+        "Veterinary Medicine",
+        "Engineering",
+        "Animal Science"
+      ],
+      "assessment": "Qualidade e conservação de pescado foram adjudicadas como Estética e Cosmetologia, com confiança 0,10. A justificativa fala de tecnologia de alimentos e afirma incorretamente que Veterinary Medicine está ausente. O rótulo final não tem suporte no conteúdo; validar entre os candidatos especializados existentes.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "2eefb51524d246eb3a5d827c3ec30453815700fcd27f9d992d47bc3106581eb0",
+      "annotation_row_index": 22449,
+      "exam": "ENADE",
+      "exam_edition": "ENADE 2019 - tecnologia_em_agronegocio",
+      "num": "26",
+      "category": "boundary_or_model_error",
+      "suggested_subjects": [
+        "Administrative Law"
+      ],
+      "assessment": "A justificativa identifica regulação sanitária de embalagens pela Anvisa, mas o rótulo é Environmental Law. Revisar a distinção entre regulação sanitária e direito ambiental; não tomar o rótulo como correto só por estar permitido.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "6a310c2a9e0425f731bac841a5b654f1a5ea0f3069d6f1ed662655e0be11dfbe",
+      "annotation_row_index": 22465,
+      "exam": "ENADE",
+      "exam_edition": "ENADE 2019 - tecnologia_em_estetica_e_cosmetica",
+      "num": "14",
+      "category": "new_subject_boundary",
+      "suggested_subjects": [
+        "Internal Medicine"
+      ],
+      "assessment": "A tarefa pede identificar doença/causa de queda capilar a partir de apresentação clínica. Aesthetics and Cosmetology exclui diagnóstico médico em sua definição; revisar a influência do curso/cenário no rótulo.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "56c76cdcab0e06c0f3816f73dfbb189f7a2d752c844100c1f9293ae129f71050",
+      "annotation_row_index": 22561,
+      "exam": "ENADE",
+      "exam_edition": "ENADE 2019 - tecnologia_em_seguranca_do_trabalho",
+      "num": "10",
+      "category": "new_subject_boundary",
+      "suggested_subjects": [
+        "Labor Law and Labor Procedure",
+        "Engineering",
+        "Family and Community Medicine and Public Health"
+      ],
+      "assessment": "O tema é saúde/segurança ocupacional e normas NR. Public Safety and Physical Security foi definido para proteção física de pessoas e instalações. Rever essa fronteira, sem assumir que todo tipo de segurança pertence ao novo rótulo.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "470869dad67ac45eb148c112834c489662aa3cb51c1e37f7bfac965ec0d63ca7",
+      "annotation_row_index": 24928,
+      "exam": "COMVEST",
+      "exam_edition": "COMVEST 2015",
+      "num": "38",
+      "category": "over_abstention_with_missing_source",
+      "suggested_subjects": [
+        "Biology"
+      ],
+      "assessment": "O item pergunta por técnicas dos experimentos de Mendel: o domínio biológico é identificável sem resolver o infográfico ausente. Há também texto de questões posteriores anexado à alternativa D.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "c63b7fdd86138ab8880100944892c9de000903a9543294dc2c5c9f56e8223afe",
+      "annotation_row_index": 25942,
+      "exam": "OAB",
+      "exam_edition": "OAB-BR 2022.2",
+      "num": "5",
+      "category": "model_error",
+      "suggested_subjects": [
+        "Professional Ethics"
+      ],
+      "assessment": "Permissões e vedações profissionais do estagiário de advocacia pertencem às regras do exercício profissional; Professional Ethics está permitido. A adjudicação escolheu Labor Law com 0,45.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "14d3a48c22cba84effa7e2df6079d378b146db35ec8352a2ce841c47fd65a4b8",
+      "annotation_row_index": 36419,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Cirurgia Torácica - 2024",
+      "num": "4",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Family and Community Medicine and Public Health",
+        "Administrative Law"
+      ],
+      "assessment": "Regras de priorização de transplante estão na fronteira entre organização do sistema de saúde e regulação administrativa. O primeiro candidato está disponível e o segundo não; a palavra legislação sozinha não decide a classificação. Exige revisão especializada.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "6b67ee9f2b917d4fe27b3b19a07d788cda0fdcc4f3d1d7654e8550e4e60a54d0",
+      "annotation_row_index": 36658,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Medicina Paliativa - 2024",
+      "num": "10",
+      "category": "missing_exam_candidate",
+      "suggested_subjects": [
+        "Professional Ethics"
+      ],
+      "assessment": "A aplicação de códigos profissionais e resoluções éticas é central. Professional Ethics existe globalmente, mas não está permitido para este exame; a abstenção é coerente com essa restrição.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "27c52625bc36ebf4820b8a0040b7f7da63950e8b6bf29867f02e4ee8bc78141b",
+      "annotation_row_index": 36877,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Pneumologia - 2024",
+      "num": "26",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Family and Community Medicine and Public Health",
+        "Administrative Law"
+      ],
+      "assessment": "Regras de priorização de transplante estão na fronteira entre organização do sistema de saúde e regulação administrativa. O primeiro candidato está disponível e o segundo não; a palavra legislação sozinha não decide a classificação. Exige revisão especializada.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "ac1f823616bf30393c84135de504d2552bed5c8be910f6cba50a47f1eb613f91",
+      "annotation_row_index": 36961,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Psiquiatria Forense - 2024",
+      "num": "1",
+      "category": "interdisciplinary_review",
+      "suggested_subjects": [
+        "Labor Law and Labor Procedure",
+        "Criminal Law and Criminal Procedure"
+      ],
+      "assessment": "As alternativas misturam acidente de trabalho, imputabilidade e indenização. A diferença em relação à sugestão anterior requer especialista; não demonstra isoladamente erro do modelo.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "beb3e86bd1018fdee835cdd7f12343349ad61192efdb1cb19a8cac98a1a41429",
+      "annotation_row_index": 36985,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Psiquiatria Forense - 2024",
+      "num": "28",
+      "category": "missing_exam_candidate",
+      "suggested_subjects": [
+        "Social Security Law"
+      ],
+      "assessment": "O item compara elegibilidade ao BPC/benefícios por incapacidade e renda. Social Security Law existe globalmente, mas não está permitido na residência médica.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "e4c517262c72b2da362f792d14af08d96a58038adb5203629560a0e05afec5c3",
+      "annotation_row_index": 36992,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Psiquiatria Forense - 2024",
+      "num": "36",
+      "category": "model_error",
+      "suggested_subjects": [
+        "Civil Law and Civil Procedure"
+      ],
+      "assessment": "O enunciado, as alternativas e ambas as justificativas tratam de capacidade civil/curatela, mas o rótulo de ambas as passagens é Penal. Civil está permitido.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "853fe1fd6a71ff0b325e1d6d4579dc4196ada2e84c84419efcc63c689bbc94eb",
+      "annotation_row_index": 37061,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Psiquiatria- 2024",
+      "num": "34",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Internal Medicine",
+        "Chemistry"
+      ],
+      "assessment": "A pergunta classifica compostos voláteis e aparece em Psiquiatria. Avaliar se o conhecimento cobrado é toxicologia clínica de inalantes ou classificação química; a edição e palavras isoladas não bastam para escolher.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "75b863c0b2a7d07ad9b03021958473733a6679007696b42a52e8cf4dcfa3fdc5",
+      "annotation_row_index": 37076,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Transplante de Córnea - Oftalmologia - 2024",
+      "num": "10",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Internal Medicine",
+        "Physics"
+      ],
+      "assessment": "Conhecimento especializado de lentes de contato e fisiologia/óptica ocular. Revisar o limite de cobertura da oftalmologia não cirúrgica na taxonomia; não presumir necessidade de novo rótulo apenas pela abstenção.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "ecc247d095f0fe7f6c202c08f014a6f9cf28c643ab25a234a9beb9b6a56a0a24",
+      "annotation_row_index": 37078,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Transplante de Córnea - Oftalmologia - 2024",
+      "num": "12",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Internal Medicine",
+        "Physics"
+      ],
+      "assessment": "Conhecimento especializado de lentes de contato e fisiologia/óptica ocular. Revisar o limite de cobertura da oftalmologia não cirúrgica na taxonomia; não presumir necessidade de novo rótulo apenas pela abstenção.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "5a06eef509e16c5993f56029d1484df81816920ede6ddffb130c8b67e3436c3a",
+      "annotation_row_index": 38549,
+      "exam": "POSCOMP",
+      "exam_edition": "POSCOMP_2024",
+      "num": "20",
+      "category": "source_recovery",
+      "suggested_subjects": [],
+      "assessment": "Faltam os dados ou algoritmo que definem o tempo médio. Recuperar o contexto antes de decidir entre Matemática, Estatística e Algoritmos.",
+      "source_issue": true
+    },
+    {
+      "annotation_id": "97545148e8a6c16654d28759d30ad8c8d1ae2bdd4cdf308a1fd78f35628151a1",
+      "annotation_row_index": 40510,
+      "exam": "REVALIDA",
+      "exam_edition": "2011",
+      "num": "57",
+      "category": "missing_exam_candidate",
+      "suggested_subjects": [
+        "Professional Ethics"
+      ],
+      "assessment": "A aplicação de códigos profissionais e resoluções éticas é central. Professional Ethics existe globalmente, mas não está permitido para este exame; a abstenção é coerente com essa restrição.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "a9ec533b647b68b83922c151dd9e684cf4f48c36cd03f2d5a7f05446d802f32e",
+      "annotation_row_index": 40707,
+      "exam": "REVALIDA",
+      "exam_edition": "2013",
+      "num": "35",
+      "category": "label_justification_contradiction",
+      "suggested_subjects": [
+        "General Surgery",
+        "Pediatrics",
+        "Family and Community Medicine and Public Health"
+      ],
+      "assessment": "Transplante hepático de adolescente recebeu Obstetrics and Gynecology com 0,35. A própria justificativa nega a pertinência de obstetrícia. Revisar transplantes/regulação, sem responder à questão clínica.",
+      "source_issue": false
+    },
+    {
+      "annotation_id": "aaada860474ea2aa5e774c083cb031e65ee1ef35ef8e1617be35f5d400281c67",
+      "annotation_row_index": 40910,
+      "exam": "REVALIDA",
+      "exam_edition": "2015",
+      "num": "24",
+      "category": "missing_exam_candidate",
+      "suggested_subjects": [
+        "Professional Ethics"
+      ],
+      "assessment": "A aplicação de códigos profissionais e resoluções éticas é central. Professional Ethics existe globalmente, mas não está permitido para este exame; a abstenção é coerente com essa restrição.",
+      "source_issue": false
+    }
+  ]
+}

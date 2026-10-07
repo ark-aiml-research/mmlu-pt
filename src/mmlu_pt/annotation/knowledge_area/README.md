@@ -415,3 +415,119 @@ matches fail preflight. Lists must be nonempty subsets of the exam list.
 ENADE has 471 course-bearing editions, but taxonomy 1.2 does not yet define
 audited course lists. The pipeline therefore uses its authoritative 78 candidates, and
 does not infer narrower lists from edition names. BNDES/BACEN/CNU work the same way.
+
+## Taxonomia 1.3: experimento com os 23 UNCERTAIN da full-run-2
+
+A versão 1.3 é experimental e deve ser selecionada explicitamente por `--taxonomy`.
+O padrão continua na 1.2. Ela mantém 78 disciplinas e nove macroáreas; as alterações,
+IDs de evidência e pendências estão no [histórico](TAXONOMY_CHANGELOG.md) e no
+[registro de evidências](mmlu_pt_taxonomy_v1_3_evidence.json). Esses registros não entram
+nos prompts e não constituem um padrão-ouro humano.
+
+Prepare o dataset local (sem inferência):
+
+```bash
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli prepare-subset \
+  --source-run output/knowledge-annotation-work/full-run-2 \
+  --output-dir output/knowledge-annotation-work/subsets/full-run-2-uncertain
+```
+
+O comando lê a geração publicada em `exports/latest.json` e recupera os registros
+no `source` salvo. Seleciona somente `subject == "UNCERTAIN"`, que corresponde a
+23 registros na segunda full run. Recusa pasta existente e não modifica o SQLite.
+A pasta contém `dataset/`, carregável com `datasets.load_from_disk`, e `subset.json`,
+com hashes, revisão da fonte, geração de origem e mapeamento de IDs/índices.
+
+O dataset contém os campos originais, incluindo `answer`, mas nenhuma anotação
+anterior. `source_row_index` preserva o índice original, base zero, e `source_run_id`
+identifica a execução de origem. A nova `annotation_row_index` será a posição local
+no subset; `annotation_id` permanece igual. Apenas exame, edição, pergunta e
+alternativas são enviados ao worker/modelo; o gabarito e os campos de proveniência
+não participam dos prompts.
+
+Copie a pasta inteira do subset para o mesmo caminho na máquina de inferência.
+Não é necessário copiar a full run de origem para executar a anotação.
+
+Inspecione a seleção e a taxonomia sem carregar vLLM:
+
+```bash
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli inspect \
+  --dataset-path output/knowledge-annotation-work/subsets/full-run-2-uncertain/dataset \
+  --taxonomy src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_3.json \
+  --output-dir output/knowledge-annotation-work/inspection-uncertain-v1.3
+```
+
+Na máquina com B200, execute o job `knowledge_annotation_uncertain.sauron`, usando
+`knowledge_annotation_uncertain.yaml` no scheduler, ou diretamente:
+
+```bash
+bash knowledge_annotation_uncertain.sauron
+```
+
+O job usa os parâmetros científicos da full-run-2: pesos na mesma revisão imutável,
+thinking desligado, duas passagens e adjudicação, seed 42, amostragem igual,
+CUDA Graphs habilitados, DP=TP=1, lote 128, 50 sequências e contexto 20.480.
+**Não acrescente `--dry-run`: o dataset já contém todos os casos do experimento**;
+a amostragem por exame excluiria parte das questões. Thinking permanece configurável,
+mas alterá-lo cria outro experimento e exige outra pasta:
+
+```bash
+ANNOTATION_THINKING=true \
+ANNOTATION_RUN_DIR=output/knowledge-annotation-work/uncertain-taxonomy-v1.3-thinking \
+bash knowledge_annotation_uncertain.sauron
+```
+
+Para retomar, repita exatamente o comando da execução interrompida, com os mesmos
+arquivos e parâmetros. Não use `--force`: os resultados bem-sucedidos serão reutilizados.
+O contexto é verificado em tempo de execução, sem truncamento silencioso.
+
+Depois de trazer a run experimental para a máquina que possui a baseline, compare:
+
+```bash
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli compare-subset \
+  --source-run output/knowledge-annotation-work/full-run-2 \
+  --run-dir output/knowledge-annotation-work/uncertain-taxonomy-v1.3 \
+  --output-dir output/knowledge-annotation-work/comparison-uncertain-v1.3
+```
+
+A comparação usa IDs e valida o conteúdo e a proveniência. Gera `comparison.json`,
+`comparison.md`, `cases.csv` e `cases.jsonl`, sem gabaritos, com resultados anteriores
+e novos, passagens, status de adjudicação, confiança e justificativa final. IDs ausentes,
+inesperados, conteúdo alterado, rótulos não permitidos e macroáreas inconsistentes
+invalidam a comparação; o CLI retorna código 2. Erros finais de anotação também retornam 2.
+Os comandos de preparação/comparação recusam sobrescrever uma pasta existente;
+use um novo destino ao comparar uma nova geração.
+
+`--review-notes` permite selecionar outro registro de avaliações no mesmo formato do
+JSON de evidências fornecido. As notas de problemas de fonte são avaliações de engenharia,
+não rótulos esperados, e não afetam a inferência. “Recebeu disciplina” não significa
+“foi corrigido”: revisar adequação semântica, sobretudo onde a fonte está incompleta.
+Os 23 casos não medem acurácia global nem validam as mudanças do CNU, ausente do subset.
+
+Após avaliar o experimento, execute a futura full run sobre a revisão original completa,
+sem `--dataset-path`, em uma nova pasta. O comando abaixo mantém a configuração da baseline:
+
+```bash
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
+  --dataset bench-temp/mmlu-pt-filtered \
+  --dataset-revision bef2dcfb3e3ca6d0add3cf374a4c0421927af680 \
+  --taxonomy src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_3.json \
+  --exam-aliases src/mmlu_pt/annotation/knowledge_area/exam_aliases.json \
+  --model Qwen/Qwen3.5-122B-A10B-FP8 \
+  --model-revision a099dee70ccfcd8d5dda56aaa0b60cb8ecadabc9 \
+  --num-independent-passes 2 --adjudicate-disagreements --include-exam-edition \
+  --structured-output json_schema --prompt-version subject_annotation_v1 \
+  --seed 42 --temperature 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 \
+  --presence-penalty 1.5 --repetition-penalty 1.0 --max-tokens 8192 \
+  --max-attempts 5 --format-retries 2 \
+  --no-thinking --no-enforce-eager \
+  --data-parallel-size 1 --tensor-parallel-size 1 \
+  --batch-size 128 --max-num-seqs 50 --max-num-batched-tokens 4096 \
+  --max-model-len 20480 --gpu-memory-utilization 0.90 \
+  --run-dir output/knowledge-annotation-work/full-run-taxonomy-v1.3
+```
+
+O limite de 2.000 registros por macroárea deverá ser conferido nessa full run;
+ele não se aplica ao subset. Nenhum resultado experimental é mesclado automaticamente
+com a execução anterior. Se houver novas mudanças após o piloto, versionar a taxonomia
+e usar outra pasta em vez de substituir silenciosamente a versão já executada.

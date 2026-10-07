@@ -14,6 +14,7 @@ from .pipeline import AnnotationTerminated, annotate, print_validation, read_run
 from .reporting import export_review, generate_report
 from .inference import InferenceError, OfflineConfig
 from .taxonomy import load_taxonomy
+from .subsets import DEFAULT_REVIEW_NOTES, compare_subset, prepare_subset
 
 
 def environment_default(name: str, default):
@@ -69,6 +70,14 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--run-dir", type=Path)
     run.add_argument("--force", action="store_true")
     run.add_argument("--push-to-hub")
+    subset = commands.add_parser("prepare-subset", help="Save final UNCERTAIN rows as a local dataset; no inference")
+    subset.add_argument("--source-run", type=Path, required=True)
+    subset.add_argument("--output-dir", type=Path, required=True)
+    compare = commands.add_parser("compare-subset", help="Compare an abstention experiment with its baseline")
+    compare.add_argument("--source-run", type=Path, required=True)
+    compare.add_argument("--run-dir", type=Path, required=True)
+    compare.add_argument("--output-dir", type=Path, required=True)
+    compare.add_argument("--review-notes", type=Path, default=DEFAULT_REVIEW_NOTES)
     for name in ("report", "export-review"):
         command = commands.add_parser(name)
         command.add_argument("--run-dir", type=Path, required=True)
@@ -93,6 +102,14 @@ def main(argv: list[str] | None = None) -> int:
                      "--batch-timeout. Choose a new --run-dir for offline runs.")
     args = parser.parse_args(arguments)
     try:
+        if args.command == "prepare-subset":
+            result = prepare_subset(args.source_run, args.output_dir)
+            print(f"Prepared {result['rows']} UNCERTAIN rows: {args.output_dir / 'dataset'}")
+            return 0
+        if args.command == "compare-subset":
+            result = compare_subset(args.source_run, args.run_dir, args.output_dir, args.review_notes)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0 if result["valid"] and not result["counts"]["error"] else 2
         if args.command in ("report", "export-review"):
             with run_lock(args.run_dir):
                 data, audits, manifest, generation = read_run(args.run_dir)
