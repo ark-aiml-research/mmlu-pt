@@ -1,6 +1,6 @@
 # Reproducible academic subject annotation
 
-This CLI annotates `bench-temp/mmlu-pt-filtered` with offline `vllm.LLM.generate`. The source `answer` is preserved in exports but never passed to the model.
+This CLI annotates `bench-temp-2/mmlu-pt-revised` (stage 04 after the [dataset revision](../../../../docs/dataset_revision.md); earlier runs used `bench-temp/mmlu-pt-filtered`) with offline `vllm.LLM.generate`. The source `answer` is preserved in exports but never passed to the model.
 Questions and **all choices** determine the required discipline. Candidates and
 their definitions come directly from the authoritative taxonomy. `macro_area`
 is derived from `subject`, never generated.
@@ -504,14 +504,52 @@ não rótulos esperados, e não afetam a inferência. “Recebeu disciplina” n
 “foi corrigido”: revisar adequação semântica, sobretudo onde a fonte está incompleta.
 Os 23 casos não medem acurácia global nem validam as mudanças do CNU, ausente do subset.
 
-Após avaliar o experimento, execute a futura full run sobre a revisão original completa,
-sem `--dataset-path`, em uma nova pasta. O comando abaixo mantém a configuração da baseline:
+## Taxonomia 1.4: experimento com os 15 casos restantes e full run sobre o dataset revisado
+
+O experimento 1.3 (run `9f4f7174e7631904`) deu disciplina a 14 dos 23 casos e manteve 9 UNCERTAIN.
+Oito desses nove não têm enunciado recuperável e foram removidos do dataset, junto com sete linhas
+com o mesmo defeito ([docs/dataset_revision.md](../../../../docs/dataset_revision.md)). A versão 1.4
+trata o caso restante (AFA 2019 item 45) e a fragilidade dos dois IME, que só receberam English
+Language na adjudicação: enunciado e alternativas em inglês identificam English Language quando
+permitido, mesmo sem a passagem. Candidatos e aliases são os da 1.3; mudanças e evidências estão no
+[histórico](TAXONOMY_CHANGELOG.md) e em [mmlu_pt_taxonomy_v1_4_evidence.json](mmlu_pt_taxonomy_v1_4_evidence.json).
+
+O subset revisado, com os 15 casos restantes, já está em
+`output/knowledge-annotation-work/subsets/full-run-2-uncertain-revised/huggingface` (gerado por
+`python -m mmlu_pt.revision revise` a partir do subset original). Copie a pasta para a máquina de
+inferência e rode o mesmo job apontando subset, taxonomia e pasta de saída:
+
+```bash
+ANNOTATION_DATASET_PATH=output/knowledge-annotation-work/subsets/full-run-2-uncertain-revised/huggingface \
+ANNOTATION_TAXONOMY=src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_4.json \
+ANNOTATION_RUN_DIR=output/knowledge-annotation-work/uncertain-taxonomy-v1.4 \
+bash knowledge_annotation_uncertain.sauron
+```
+
+Compare com a baseline usando as notas da 1.4, que já marcam os oito itens removidos:
+
+```bash
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli compare-subset \
+  --source-run output/knowledge-annotation-work/full-run-2 \
+  --run-dir output/knowledge-annotation-work/uncertain-taxonomy-v1.4 \
+  --output-dir output/knowledge-annotation-work/comparison-uncertain-v1.4 \
+  --review-notes src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_4_evidence.json
+```
+
+A comparação parte dos 23 UNCERTAIN da baseline. Os oito itens marcados como
+`removed_from_dataset` nas notas contam como `removed`, não como ausentes, e não invalidam a
+comparação; qualquer outro ID ausente continua sendo `missing`. Avalie os 15 casos presentes em
+`cases.csv`.
+
+Após avaliar o experimento, execute a futura full run sobre o dataset revisado completo
+(`bench-temp-2/mmlu-pt-revised`, publicado por `python -m mmlu_pt.revision publish`), sem
+`--dataset-path`, em uma nova pasta. O comando abaixo mantém a configuração da baseline:
 
 ```bash
 uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --dataset bench-temp/mmlu-pt-filtered \
-  --dataset-revision bef2dcfb3e3ca6d0add3cf374a4c0421927af680 \
-  --taxonomy src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_3.json \
+  --dataset bench-temp-2/mmlu-pt-revised \
+  --dataset-revision <sha registrado em "output/04 - revised/manifest.json" após o publish> \
+  --taxonomy src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_4.json \
   --exam-aliases src/mmlu_pt/annotation/knowledge_area/exam_aliases.json \
   --model Qwen/Qwen3.5-122B-A10B-FP8 \
   --model-revision a099dee70ccfcd8d5dda56aaa0b60cb8ecadabc9 \
@@ -524,7 +562,7 @@ uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.c
   --data-parallel-size 1 --tensor-parallel-size 1 \
   --batch-size 128 --max-num-seqs 50 --max-num-batched-tokens 4096 \
   --max-model-len 20480 --gpu-memory-utilization 0.90 \
-  --run-dir output/knowledge-annotation-work/full-run-taxonomy-v1.3
+  --run-dir output/knowledge-annotation-work/full-run-taxonomy-v1.4
 ```
 
 O limite de 2.000 registros por macroárea deverá ser conferido nessa full run;

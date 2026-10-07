@@ -291,6 +291,12 @@ output/
 ├── 06 - semantic-deduplicated/
 │   ├── data.jsonl                  # final JSONL
 │   └── huggingface/                # local Hugging Face Dataset
+├── 04 - revised/                   # stage 04 minus the questions in config/removed_questions.json
+├── 06 - revised/                   # stage 06 minus the same questions
+│   ├── huggingface/                # local Hugging Face Dataset, same schema and order
+│   ├── data.jsonl                  # same records as huggingface/
+│   ├── removals.jsonl              # one line per removed row: index, ID, exam, item, category, reason
+│   └── manifest.json               # input/output hashes, absent IDs, Hub revision after publish
 └── knowledge-annotation-work/
     ├── inspection/                # schema and taxonomy validation
     └── <run>/                     # source snapshot, checkpoints, server logs, exports and reports
@@ -332,6 +338,19 @@ dataset = load_from_disk("output/06 - semantic-deduplicated/huggingface")
 
 The intermediate directories make each transformation inspectable. They and
 the final output directory are ignored by Git.
+
+## Dataset revision
+
+Questions whose original task is unrecoverable (a self-referential OBI logic
+block, BLUEX stems replaced by a LaTeX-conversion instruction, truncated POSCOMP
+stems) are listed by content hash in
+[config/removed_questions.json](config/removed_questions.json) and removed from
+stages 04 and 06 by `python -m mmlu_pt.revision revise`, which writes a new
+directory and never modifies its input. The removal, its reasons and the manual
+validation of edge cases are documented in
+[docs/dataset_revision.md](docs/dataset_revision.md). The revised stage 04 is
+published as `bench-temp-2/mmlu-pt-revised` with
+`python -m mmlu_pt.revision publish` and is the base of the knowledge-area annotation.
 
 ## Question-length analysis
 

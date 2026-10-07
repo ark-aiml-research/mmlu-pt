@@ -196,3 +196,20 @@ O teste preparado contém apenas os 23 UNCERTAIN finais. Alterações motivadas 
 As oito fontes insuficientes/contaminadas continuam pendentes de recuperação. Não reconstruir textos nem imagens neste experimento. AutoCAD, priorização de transplantes, inalantes e lentes permanecem casos de fronteira a avaliar: a definição esclarecida não obriga um rótulo nem garante acerto.
 
 O mínimo de 2.000 registros por macroárea não é aplicável ao subset. O mapa de macroáreas não mudou, portanto a projeção da full-run-2 permanece acima do mínimo; conferir novamente após a próxima full run.
+
+## Version 1.4 — após o experimento 1.3 e a revisão do dataset
+
+Experimental: 78 disciplinas, nove macroáreas, candidatos e aliases idênticos à 1.3. A versão padrão permanece 1.2; selecionar com `--taxonomy`.
+
+Resultado do experimento 1.3 (run `9f4f7174e7631904`, 23 UNCERTAIN da full-run-2): 14 receberam disciplina, 9 continuaram UNCERTAIN, 0 erros. Dos 9, oito são itens sem enunciado recuperável e foram **removidos do dataset** ([docs/dataset_revision.md](../../../../docs/dataset_revision.md), [config/removed_questions.json](../../../../config/removed_questions.json)), junto com sete linhas com o mesmo defeito que haviam recebido rótulo. O único UNCERTAIN restante é o AFA 2019 item 45. As evidências estão em [mmlu_pt_taxonomy_v1_4_evidence.json](mmlu_pt_taxonomy_v1_4_evidence.json); não são gabaritos humanos.
+
+| Tipo / alvo | Motivação e impacto esperado | Evidências (índice original base zero; ID) |
+|---|---|---|
+| policy: language_and_metadata_rule | O AFA 7234 ficou UNCERTAIN porque o modelo procurou Medicina/Psicologia, tema da passagem ausente, em vez da competência avaliada. A regra passa a dizer que enunciado e alternativas integralmente em inglês identificam English Language quando permitido e sem disciplina especialista em inglês entre os candidatos, mesmo sem a passagem. | 7234: `e0c57dfc…` (AFA, AFA_2019, item 45); 11758: `a74eac08…` (IME 2010 - Portugues, item 36); 11820: `2495ad09…` (IME 2011 - Portugues, item 36) |
+| policy: label_justification_consistency_rule | Nos dois IME a passagem 1 absteve alegando conhecimento biográfico; só a adjudicação deu English Language. Antes de abster por "o tema não está na lista", verificar se a tarefa é compreensão de língua. Esperado: concordância na primeira passagem e menos adjudicações. | 11758, 11820, 7234 (IDs acima) |
+| definition: English Language | Enunciados fragmentários ("Regarding X", "According to the text") com alternativas em inglês identificam English Language quando permitido; não reatribuir ao tema da passagem nem abster só por isso. | 7234, 11758, 11820 |
+| policy: source_integrity_rule | Itens com tarefa irrecuperável são tratados por revisão do dataset, não por alargamento de definição; abster em casos residuais. | 15 itens removidos listados em `config/removed_questions.json` |
+
+Nenhuma definição foi alargada para os 14 casos que receberam disciplina na 1.3; eles permanecem como estão. Pendências: os 14 rótulos novos ainda carecem de revisão humana de adequação, sobretudo COMVEST 2015 item 38 (infográfico ausente) e os dois IME (texto de apoio ausente). O efeito de English Language no CNU continua sem medição até a próxima full run.
+
+Próxima base de anotação: `bench-temp-2/mmlu-pt-revised` (04 revisado, 41.638 linhas), com revisão fixada no comando da full run. O mínimo de 2.000 registros por macroárea deve ser conferido nessa execução.

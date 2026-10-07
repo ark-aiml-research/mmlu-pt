@@ -1,0 +1,551 @@
+{
+  "taxonomy_version": "1.4",
+  "baseline_run_id": "4e053d1ce260f6ae",
+  "baseline_taxonomy_version": "1.2",
+  "experimental_run_id_v1_3": "9f4f7174e7631904",
+  "status": "Experimental; derived from the v1.3 subset experiment (14 received a subject, 9 remained UNCERTAIN, of which 8 were removed from the dataset). No v1.4 inference yet.",
+  "reviewer": "Engineering assessment after manual review of the v1.3 comparison; not human gold labels.",
+  "dataset_revision": "config/removed_questions.json; docs/dataset_revision.md",
+  "changes": [
+    {
+      "kind": "policy",
+      "target": "language_and_metadata_rule",
+      "motivation_and_expected_impact": "In v1.3 the AFA item with an English stem fragment and English choices stayed UNCERTAIN because the model looked for Medicine or Psychology, the topic of the missing passage, instead of the assessed competence. The rule now states that an all-English stem and choices identify English Language when it is allowed and no English-medium specialist discipline is allowed, even without the passage. Expected: AFA 7234 receives English Language; no effect on items whose choices test specialist knowledge.",
+      "evidence": [
+        {
+          "annotation_id": "e0c57dfc854608f6eead84138fc69ff471272ddf6901fd04ba3e14e934ed4d32",
+          "annotation_row_index": 7234,
+          "exam": "AFA",
+          "exam_edition": "AFA_2019",
+          "num": "45"
+        },
+        {
+          "annotation_id": "a74eac0818f2b9373ae39707e628bbdefa5e72729d56980eb39e4cd43356d6ce",
+          "annotation_row_index": 11758,
+          "exam": "IME",
+          "exam_edition": "IME 2010 - Portugues",
+          "num": "36"
+        },
+        {
+          "annotation_id": "2495ad0959037a7a9d3428b8f280bcd51c0e47ab797ca32dbb964438f436b12b",
+          "annotation_row_index": 11820,
+          "exam": "IME",
+          "exam_edition": "IME 2011 - Portugues",
+          "num": "36"
+        }
+      ]
+    },
+    {
+      "kind": "policy",
+      "target": "label_justification_consistency_rule",
+      "motivation_and_expected_impact": "Both IME items received English Language only through adjudication: pass 1 abstained claiming biographical knowledge was required. The rule now asks the annotator to check whether the task is language comprehension before abstaining because the passage topic is not a candidate. Expected: first-pass agreement on comprehension items; fewer adjudications.",
+      "evidence": [
+        {
+          "annotation_id": "a74eac0818f2b9373ae39707e628bbdefa5e72729d56980eb39e4cd43356d6ce",
+          "annotation_row_index": 11758,
+          "exam": "IME",
+          "exam_edition": "IME 2010 - Portugues",
+          "num": "36"
+        },
+        {
+          "annotation_id": "2495ad0959037a7a9d3428b8f280bcd51c0e47ab797ca32dbb964438f436b12b",
+          "annotation_row_index": 11820,
+          "exam": "IME",
+          "exam_edition": "IME 2011 - Portugues",
+          "num": "36"
+        },
+        {
+          "annotation_id": "e0c57dfc854608f6eead84138fc69ff471272ddf6901fd04ba3e14e934ed4d32",
+          "annotation_row_index": 7234,
+          "exam": "AFA",
+          "exam_edition": "AFA_2019",
+          "num": "45"
+        }
+      ]
+    },
+    {
+      "kind": "definition",
+      "target": "English Language",
+      "motivation_and_expected_impact": "Make explicit that fragmentary stems ('Regarding X', 'According to the text') with English choices identify English Language when allowed; do not reassign to the passage topic or abstain for that reason alone. Expected: consistent handling of comprehension items whose supporting text is missing.",
+      "evidence": [
+        {
+          "annotation_id": "e0c57dfc854608f6eead84138fc69ff471272ddf6901fd04ba3e14e934ed4d32",
+          "annotation_row_index": 7234,
+          "exam": "AFA",
+          "exam_edition": "AFA_2019",
+          "num": "45"
+        },
+        {
+          "annotation_id": "a74eac0818f2b9373ae39707e628bbdefa5e72729d56980eb39e4cd43356d6ce",
+          "annotation_row_index": 11758,
+          "exam": "IME",
+          "exam_edition": "IME 2010 - Portugues",
+          "num": "36"
+        },
+        {
+          "annotation_id": "2495ad0959037a7a9d3428b8f280bcd51c0e47ab797ca32dbb964438f436b12b",
+          "annotation_row_index": 11820,
+          "exam": "IME",
+          "exam_edition": "IME 2011 - Portugues",
+          "num": "36"
+        }
+      ]
+    },
+    {
+      "kind": "policy",
+      "target": "source_integrity_rule",
+      "motivation_and_expected_impact": "Items whose original task is irrecoverable (self-referential OBI block, BLUEX stems replaced by a LaTeX instruction, truncated POSCOMP stems) were removed from the dataset (docs/dataset_revision.md) instead of broadening definitions. The rule records that such items are handled by revision and that the annotator should abstain on any residual case. Expected: no change for valid items.",
+      "evidence": [
+        {
+          "annotation_id": "ae9112e39ab9e145663963cbb08cc6f5295d7b69d2cfce0651a1210af478662c",
+          "exam": "OBI",
+          "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+          "num": "1"
+        },
+        {
+          "annotation_id": "497aa0d7274d3e9035ed3f1349eb12c4bb9f638ea69fb2b553ad2c936eff460b",
+          "exam": "OBI",
+          "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+          "num": "2"
+        },
+        {
+          "annotation_id": "1219a99e8a70dfa209f51e3958ebef90f6a0a69ad912aa28a1f116e3dff9f207",
+          "exam": "OBI",
+          "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+          "num": "3"
+        },
+        {
+          "annotation_id": "b801de0e7a26e147cb97df0b22dae480d35ca79a3288a48c923f2b0615db969b",
+          "exam": "OBI",
+          "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+          "num": "1"
+        },
+        {
+          "annotation_id": "c2f873ef67ebb9ae1620966264861549f3aeb48fb10577e816c973661b84a480",
+          "exam": "OBI",
+          "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+          "num": "2"
+        },
+        {
+          "annotation_id": "339bef16f6aeb5a29d3a9b1ba6116f291273b7d8945f0e129bea1881591ab50d",
+          "exam": "OBI",
+          "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+          "num": "3"
+        },
+        {
+          "annotation_id": "ffa1528bf8148169364106ef0f6d0a6c5e3c77b48f14890a56e5421c62bc2b2a",
+          "exam": "BLUEX",
+          "exam_edition": "UNICAMP_2018",
+          "num": "2"
+        },
+        {
+          "annotation_id": "3efbbf852484bb144b109e8ba51727d5dbf68c9c6463adf3af0251849627b9d0",
+          "exam": "BLUEX",
+          "exam_edition": "UNICAMP_2020",
+          "num": "68"
+        },
+        {
+          "annotation_id": "bd44c74426baa850bacabb859a69c5bb574deafc87aa87178949ebb26c799e8a",
+          "exam": "BLUEX",
+          "exam_edition": "UNICAMP_2023",
+          "num": "9"
+        },
+        {
+          "annotation_id": "8e96d3a62d26b0c8b7ad9ed3beab177a6144e448ffcbe3f35e35cf2d07d9c9d5",
+          "exam": "BLUEX",
+          "exam_edition": "UNICAMP_2024",
+          "num": "7"
+        },
+        {
+          "annotation_id": "6a8315ca1d35b655cc6897b5a3f7efcacad5a2a50bec177a8aff4a41cc5004bf",
+          "exam": "BLUEX",
+          "exam_edition": "UNICAMP_2024",
+          "num": "12"
+        },
+        {
+          "annotation_id": "29e7e92c58311a2174911737e7a3549cd26a9f00aea6256650602fcf48103c21",
+          "exam": "BLUEX",
+          "exam_edition": "USP_2020",
+          "num": "37"
+        },
+        {
+          "annotation_id": "6c070dc10a1defdc7294c45c33ee9cc2020583b4dd177404860b42f928518bc4",
+          "exam": "BLUEX",
+          "exam_edition": "USP_2022",
+          "num": "65"
+        },
+        {
+          "annotation_id": "28cfe56847129b25c368dc9327542be58bc97a0888c76740695c81544b3ceebd",
+          "exam": "POSCOMP",
+          "exam_edition": "POSCOMP_2024",
+          "num": "19"
+        },
+        {
+          "annotation_id": "5a06eef509e16c5993f56029d1484df81816920ede6ddffb130c8b67e3436c3a",
+          "exam": "POSCOMP",
+          "exam_edition": "POSCOMP_2024",
+          "num": "20"
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "annotation_id": "9ecd327fd87aa949436a29544d934ea42b36878a1786da184f856041f982ceb4",
+      "annotation_row_index": 1933,
+      "exam": "BNDES",
+      "exam_edition": "BNDES 2008_2 - Arquiteto",
+      "num": "60",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Architecture and Urban Planning"
+      ],
+      "assessment": "Comando operacional de AutoCAD: revisar a cobertura de ferramentas CAD em Arquitetura/Design antes de concluir que falta uma disciplina global. Não confundir uso de software com desenvolvimento de software.",
+      "source_issue": false,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Architecture and Urban Planning",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "e0c57dfc854608f6eead84138fc69ff471272ddf6901fd04ba3e14e934ed4d32",
+      "annotation_row_index": 7234,
+      "exam": "AFA",
+      "exam_edition": "AFA_2019",
+      "num": "45",
+      "category": "over_abstention_with_missing_source",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "A estrutura do enunciado e das alternativas indica compreensão de inglês, embora falte o texto de apoio. A política 1.2 distingue identificar o domínio de resolver a questão. Rótulo provável; a fonte continua incompleta.",
+      "source_issue": true,
+      "v1_3_outcome": "uncertain",
+      "v1_3_subject": "UNCERTAIN",
+      "v1_3_status": "uncertain"
+    },
+    {
+      "annotation_id": "a74eac0818f2b9373ae39707e628bbdefa5e72729d56980eb39e4cd43356d6ce",
+      "annotation_row_index": 11758,
+      "exam": "IME",
+      "exam_edition": "IME 2010 - Portugues",
+      "num": "36",
+      "category": "over_abstention_with_missing_source",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "A estrutura do enunciado e das alternativas indica compreensão de inglês, embora falte o texto de apoio. A política 1.2 distingue identificar o domínio de resolver a questão. Rótulo provável; a fonte continua incompleta.",
+      "source_issue": true,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "English Language",
+      "v1_3_status": "adjudicated"
+    },
+    {
+      "annotation_id": "2495ad0959037a7a9d3428b8f280bcd51c0e47ab797ca32dbb964438f436b12b",
+      "annotation_row_index": 11820,
+      "exam": "IME",
+      "exam_edition": "IME 2011 - Portugues",
+      "num": "36",
+      "category": "over_abstention_with_missing_source",
+      "suggested_subjects": [
+        "English Language"
+      ],
+      "assessment": "A estrutura do enunciado e das alternativas indica compreensão de inglês, embora falte o texto de apoio. A política 1.2 distingue identificar o domínio de resolver a questão. Rótulo provável; a fonte continua incompleta.",
+      "source_issue": true,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "English Language",
+      "v1_3_status": "adjudicated"
+    },
+    {
+      "annotation_id": "3b7ab188017bc3aa0d2b461cb3d8c92bd4b110071e9bb913d7fdcef14f4475a5",
+      "annotation_row_index": 18217,
+      "exam": "ENADE",
+      "exam_edition": "ENADE 2013 - nutricao",
+      "num": "21",
+      "category": "existing_candidate_ignored",
+      "suggested_subjects": [
+        "Labor Law and Labor Procedure"
+      ],
+      "assessment": "O núcleo inclui obrigações do empregador e normas de saúde e segurança no trabalho. Labor Law está disponível no ENADE; a alegação de ausência de disciplina adequada precisa ser revista, sem criar uma nova disciplina automaticamente.",
+      "source_issue": false,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Labor Law and Labor Procedure",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "470869dad67ac45eb148c112834c489662aa3cb51c1e37f7bfac965ec0d63ca7",
+      "annotation_row_index": 24928,
+      "exam": "COMVEST",
+      "exam_edition": "COMVEST 2015",
+      "num": "38",
+      "category": "over_abstention_with_missing_source",
+      "suggested_subjects": [
+        "Biology"
+      ],
+      "assessment": "O item pergunta por técnicas dos experimentos de Mendel: o domínio biológico é identificável sem resolver o infográfico ausente. Há também texto de questões posteriores anexado à alternativa D.",
+      "source_issue": true,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Biology",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "14d3a48c22cba84effa7e2df6079d378b146db35ec8352a2ce841c47fd65a4b8",
+      "annotation_row_index": 36419,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Cirurgia Torácica - 2024",
+      "num": "4",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Family and Community Medicine and Public Health",
+        "Administrative Law"
+      ],
+      "assessment": "Regras de priorização de transplante estão na fronteira entre organização do sistema de saúde e regulação administrativa. O primeiro candidato está disponível e o segundo não; a palavra legislação sozinha não decide a classificação. Exige revisão especializada.",
+      "source_issue": false,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Family and Community Medicine and Public Health",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "6b67ee9f2b917d4fe27b3b19a07d788cda0fdcc4f3d1d7654e8550e4e60a54d0",
+      "annotation_row_index": 36658,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Medicina Paliativa - 2024",
+      "num": "10",
+      "category": "missing_exam_candidate",
+      "suggested_subjects": [
+        "Professional Ethics"
+      ],
+      "assessment": "A aplicação de códigos profissionais e resoluções éticas é central. Professional Ethics existe globalmente, mas não está permitido para este exame; a abstenção é coerente com essa restrição.",
+      "source_issue": false,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Professional Ethics",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "27c52625bc36ebf4820b8a0040b7f7da63950e8b6bf29867f02e4ee8bc78141b",
+      "annotation_row_index": 36877,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Pneumologia - 2024",
+      "num": "26",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Family and Community Medicine and Public Health",
+        "Administrative Law"
+      ],
+      "assessment": "Regras de priorização de transplante estão na fronteira entre organização do sistema de saúde e regulação administrativa. O primeiro candidato está disponível e o segundo não; a palavra legislação sozinha não decide a classificação. Exige revisão especializada.",
+      "source_issue": false,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Family and Community Medicine and Public Health",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "beb3e86bd1018fdee835cdd7f12343349ad61192efdb1cb19a8cac98a1a41429",
+      "annotation_row_index": 36985,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Psiquiatria Forense - 2024",
+      "num": "28",
+      "category": "missing_exam_candidate",
+      "suggested_subjects": [
+        "Social Security Law"
+      ],
+      "assessment": "O item compara elegibilidade ao BPC/benefícios por incapacidade e renda. Social Security Law existe globalmente, mas não está permitido na residência médica.",
+      "source_issue": false,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Social Security Law",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "853fe1fd6a71ff0b325e1d6d4579dc4196ada2e84c84419efcc63c689bbc94eb",
+      "annotation_row_index": 37061,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Psiquiatria- 2024",
+      "num": "34",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Internal Medicine",
+        "Chemistry"
+      ],
+      "assessment": "A pergunta classifica compostos voláteis e aparece em Psiquiatria. Avaliar se o conhecimento cobrado é toxicologia clínica de inalantes ou classificação química; a edição e palavras isoladas não bastam para escolher.",
+      "source_issue": false,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Internal Medicine",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "75b863c0b2a7d07ad9b03021958473733a6679007696b42a52e8cf4dcfa3fdc5",
+      "annotation_row_index": 37076,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Transplante de Córnea - Oftalmologia - 2024",
+      "num": "10",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Internal Medicine",
+        "Physics"
+      ],
+      "assessment": "Conhecimento especializado de lentes de contato e fisiologia/óptica ocular. Revisar o limite de cobertura da oftalmologia não cirúrgica na taxonomia; não presumir necessidade de novo rótulo apenas pela abstenção.",
+      "source_issue": false,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Internal Medicine",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "ecc247d095f0fe7f6c202c08f014a6f9cf28c643ab25a234a9beb9b6a56a0a24",
+      "annotation_row_index": 37078,
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Transplante de Córnea - Oftalmologia - 2024",
+      "num": "12",
+      "category": "boundary_review",
+      "suggested_subjects": [
+        "Internal Medicine",
+        "Physics"
+      ],
+      "assessment": "Conhecimento especializado de lentes de contato e fisiologia/óptica ocular. Revisar o limite de cobertura da oftalmologia não cirúrgica na taxonomia; não presumir necessidade de novo rótulo apenas pela abstenção.",
+      "source_issue": false,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Internal Medicine",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "97545148e8a6c16654d28759d30ad8c8d1ae2bdd4cdf308a1fd78f35628151a1",
+      "annotation_row_index": 40510,
+      "exam": "REVALIDA",
+      "exam_edition": "2011",
+      "num": "57",
+      "category": "missing_exam_candidate",
+      "suggested_subjects": [
+        "Professional Ethics"
+      ],
+      "assessment": "A aplicação de códigos profissionais e resoluções éticas é central. Professional Ethics existe globalmente, mas não está permitido para este exame; a abstenção é coerente com essa restrição.",
+      "source_issue": false,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Professional Ethics",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "aaada860474ea2aa5e774c083cb031e65ee1ef35ef8e1617be35f5d400281c67",
+      "annotation_row_index": 40910,
+      "exam": "REVALIDA",
+      "exam_edition": "2015",
+      "num": "24",
+      "category": "missing_exam_candidate",
+      "suggested_subjects": [
+        "Professional Ethics"
+      ],
+      "assessment": "A aplicação de códigos profissionais e resoluções éticas é central. Professional Ethics existe globalmente, mas não está permitido para este exame; a abstenção é coerente com essa restrição.",
+      "source_issue": false,
+      "v1_3_outcome": "received_subject",
+      "v1_3_subject": "Professional Ethics",
+      "v1_3_status": "accepted"
+    },
+    {
+      "annotation_id": "ae9112e39ab9e145663963cbb08cc6f5295d7b69d2cfce0651a1210af478662c",
+      "annotation_row_index": 8062,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+      "num": "1",
+      "category": "removed_from_dataset",
+      "suggested_subjects": [],
+      "assessment": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "source_issue": true,
+      "v1_3_outcome": "uncertain",
+      "v1_3_subject": "UNCERTAIN",
+      "v1_3_status": "uncertain"
+    },
+    {
+      "annotation_id": "497aa0d7274d3e9035ed3f1349eb12c4bb9f638ea69fb2b553ad2c936eff460b",
+      "annotation_row_index": 8063,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+      "num": "2",
+      "category": "removed_from_dataset",
+      "suggested_subjects": [],
+      "assessment": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "source_issue": true,
+      "v1_3_outcome": "uncertain",
+      "v1_3_subject": "UNCERTAIN",
+      "v1_3_status": "uncertain"
+    },
+    {
+      "annotation_id": "1219a99e8a70dfa209f51e3958ebef90f6a0a69ad912aa28a1f116e3dff9f207",
+      "annotation_row_index": 8064,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+      "num": "3",
+      "category": "removed_from_dataset",
+      "suggested_subjects": [],
+      "assessment": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "source_issue": true,
+      "v1_3_outcome": "uncertain",
+      "v1_3_subject": "UNCERTAIN",
+      "v1_3_status": "uncertain"
+    },
+    {
+      "annotation_id": "b801de0e7a26e147cb97df0b22dae480d35ca79a3288a48c923f2b0615db969b",
+      "annotation_row_index": 8087,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+      "num": "1",
+      "category": "removed_from_dataset",
+      "suggested_subjects": [],
+      "assessment": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "source_issue": true,
+      "v1_3_outcome": "uncertain",
+      "v1_3_subject": "UNCERTAIN",
+      "v1_3_status": "uncertain"
+    },
+    {
+      "annotation_id": "c2f873ef67ebb9ae1620966264861549f3aeb48fb10577e816c973661b84a480",
+      "annotation_row_index": 8088,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+      "num": "2",
+      "category": "removed_from_dataset",
+      "suggested_subjects": [],
+      "assessment": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "source_issue": true,
+      "v1_3_outcome": "uncertain",
+      "v1_3_subject": "UNCERTAIN",
+      "v1_3_status": "uncertain"
+    },
+    {
+      "annotation_id": "339bef16f6aeb5a29d3a9b1ba6116f291273b7d8945f0e129bea1881591ab50d",
+      "annotation_row_index": 8089,
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+      "num": "3",
+      "category": "removed_from_dataset",
+      "suggested_subjects": [],
+      "assessment": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "source_issue": true,
+      "v1_3_outcome": "uncertain",
+      "v1_3_subject": "UNCERTAIN",
+      "v1_3_status": "uncertain"
+    },
+    {
+      "annotation_id": "ffa1528bf8148169364106ef0f6d0a6c5e3c77b48f14890a56e5421c62bc2b2a",
+      "annotation_row_index": 12549,
+      "exam": "BLUEX",
+      "exam_edition": "UNICAMP_2018",
+      "num": "2",
+      "category": "removed_from_dataset",
+      "suggested_subjects": [],
+      "assessment": "O enunciado foi substituído, durante o pré-processamento, por uma instrução de conversão de expressões matemáticas para LaTeX com um exemplo de função. As alternativas são de outra questão (literatura, história ou gramática) e ficaram órfãs; o enunciado original não é recuperável a partir do dataset.",
+      "source_issue": true,
+      "v1_3_outcome": "uncertain",
+      "v1_3_subject": "UNCERTAIN",
+      "v1_3_status": "uncertain"
+    },
+    {
+      "annotation_id": "5a06eef509e16c5993f56029d1484df81816920ede6ddffb130c8b67e3436c3a",
+      "annotation_row_index": 38549,
+      "exam": "POSCOMP",
+      "exam_edition": "POSCOMP_2024",
+      "num": "20",
+      "category": "removed_from_dataset",
+      "suggested_subjects": [],
+      "assessment": "A extração do PDF manteve apenas o cabeçalho 'INSTRUÇÕES' e a pergunta, sem os dados ou o algoritmo que definem o tempo de cálculo. Sem esse contexto a questão não é respondível.",
+      "source_issue": true,
+      "v1_3_outcome": "uncertain",
+      "v1_3_subject": "UNCERTAIN",
+      "v1_3_status": "uncertain"
+    }
+  ]
+}

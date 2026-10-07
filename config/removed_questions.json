@@ -1,0 +1,147 @@
+{
+  "description": "Questões removidas por defeito irrecuperável de fonte. A identidade é o SHA-256 de exam, exam_edition, num, question e choices (mesmo annotation_id da anotação de áreas). Aplicada a output/04 - filtered-huggingface, output/06 - semantic-deduplicated/huggingface e ao subset UNCERTAIN da full-run-2. Ver docs/dataset_revision.md.",
+  "created_at": "2026-10-07",
+  "validation": "Remoção após validação manual de casos de borda; ver docs/dataset_revision.md.",
+  "categories": {
+    "self_referential_block": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+    "stem_replaced_by_latex_instruction": "O enunciado foi substituído, durante o pré-processamento, por uma instrução de conversão de expressões matemáticas para LaTeX com um exemplo de função. As alternativas são de outra questão (literatura, história ou gramática) e ficaram órfãs; o enunciado original não é recuperável a partir do dataset.",
+    "truncated_stem": "A extração do PDF manteve apenas o cabeçalho 'INSTRUÇÕES' e a pergunta, sem os dados ou o algoritmo que definem o tempo de cálculo. Sem esse contexto a questão não é respondível."
+  },
+  "removals": [
+    {
+      "annotation_id": "ae9112e39ab9e145663963cbb08cc6f5295d7b69d2cfce0651a1210af478662c",
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+      "num": "1",
+      "category": "self_referential_block",
+      "reason": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "evidence": "full-run-2 UNCERTAIN"
+    },
+    {
+      "annotation_id": "497aa0d7274d3e9035ed3f1349eb12c4bb9f638ea69fb2b553ad2c936eff460b",
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+      "num": "2",
+      "category": "self_referential_block",
+      "reason": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "evidence": "full-run-2 UNCERTAIN"
+    },
+    {
+      "annotation_id": "1219a99e8a70dfa209f51e3958ebef90f6a0a69ad912aa28a1f116e3dff9f207",
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 1",
+      "num": "3",
+      "category": "self_referential_block",
+      "reason": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "evidence": "full-run-2 UNCERTAIN"
+    },
+    {
+      "annotation_id": "b801de0e7a26e147cb97df0b22dae480d35ca79a3288a48c923f2b0615db969b",
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+      "num": "1",
+      "category": "self_referential_block",
+      "reason": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "evidence": "full-run-2 UNCERTAIN"
+    },
+    {
+      "annotation_id": "c2f873ef67ebb9ae1620966264861549f3aeb48fb10577e816c973661b84a480",
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+      "num": "2",
+      "category": "self_referential_block",
+      "reason": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "evidence": "full-run-2 UNCERTAIN"
+    },
+    {
+      "annotation_id": "339bef16f6aeb5a29d3a9b1ba6116f291273b7d8945f0e129bea1881591ab50d",
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2012 Fase 2 nível 2",
+      "num": "3",
+      "category": "self_referential_block",
+      "reason": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
+      "evidence": "full-run-2 UNCERTAIN"
+    },
+    {
+      "annotation_id": "ffa1528bf8148169364106ef0f6d0a6c5e3c77b48f14890a56e5421c62bc2b2a",
+      "exam": "BLUEX",
+      "exam_edition": "UNICAMP_2018",
+      "num": "2",
+      "category": "stem_replaced_by_latex_instruction",
+      "reason": "O enunciado foi substituído, durante o pré-processamento, por uma instrução de conversão de expressões matemáticas para LaTeX com um exemplo de função. As alternativas são de outra questão (literatura, história ou gramática) e ficaram órfãs; o enunciado original não é recuperável a partir do dataset.",
+      "evidence": "full-run-2 UNCERTAIN"
+    },
+    {
+      "annotation_id": "3efbbf852484bb144b109e8ba51727d5dbf68c9c6463adf3af0251849627b9d0",
+      "exam": "BLUEX",
+      "exam_edition": "UNICAMP_2020",
+      "num": "68",
+      "category": "stem_replaced_by_latex_instruction",
+      "reason": "O enunciado foi substituído, durante o pré-processamento, por uma instrução de conversão de expressões matemáticas para LaTeX com um exemplo de função. As alternativas são de outra questão (literatura, história ou gramática) e ficaram órfãs; o enunciado original não é recuperável a partir do dataset.",
+      "evidence": "varredura por padrão de defeito no estágio 04 (mesmo defeito de um caso UNCERTAIN da full-run-2)"
+    },
+    {
+      "annotation_id": "bd44c74426baa850bacabb859a69c5bb574deafc87aa87178949ebb26c799e8a",
+      "exam": "BLUEX",
+      "exam_edition": "UNICAMP_2023",
+      "num": "9",
+      "category": "stem_replaced_by_latex_instruction",
+      "reason": "O enunciado foi substituído, durante o pré-processamento, por uma instrução de conversão de expressões matemáticas para LaTeX com um exemplo de função. As alternativas são de outra questão (literatura, história ou gramática) e ficaram órfãs; o enunciado original não é recuperável a partir do dataset.",
+      "evidence": "varredura por padrão de defeito no estágio 04 (mesmo defeito de um caso UNCERTAIN da full-run-2)"
+    },
+    {
+      "annotation_id": "8e96d3a62d26b0c8b7ad9ed3beab177a6144e448ffcbe3f35e35cf2d07d9c9d5",
+      "exam": "BLUEX",
+      "exam_edition": "UNICAMP_2024",
+      "num": "7",
+      "category": "stem_replaced_by_latex_instruction",
+      "reason": "O enunciado foi substituído, durante o pré-processamento, por uma instrução de conversão de expressões matemáticas para LaTeX com um exemplo de função. As alternativas são de outra questão (literatura, história ou gramática) e ficaram órfãs; o enunciado original não é recuperável a partir do dataset.",
+      "evidence": "varredura por padrão de defeito no estágio 04 (mesmo defeito de um caso UNCERTAIN da full-run-2)"
+    },
+    {
+      "annotation_id": "6a8315ca1d35b655cc6897b5a3f7efcacad5a2a50bec177a8aff4a41cc5004bf",
+      "exam": "BLUEX",
+      "exam_edition": "UNICAMP_2024",
+      "num": "12",
+      "category": "stem_replaced_by_latex_instruction",
+      "reason": "O enunciado foi substituído, durante o pré-processamento, por uma instrução de conversão de expressões matemáticas para LaTeX com um exemplo de função. As alternativas são de outra questão (literatura, história ou gramática) e ficaram órfãs; o enunciado original não é recuperável a partir do dataset.",
+      "evidence": "varredura por padrão de defeito no estágio 04 (mesmo defeito de um caso UNCERTAIN da full-run-2)"
+    },
+    {
+      "annotation_id": "29e7e92c58311a2174911737e7a3549cd26a9f00aea6256650602fcf48103c21",
+      "exam": "BLUEX",
+      "exam_edition": "USP_2020",
+      "num": "37",
+      "category": "stem_replaced_by_latex_instruction",
+      "reason": "O enunciado foi substituído, durante o pré-processamento, por uma instrução de conversão de expressões matemáticas para LaTeX com um exemplo de função. As alternativas são de outra questão (literatura, história ou gramática) e ficaram órfãs; o enunciado original não é recuperável a partir do dataset.",
+      "evidence": "varredura por padrão de defeito no estágio 04 (mesmo defeito de um caso UNCERTAIN da full-run-2)"
+    },
+    {
+      "annotation_id": "6c070dc10a1defdc7294c45c33ee9cc2020583b4dd177404860b42f928518bc4",
+      "exam": "BLUEX",
+      "exam_edition": "USP_2022",
+      "num": "65",
+      "category": "stem_replaced_by_latex_instruction",
+      "reason": "O enunciado foi substituído, durante o pré-processamento, por uma instrução de conversão de expressões matemáticas para LaTeX com um exemplo de função. As alternativas são de outra questão (literatura, história ou gramática) e ficaram órfãs; o enunciado original não é recuperável a partir do dataset.",
+      "evidence": "varredura por padrão de defeito no estágio 04 (mesmo defeito de um caso UNCERTAIN da full-run-2)"
+    },
+    {
+      "annotation_id": "28cfe56847129b25c368dc9327542be58bc97a0888c76740695c81544b3ceebd",
+      "exam": "POSCOMP",
+      "exam_edition": "POSCOMP_2024",
+      "num": "19",
+      "category": "truncated_stem",
+      "reason": "A extração do PDF manteve apenas o cabeçalho 'INSTRUÇÕES' e a pergunta, sem os dados ou o algoritmo que definem o tempo de cálculo. Sem esse contexto a questão não é respondível.",
+      "evidence": "varredura por padrão de defeito no estágio 04 (mesmo defeito de um caso UNCERTAIN da full-run-2)"
+    },
+    {
+      "annotation_id": "5a06eef509e16c5993f56029d1484df81816920ede6ddffb130c8b67e3436c3a",
+      "exam": "POSCOMP",
+      "exam_edition": "POSCOMP_2024",
+      "num": "20",
+      "category": "truncated_stem",
+      "reason": "A extração do PDF manteve apenas o cabeçalho 'INSTRUÇÕES' e a pergunta, sem os dados ou o algoritmo que definem o tempo de cálculo. Sem esse contexto a questão não é respondível.",
+      "evidence": "full-run-2 UNCERTAIN"
+    }
+  ]
+}

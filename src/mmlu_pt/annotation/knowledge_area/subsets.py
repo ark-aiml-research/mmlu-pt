@@ -18,6 +18,7 @@ from .taxonomy import load_taxonomy
 from .validation import Annotation
 
 DEFAULT_REVIEW_NOTES = PACKAGE_DIR / "mmlu_pt_taxonomy_v1_3_evidence.json"
+REMOVED_CATEGORY = "removed_from_dataset"
 RESULT_FIELDS = ("subject", "macro_area", "alternative_subject", "subject_confidence",
                  "subject_justification", "annotation_status", "annotation_agreement",
                  "annotation_pass_1_subject", "annotation_pass_2_subject", "taxonomy_version")
@@ -186,7 +187,8 @@ def compare_subset(source_run: Path, run_dir: Path, output_dir: Path,
                 **{"new_" + k: row.get(k) if row else None for k in RESULT_FIELDS}}
         issues = []
         if row is None:
-            outcome = "missing"
+            # Rows removed by the dataset revision are expected to be absent from later experiments.
+            outcome = "removed" if note.get("category") == REMOVED_CATEGORY else "missing"
         else:
             if annotation_id(row) != identity or any(
                 k not in row or k not in old or row[k] != old[k] for k in baseline["source"]["features"]
@@ -205,12 +207,13 @@ def compare_subset(source_run: Path, run_dir: Path, output_dir: Path,
             violations.append({"annotation_id": identity, "issues": issues})
         item.update({"outcome": outcome, "issues": issues})
         cases.append(item)
-    missing = sorted(expected.keys() - observed.keys())
+    missing = sorted(identity for identity in expected.keys() - observed.keys()
+                     if notes.get(identity, {}).get("category") != REMOVED_CATEGORY)
     unexpected = sorted(observed.keys() - expected.keys())
     summary = {"created_at": timestamp(), "baseline_run_id": baseline["run_id"],
                "experimental_run_id": experimental["run_id"], "taxonomy_version": taxonomy.version,
                "expected_rows": len(expected), "observed_rows": len(observed),
-               "counts": {k: counts[k] for k in ("received_subject", "uncertain", "error", "missing", "invalid")},
+               "counts": {k: counts[k] for k in ("received_subject", "uncertain", "error", "missing", "removed", "invalid")},
                "missing_ids": missing, "unexpected_ids": unexpected, "violations": violations,
                "valid": not (missing or unexpected or violations),
                "source_issue_cases": sum(c["source_issue"] for c in cases),
@@ -226,7 +229,7 @@ def compare_subset(source_run: Path, run_dir: Path, output_dir: Path,
     lines = ["# Comparação do subset UNCERTAIN", "", f"Baseline: `{baseline['run_id']}`; experimento: `{experimental['run_id']}`.",
              "", f"Integridade: {'válida' if summary['valid'] else 'FALHOU; consulte comparison.json'}.",
              f"Receberam disciplina: {counts['received_subject']}; continuam UNCERTAIN: {counts['uncertain']}; erros: {counts['error']}.",
-             f"Ausentes: {len(missing)}; inesperados: {len(unexpected)}; inválidos: {counts['invalid']}.",
+             f"Ausentes: {len(missing)}; removidos do dataset: {counts['removed']}; inesperados: {len(unexpected)}; inválidos: {counts['invalid']}.",
              "", "Receber disciplina não comprova correção. Confiança não é calibrada. Nenhum gabarito é exportado.", ""]
     for source_issue in (True, False):
         lines.extend(["## " + ("Problemas conhecidos de fonte" if source_issue else "Cobertura e classificação"), "",

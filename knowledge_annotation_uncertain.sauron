@@ -10,10 +10,11 @@ case "${ANNOTATION_THINKING:-false}" in
   false|0) thinking_flag=--no-thinking ;;
   *) echo 'ANNOTATION_THINKING must be true, false, 1 or 0' >&2; exit 2 ;;
 esac
-# The local dataset is already the complete 23-row experiment. Do not add --dry-run.
+# The local dataset is already the complete experiment subset. Do not add --dry-run.
+# ANNOTATION_DATASET_PATH, ANNOTATION_TAXONOMY and ANNOTATION_RUN_DIR select another subset/taxonomy/run.
 exec uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli annotate \
-  --dataset-path output/knowledge-annotation-work/subsets/full-run-2-uncertain/dataset \
-  --taxonomy src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_3.json \
+  --dataset-path "${ANNOTATION_DATASET_PATH:-output/knowledge-annotation-work/subsets/full-run-2-uncertain/dataset}" \
+  --taxonomy "${ANNOTATION_TAXONOMY:-src/mmlu_pt/annotation/knowledge_area/mmlu_pt_taxonomy_v1_3.json}" \
   --exam-aliases src/mmlu_pt/annotation/knowledge_area/exam_aliases.json \
   --model Qwen/Qwen3.5-122B-A10B-FP8 \
   --model-revision a099dee70ccfcd8d5dda56aaa0b60cb8ecadabc9 \
