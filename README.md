@@ -352,6 +352,10 @@ validation of edge cases are documented in
 [docs/dataset_revision.md](docs/dataset_revision.md). The revised stage 04 is
 published as `bench-temp-2/mmlu-pt-revised` with
 `python -m mmlu_pt.revision publish` and is the base of the knowledge-area annotation.
+After a full annotation run, remaining abstentions are resolved by hand:
+[config/manual_annotations.json](config/manual_annotations.json) is applied to the
+run export by the `finalize` command of the annotation CLI, as documented in
+[docs/post_annotation.md](docs/post_annotation.md).
 
 ## Question-length analysis
 
