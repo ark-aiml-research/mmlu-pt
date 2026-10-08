@@ -27,9 +27,10 @@ por índice, então a mesma lista vale para qualquer estágio ou subset.
 | `self_referential_block` | OBI 2012 Fase 2, nível 1 e nível 2, itens 1, 2 e 3 | 6 | O enunciado é apenas "A resposta da questão N é:" e as alternativas são letras. As três questões formam um bloco de lógica que só se resolve em conjunto; isoladas em linhas independentes, cada uma é indecidível. O dataset é de itens independentes, então não há reparo sem mudar o formato. |
 | `stem_replaced_by_latex_instruction` | BLUEX: UNICAMP 2018 item 2; UNICAMP 2020 item 68; UNICAMP 2023 item 9; UNICAMP 2024 itens 7 e 12; USP 2020 item 37; USP 2022 item 65 | 7 | O enunciado foi substituído, no pré-processamento, pela instrução "Seu único objetivo é detectar as expressões matemáticas, convertê-las para o padrão LaTeX…" seguida de um exemplo de função. As alternativas pertencem a outra questão (literatura, história ou gramática) e ficaram órfãs. O enunciado original não é recuperável a partir do dataset. |
 | `truncated_stem` | POSCOMP 2024 itens 19 e 20 | 2 | A extração manteve só o cabeçalho "INSTRUÇÕES" e a pergunta ("A percentagem de tempo…", "O tempo médio aproximado…"), sem os dados ou o algoritmo que definem o tempo de cálculo. Sem esse contexto as questões não são respondíveis. |
+| `missing_supporting_data` | COMVEST 2017 item 63; ENEM 2018 item 136 | 2 | O enunciado cita um gráfico ou tabela ("O gráfico abaixo", "Com base nessas informações") que não existe no dataset, e o texto não contém os valores necessários. Identificadas como UNCERTAIN na full run 1.4 e confirmadas por inspeção manual em 8 de outubro de 2026; ver [post_annotation.md](post_annotation.md). |
 | `missing_supporting_text` | IME 2010 e 2011, item 36 | 2 | Enunciado fragmentário ("What task below could Lammert B. Otten be legally in charge of?") que depende de um texto de apoio ausente; sem ele a questão não é respondível. As duas cópias são idênticas, e nos experimentos 1.3 e 1.4 a anotação oscilou entre English Language e UNCERTAIN para o mesmo conteúdo. Incluído em 8 de outubro de 2026, após o experimento 1.4. |
 
-Total: 17 identidades. Os IDs completos, categorias, motivos e a origem da evidência (abstenção na
+Total: 19 identidades. Os IDs completos, categorias, motivos e a origem da evidência (abstenção na
 full run ou varredura por padrão) estão no arquivo de configuração.
 
 ## Validação manual de casos de borda
@@ -63,13 +64,16 @@ dependência de um bloco que o formato do dataset não preserva.
 
 | Entrada | Saída | Linhas | Removidas | IDs da lista ausentes |
 |---|---|---|---|---|
-| `output/04 - filtered-huggingface` (idêntico a `bench-temp/mmlu-pt-filtered`, base da full run) | `output/04 - revised` | 41.653 → 41.636 | 17 | 0 |
-| `output/06 - semantic-deduplicated/huggingface` | `output/06 - revised` | 37.887 → 37.875 | 12 | 5 (já eliminados pela deduplicação) |
+| `output/04 - filtered-huggingface` (idêntico a `bench-temp/mmlu-pt-filtered`, base da full run) | `output/04 - revised` | 41.653 → 41.634 | 19 | 0 |
+| `output/06 - semantic-deduplicated/huggingface` | `output/06 - revised` | 37.887 → 37.873 | 14 | 5 (já eliminados pela deduplicação) |
 | `output/knowledge-annotation-work/subsets/full-run-2-uncertain/dataset` | `…/subsets/full-run-2-uncertain-revised` | 23 → 15 | 8 | 7 (não eram UNCERTAIN) |
 
 O subset revisado foi gerado com a lista de 15 itens e serviu de entrada ao experimento 1.4; os
 dois IME ainda constam nele. As pastas `04 - revised` e `06 - revised` foram regeneradas a partir
-dos estágios originais com a lista de 17 itens.
+dos estágios originais com a lista de 19 itens. A full run 1.4 anotou a revisão do Hub com
+41.636 linhas (17 remoções); as duas remoções seguintes foram aplicadas ao seu export na
+pós-anotação ([post_annotation.md](post_annotation.md)), e o Hub precisa ser republicado para
+refletir a lista completa.
 
 Cada pasta de saída contém `huggingface/` (dataset local, `load_from_disk`), `data.jsonl` (mesmos
 registros e ordem, todas as colunas), `removals.jsonl` (índice de entrada, ID, exame, edição,

@@ -1,0 +1,68 @@
+{
+  "description": "Atribuições manuais pós-anotação para itens que terminaram UNCERTAIN na full run 1.4. Cada entrada substitui o resultado do modelo no dataset final; a disciplina está sempre entre os candidatos do exame. Aplicadas por `python -m mmlu_pt.annotation.knowledge_area.cli finalize`. Ver docs/post_annotation.md.",
+  "created_at": "2026-10-08",
+  "source_run_id": "1640098255bb0bed",
+  "taxonomy_version": "1.4",
+  "assignments": [
+    {
+      "annotation_id": "c1b3349116677151e3b61d8b1fabf5a3497af1fbdfcf0b42a246e1e9b5420e70",
+      "exam": "BNDES",
+      "exam_edition": "BNDES 2011 - Engenheiro",
+      "num": "26",
+      "subject": "Spanish Language",
+      "alternative_subject": null,
+      "category": "adjudication_error",
+      "justification": "Atribuição manual. A questão pede a função semântica da conjunção espanhola 'sino' em um texto em espanhol; é compreensão de espanhol. Spanish Language é candidato do BNDES e foi a escolha da passagem 1; o adjudicador afirmou erroneamente que a disciplina não estava na lista."
+    },
+    {
+      "annotation_id": "96504d2784469a99052d180ebdeb462523916fd79c47a65dddb915910ab04232",
+      "exam": "OAB",
+      "exam_edition": "OAB-PR 2006.2 ",
+      "num": "3",
+      "subject": "Professional Ethics",
+      "alternative_subject": null,
+      "category": "adjudication_error",
+      "justification": "Atribuição manual. A questão trata de impedimentos e incompatibilidades para o exercício da advocacia segundo o Estatuto da Advocacia e da OAB, matéria de ética e disciplina profissional. Professional Ethics é candidato da OAB; o adjudicador afirmou erroneamente que a disciplina não estava na lista."
+    },
+    {
+      "annotation_id": "2c484bd37295fb118006a6d2408f12bd176dec26c48d73f1266470a40aa2f17c",
+      "exam": "ENEM",
+      "exam_edition": "ENEM-2023",
+      "num": "89",
+      "subject": "Sociology",
+      "alternative_subject": null,
+      "category": "candidate_gap",
+      "justification": "Atribuição manual. A questão classifica condutas contra a mulher previstas na Lei Maria da Penha como forma de violência patrimonial. O ENEM não tem candidatos de Direito; entre os disponíveis, Sociology é a disciplina que trata de violência de gênero, cidadania e direitos como fenômeno social, que é o enquadramento da prova de Ciências Humanas."
+    },
+    {
+      "annotation_id": "16528e6cb6880a067eb8061de45a0daa7419d527d46301765b810c80cf93651e",
+      "exam": "COMVEST",
+      "exam_edition": "COMVEST 2016",
+      "num": "71",
+      "subject": "Sociology",
+      "alternative_subject": "Geography",
+      "category": "candidate_gap",
+      "justification": "Atribuição manual. A questão pede as competências exclusivas da União na organização federativa definida pela Constituição de 1988. O COMVEST não tem candidatos de Direito; entre os disponíveis, Sociology cobre a organização política do Estado brasileiro e o pacto federativo (sociologia política). Geography é alternativa pela dimensão de ordenamento territorial e regiões metropolitanas presente nas alternativas."
+    },
+    {
+      "annotation_id": "283fad2688e86a628d6adec550f2e71981e541d22a98fb3628144a90d0f94d5c",
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Residência Médica USP - Psiquiatria- 2024",
+      "num": "23",
+      "subject": "Family and Community Medicine and Public Health",
+      "alternative_subject": null,
+      "category": "candidate_gap",
+      "justification": "Atribuição manual. A questão pergunta o efeito de uma resolução da ANVISA sobre a comercialização de um produto; é regulação sanitária dentro da organização do sistema de saúde. A residência não tem Administrative Law entre os candidatos; a definição 1.4 de Family and Community Medicine and Public Health inclui organização do sistema de saúde e regulação em saúde, e foi a escolha da passagem 1."
+    },
+    {
+      "annotation_id": "dc04d3b1db069ddceeff942a530b1f8ef84a646f75355142d775be9a1065dc84",
+      "exam": "RESIDENCIA_USP_UNICAMP",
+      "exam_edition": "Cirurgia Cabeça e Pescoço - USP - 2024",
+      "num": "73",
+      "subject": "General Surgery",
+      "alternative_subject": "Pediatrics",
+      "category": "boundary",
+      "justification": "Atribuição manual. A questão cobra a embriologia da laringe e da faringe como base para anatomia, fisiologia e malformações, em prova de uma especialidade cirúrgica (Cirurgia de Cabeça e Pescoço). A residência não tem candidato de ciências básicas; entre os disponíveis, General Surgery é a disciplina em que a anatomia e a embriologia cirúrgicas do pescoço são conhecimento de base. Pediatrics é alternativa pelo aspecto de malformações congênitas, escolhido pela passagem 2."
+    }
+  ]
+}

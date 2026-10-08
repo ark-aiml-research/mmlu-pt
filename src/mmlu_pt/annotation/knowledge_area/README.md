@@ -551,6 +551,25 @@ bash knowledge_annotation.sauron
 Para retomar, repita o comando. Para fixar uma revisão específica do dataset, acrescente
 `--dataset-revision 0e8b69a1d3ba429903b199cb48f40b813b874f43` ao script.
 
+## Pós-anotação: atribuições manuais e remoções sobre o export da full run
+
+Depois da full run, os `UNCERTAIN` restantes são revisados um a um. Disciplinas atribuídas
+manualmente ficam em [config/manual_annotations.json](../../../../config/manual_annotations.json)
+(sempre dentro dos candidatos do exame, com justificativa) e questões sem material de apoio entram em
+[config/removed_questions.json](../../../../config/removed_questions.json). O comando abaixo aplica
+as duas listas ao export publicado e grava `post-annotation/` na pasta da run, sem tocar no
+checkpoint nem nos exports:
+
+```bash
+uv run --locked --group annotation python -m mmlu_pt.annotation.knowledge_area.cli finalize \
+  --run-dir output/knowledge-annotation-work/full-run-taxonomy-v1.4
+```
+
+As linhas manuais recebem `annotation_status = "manual"` e confiança nula; as passagens do modelo
+são preservadas. Cada decisão da full run 1.4 está documentada em
+[docs/post_annotation.md](../../../../docs/post_annotation.md). O dataset final fica em
+`post-annotation/huggingface` e é o que deve ser publicado.
+
 O limite de 2.000 registros por macroárea deverá ser conferido nessa full run;
 ele não se aplica ao subset. Nenhum resultado experimental é mesclado automaticamente
 com a execução anterior. Se houver novas mudanças após o piloto, versionar a taxonomia

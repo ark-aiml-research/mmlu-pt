@@ -15,6 +15,7 @@ from .reporting import export_review, generate_report
 from .inference import InferenceError, OfflineConfig
 from .taxonomy import load_taxonomy
 from .subsets import DEFAULT_REVIEW_NOTES, compare_subset, prepare_subset
+from .post_annotation import DEFAULT_MANUAL, DEFAULT_REMOVALS, finalize
 
 
 def environment_default(name: str, default):
@@ -78,6 +79,11 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("--run-dir", type=Path, required=True)
     compare.add_argument("--output-dir", type=Path, required=True)
     compare.add_argument("--review-notes", type=Path, default=DEFAULT_REVIEW_NOTES)
+    final = commands.add_parser("finalize", help="Apply manual assignments and dataset removals to a published export")
+    final.add_argument("--run-dir", type=Path, required=True)
+    final.add_argument("--output-dir", type=Path, help="default: <run-dir>/post-annotation")
+    final.add_argument("--manual", type=Path, default=DEFAULT_MANUAL)
+    final.add_argument("--removals", type=Path, default=DEFAULT_REMOVALS)
     for name in ("report", "export-review"):
         command = commands.add_parser(name)
         command.add_argument("--run-dir", type=Path, required=True)
@@ -110,6 +116,11 @@ def main(argv: list[str] | None = None) -> int:
             result = compare_subset(args.source_run, args.run_dir, args.output_dir, args.review_notes)
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0 if result["valid"] and not result["counts"]["error"] else 2
+        if args.command == "finalize":
+            result = finalize(args.run_dir, args.output_dir or args.run_dir / "post-annotation", args.manual, args.removals)
+            print(f"Final dataset: {result['output_rows']} rows; {len(result['manual_assignments'])} manual assignments; "
+                  f"{len(result['removed'])} removed; {len(result['remaining_uncertain_row_indices'])} UNCERTAIN left")
+            return 0
         if args.command in ("report", "export-review"):
             with run_lock(args.run_dir):
                 data, audits, manifest, generation = read_run(args.run_dir)

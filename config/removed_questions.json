@@ -6,7 +6,8 @@
     "self_referential_block": "Bloco de lógica autorreferente da OBI 2012 (Fase 2): o enunciado é apenas 'A resposta da questão N é:' e as alternativas são letras. As três questões só se resolvem em conjunto; isoladas em linhas independentes, cada uma é indecidível.",
     "stem_replaced_by_latex_instruction": "O enunciado foi substituído, durante o pré-processamento, por uma instrução de conversão de expressões matemáticas para LaTeX com um exemplo de função. As alternativas são de outra questão (literatura, história ou gramática) e ficaram órfãs; o enunciado original não é recuperável a partir do dataset.",
     "truncated_stem": "A extração do PDF manteve apenas o cabeçalho 'INSTRUÇÕES' e a pergunta, sem os dados ou o algoritmo que definem o tempo de cálculo. Sem esse contexto a questão não é respondível.",
-    "missing_supporting_text": "Enunciado fragmentário ('What task below could Lammert B. Otten be legally in charge of?') que depende de um texto de apoio ausente; sem ele a questão não é respondível. As cópias de 2010 e 2011 são idênticas e, nos experimentos 1.3 e 1.4, a anotação oscilou entre English Language e UNCERTAIN para o mesmo conteúdo."
+    "missing_supporting_text": "Enunciado fragmentário ('What task below could Lammert B. Otten be legally in charge of?') que depende de um texto de apoio ausente; sem ele a questão não é respondível. As cópias de 2010 e 2011 são idênticas e, nos experimentos 1.3 e 1.4, a anotação oscilou entre English Language e UNCERTAIN para o mesmo conteúdo.",
+    "missing_supporting_data": "O enunciado faz referência a um gráfico ou tabela ('O gráfico abaixo', 'Com base nessas informações') que não existe no dataset, e o texto não contém os valores necessários; sem o material de apoio a questão não é respondível."
   },
   "removals": [
     {
@@ -161,6 +162,24 @@
       "category": "missing_supporting_text",
       "reason": "Enunciado fragmentário ('What task below could Lammert B. Otten be legally in charge of?') que depende de um texto de apoio ausente; sem ele a questão não é respondível. As cópias de 2010 e 2011 são idênticas e, nos experimentos 1.3 e 1.4, a anotação oscilou entre English Language e UNCERTAIN para o mesmo conteúdo.",
       "evidence": "full-run-2 UNCERTAIN; experimentos 1.3 e 1.4 com resultados divergentes entre cópias idênticas"
+    },
+    {
+      "annotation_id": "fca94dc353c15ad428b5fc0641a740b6ec72cdb19e8641ce80ab72ebecf380cd",
+      "exam": "COMVEST",
+      "exam_edition": "COMVEST 2017",
+      "num": "63",
+      "category": "missing_supporting_data",
+      "reason": "O enunciado faz referência a um gráfico ou tabela ('O gráfico abaixo', 'Com base nessas informações') que não existe no dataset, e o texto não contém os valores necessários; sem o material de apoio a questão não é respondível.",
+      "evidence": "full-run-taxonomy-v1.4 UNCERTAIN (run 1640098255bb0bed); inspeção manual confirmou a ausência do gráfico/tabela"
+    },
+    {
+      "annotation_id": "bd5bbe5c8220009bc5c9d0363774e768ce9e9bf4b5f8de3326cbbef043b2f227",
+      "exam": "ENEM",
+      "exam_edition": "ENEM-2018",
+      "num": "136",
+      "category": "missing_supporting_data",
+      "reason": "O enunciado faz referência a um gráfico ou tabela ('O gráfico abaixo', 'Com base nessas informações') que não existe no dataset, e o texto não contém os valores necessários; sem o material de apoio a questão não é respondível.",
+      "evidence": "full-run-taxonomy-v1.4 UNCERTAIN (run 1640098255bb0bed); inspeção manual confirmou a ausência do gráfico/tabela"
     }
   ],
   "updated_at": "2026-10-08"
