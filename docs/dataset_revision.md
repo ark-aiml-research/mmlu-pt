@@ -72,8 +72,8 @@ O subset revisado foi gerado com a lista de 15 itens e serviu de entrada ao expe
 dois IME ainda constam nele. As pastas `04 - revised` e `06 - revised` foram regeneradas a partir
 dos estágios originais com a lista de 19 itens. A full run 1.4 anotou a revisão do Hub com
 41.636 linhas (17 remoções); as duas remoções seguintes foram aplicadas ao seu export na
-pós-anotação ([post_annotation.md](post_annotation.md)), e o Hub precisa ser republicado para
-refletir a lista completa.
+pós-anotação ([post_annotation.md](post_annotation.md)). O Hub foi republicado em 8 de outubro de
+2026 com a lista completa: `bench-temp-2/mmlu-pt-revised`, revisão `e0f638e0…`, 41.634 linhas.
 
 Cada pasta de saída contém `huggingface/` (dataset local, `load_from_disk`), `data.jsonl` (mesmos
 registros e ordem, todas as colunas), `removals.jsonl` (índice de entrada, ID, exame, edição,

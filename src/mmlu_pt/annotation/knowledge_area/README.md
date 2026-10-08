@@ -549,7 +549,7 @@ bash knowledge_annotation.sauron
 ```
 
 Para retomar, repita o comando. Para fixar uma revisão específica do dataset, acrescente
-`--dataset-revision 0e8b69a1d3ba429903b199cb48f40b813b874f43` ao script.
+`--dataset-revision <sha>` ao script (a revisão atual, com 41.634 linhas, é `e0f638e00f9bc061e4fe16ccbb4318766bf16a86`).
 
 ## Pós-anotação: atribuições manuais e remoções sobre o export da full run
 

@@ -67,13 +67,25 @@ linhas) e no `output/06 - revised` (regenerado a partir do estágio 06, 37.873 l
 | Menor macroárea | Social and Applied Social Sciences, 2.472 (mínimo exigido 2.000) |
 
 Os IDs do dataset final coincidem, na mesma ordem, com os do `output/04 - revised` regenerado.
-O `bench-temp-2/mmlu-pt-revised` publicado ainda está na revisão anterior, com 41.636 linhas; para
-que o dataset base no Hub reflita as duas remoções, rode novamente
-`python -m mmlu_pt.revision publish --output "output/04 - revised" --repo bench-temp-2/mmlu-pt-revised`.
+O dataset base `bench-temp-2/mmlu-pt-revised` foi republicado com as 41.634 linhas na revisão
+`e0f638e00f9bc061e4fe16ccbb4318766bf16a86`, conferida contra `output/04 - revised`; os IDs do
+dataset anotado final coincidem com os dela na mesma ordem. A full run 1.4 anotou a revisão
+anterior, `0e8b69a1…` (41.636 linhas), e as duas remoções foram aplicadas ao seu export.
 
-Comando usado:
+Comandos usados:
 
 ```bash
 .venv/bin/python -m mmlu_pt.annotation.knowledge_area.cli finalize \
   --run-dir output/knowledge-annotation-work/full-run-taxonomy-v1.4
+.venv/bin/python -m mmlu_pt.revision publish \
+  --output output/knowledge-annotation-work/full-run-taxonomy-v1.4/post-annotation \
+  --repo bench-temp-2/mmlu-pt-knowledge-annotated
 ```
+
+## Publicação
+
+O dataset final está em `bench-temp-2/mmlu-pt-knowledge-annotated`, revisão
+`fb9d509a62c0e05e3fecd37e7626563294a44229` (8 de outubro de 2026), conferida linha a linha contra
+`post-annotation/huggingface`: mesmos IDs, ordem, disciplinas, status e gabaritos. A anotação
+anterior (taxonomia 1.2, revisão `9a578d25…`) foi renomeada para `-deprecated` e depois excluída
+do Hub; ela sobrevive apenas localmente, em `output/knowledge-annotation-work/full-run-2/exports`.
