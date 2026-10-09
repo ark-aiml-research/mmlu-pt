@@ -1,0 +1,882 @@
+% =============================================================================
+% Appendix: knowledge-area annotation --- method, taxonomy evolution and final
+% distribution.
+%
+% Usage: \input this file after \appendix in the paper.
+% Required packages: graphicx, booktabs, amsmath, amssymb, natbib (\citep),
+% hyperref or url (\url in footnotes; the ACL template loads hyperref).
+% Assumes UTF-8 input and T1 font encoding (both provided by the ACL template).
+% Bibliography entries for every \citep below are in
+% ablations/knowledge_area/references_knowledge_area.bib.
+%
+% The annotation method (model, prompt template, decoding, two passes and
+% adjudication) was fixed before the first full run and never varied. What
+% varied is the taxonomy: versions 1.0 to 1.4, three full runs (1.1, 1.2 and
+% 1.4) over the same questions and two runs of 1.3 and 1.4 on the abstentions
+% of run 1.2. Every number below comes from the artifacts of those runs under
+% output/knowledge-annotation-work/ (full-run, full-run-2,
+% uncertain-taxonomy-v1.3, uncertain-taxonomy-v1.4, full-run-taxonomy-v1.4 and
+% its post-annotation/ directory), from the taxonomy files in
+% src/mmlu_pt/annotation/knowledge_area/ (1.0 is the git snapshot kept in
+% ablations/knowledge_area/assets/) and from the versioned lists in config/.
+% ablations/knowledge_area/make_figures.py prints every aggregate quoted
+% below, checks the exports against the QC reports, the checkpoints and the
+% taxonomies, and generates the figures. The only numbers not printed by the
+% script are the sizes of the audits that motivated each taxonomy version,
+% taken from src/mmlu_pt/annotation/knowledge_area/TAXONOMY_CHANGELOG.md.
+% By default figures are read from ./figures; to change this, define the macro
+% before the \input, e.g.
+%   \newcommand{\KnowledgeAreaFigDir}{ablations/knowledge_area/figures}
+% =============================================================================
+\providecommand{\KnowledgeAreaFigDir}{figures}
+
+\section{Knowledge-Area Annotation: Method, Taxonomy Evolution and Final Distribution}
+\label{app:ka}
+
+Every released question carries a \emph{subject}, chosen from a closed list of
+candidates fixed per exam, and a \emph{macro area}, derived from the subject
+by a table and never generated. The paper uses them to report accuracy per
+area and to stratify the few-shot demonstrations by macro area and academic
+level. The labels are assigned by an open-weight language model that reads
+the question, its choices, the exam and the edition, chooses one candidate or
+abstains with \texttt{UNCERTAIN}, and does so twice with independent seeds; a
+third request by the same model settles the disagreements. Unlike the
+filtering and deduplication stages, the method itself was not ablated: model,
+prompt template, decoding and aggregation were fixed before the first full run
+and never changed. What changed was the \emph{taxonomy}. Five versions were
+written (1.0 to 1.4), three of them were run over the whole corpus (1.1, 1.2
+and 1.4) and two were run on the abstentions of the previous full run (1.3 and
+1.4), so the version is the only treatment this appendix can compare
+(Table~\ref{tab:ka-overview}). The appendix fixes the notation
+(\S\ref{app:ka-setup}), records the method and the reasons behind the choice
+of model (\S\ref{app:ka-method}), traces the taxonomy from 1.0 to 1.4
+(\S\ref{app:ka-taxonomy}), measures what each version changed in the labels
+(\S\ref{app:ka-effect}), describes the final distribution
+(\S\ref{app:ka-distribution}), the manual post-annotation
+(\S\ref{app:ka-post}) and the cost (\S\ref{app:ka-cost}). Limitations are
+discussed in \S\ref{app:ka-limitations}.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lrrrrlrrrr@{}}
+\toprule
+Ver. & Subj. & Areas & Exams & Rules & Run & $n$ & Agr. & Adj. & Unc. \\
+\midrule
+1.0 & 70 & 11 & 15 & 8 & -- & -- & -- & -- & -- \\
+1.1 & 70 & 11 & 17 & 8 & full & 41,653 & 91.64 & 8.36 & 88 \\
+1.2 & 78 & 9 & 17 & 14 & full & 41,653 & 92.14 & 7.86 & 23 \\
+1.3 & 78 & 9 & 17 & 15 & subset & 23 & -- & -- & 9 \\
+1.4 & 78 & 9 & 17 & 15 & subset & 15 & -- & -- & 1 \\
+1.4 & 78 & 9 & 17 & 15 & full & 41,636 & 92.08 & 7.92 & 8 \\
+\bottomrule
+\end{tabular}
+\caption{Taxonomy versions and the runs made with each. \emph{Subj.}, \emph{Areas}, \emph{Exams}, \emph{Rules}: subjects, macro areas, exams with a candidate list and annotation rules in the version; \emph{Run}: a full run over the corpus or a run over the abstentions of the previous full run; $n$: questions; \emph{Agr.}: percentage of questions on which the two independent passes chose the same subject; \emph{Adj.}: percentage sent to adjudication; \emph{Unc.}: questions left \texttt{UNCERTAIN}. Runs 1.1 and 1.2 annotated the 41,653 questions of the filtered corpus; run 1.4 annotated the 41,636 questions left after the dataset revision. Agreement is the self-consistency of one model, not accuracy.}
+\label{tab:ka-overview}
+\end{table}
+
+\paragraph{Summary.} The method is fixed and the taxonomy is the variable.
+(1)~One open-weight model, Qwen3.5-122B-A10B in FP8, labels each question
+twice with independent seeds under a JSON-schema grammar that admits only the
+exam's candidates and \texttt{UNCERTAIN}; a third request by the same model
+adjudicates when the passes differ or either abstains. (2)~The taxonomy grew
+from 70 subjects in 11 macro areas and 15 exams (1.0) to 78 subjects in 9
+areas and 17 exams with 15 annotation rules (1.4), each step motivated by an
+audit of the previous run's abstentions, low-confidence labels and targeted
+cases. (3)~Abstentions fell from 88 (1.1) to 23 (1.2) to 8 (1.4) and to 0
+after six manual assignments and two removals; the eight abstentions of the
+final run are questions no earlier run had abstained on. (4)~Between
+consecutive full runs 7.96\% (1.1 to 1.2) and 4.46\% (1.2 to 1.4) of the
+labels changed, against a within-run disagreement between the two passes of
+7.82\% and 7.92\%; 549 questions took one of the eight subjects added in 1.2.
+(5)~All nine macro areas of the final dataset have at least 2,472 questions;
+all 78 subjects are used, 14 with fewer than 100 questions. (6)~The final run
+took 3\,h\,39\,min on one GPU and processed 311.2 million prompt tokens.
+
+% -----------------------------------------------------------------------------
+\subsection{Data, notation and metrics}
+\label{app:ka-setup}
+
+\paragraph{Data.} Runs 1.1 and 1.2 annotated $D_F$, the 41,653 questions of
+the filtered corpus (\texttt{bench-temp/mmlu-pt-filtered}, revision
+\texttt{bef2dcfb}\ldots). Run 1.4 annotated $D_R$, the 41,636 questions of the
+revised corpus (\texttt{bench-temp-2/mmlu-pt-revised}, revision
+\texttt{0e8b69a1}\ldots), which removes 17 questions with an irrecoverable
+defect (the dataset revision); the final dataset removes two more and
+has 41,634 questions from 17 exams, 9,789 at high-school and 31,845 at
+undergraduate level. A question is identified by the SHA-256 of its exam,
+edition, number, statement and choices, so the three full runs join exactly
+on the 41,636 questions of $D_R$, and the two subset runs are identified
+within the full runs by the same key. A record $x=(q,C,a,e,d,\ell)$ has
+statement $q$, ordered choices $C$, answer index $a$, exam $e$, edition $d$
+and level $\ell$. The model sees $q$, $C$, $e$ and $d$; it never sees $a$.
+
+\paragraph{Taxonomy and labels.} A taxonomy version $v$ defines a set of
+subjects $T_v$ with a one-paragraph definition each, a map
+$\mu_v\colon T_v\to A_v$ to macro areas, a candidate list $C_v(e)\subseteq
+T_v$ per exam and a list of annotation rules $R_v$ that is included verbatim
+in every prompt. A label for a question of exam $e$ is an element of
+$C_v(e)\cup\{\texttt{UNCERTAIN}\}$. Two independent passes produce $s_1(x)$
+and $s_2(x)$; when $s_1\neq s_2$ or either is \texttt{UNCERTAIN}, an
+adjudication request produces $s_a(x)$ and the final label is $s(x)=s_a(x)$
+(status \emph{adjudicated}, or \emph{uncertain} when $s_a=\texttt{UNCERTAIN}$);
+otherwise $s(x)=s_1(x)$ (status \emph{accepted}) with confidence equal to the
+smaller of the two reported confidences. The stored macro area is
+$\mu_v(s(x))$. Each pass also returns an alternative subject, a confidence in
+$[0,1]$ and a justification of at most 400 characters; the confidence is
+model-reported and uncalibrated.
+
+\paragraph{Metrics.} For a run, the \emph{agreement} is the share of
+questions with $s_1=s_2\neq\texttt{UNCERTAIN}$, the \emph{adjudication rate}
+the share sent to adjudication and the \emph{abstention} the number of
+questions with $s=\texttt{UNCERTAIN}$. For two versions $u$ and $v$ run over
+the same questions, the \emph{change share} of a group $G$ is
+$|\{x\in G: s^{u}(x)\neq s^{v}(x)\}|/|G|$, which is compared with the
+within-run \emph{disagreement} $|\{x\in G: s^{v}_1(x)\neq s^{v}_2(x)\}|/|G|$,
+the share of labels that one version alone already fails to reproduce between
+its two passes. The \emph{uptake} of a version is the number of questions that
+received a subject absent from the previous version, or absent from the
+previous candidate list of their exam. None of these measures accuracy: no
+human-labelled reference exists for these questions, and all three runs use
+the same model, so agreement between passes or versions measures consistency,
+and a change between versions is not evidence that either label is right.
+
+% -----------------------------------------------------------------------------
+\subsection{Annotation method}
+\label{app:ka-method}
+
+\paragraph{Motivation.} Three failure modes were anticipated. A model may
+label a question by the dominant subject of its exam instead of by its
+content; it may choose a neighbouring subject when the right one is missing
+from the list; and its labels vary with the prompt and the model, and even
+identical inputs can receive different labels under sampling, a variance that
+a single sample per item hides \citep{song2025good}. The design answers each: the exam and the edition are given to the
+model as context but the prompt states that they are priors, not labels, and
+the candidate list is restricted per exam so that an out-of-scope subject
+cannot be chosen at all; \texttt{UNCERTAIN} is always available and the rules
+forbid substituting an adjacent subject for a missing one; and every question
+is labelled twice with independent seeds, in the spirit of self-consistency
+checks that sample a model several times \citep{wang2023selfconsistency},
+with a third request to settle the cases where the two labels differ.
+
+\paragraph{Model choice.} The annotator is Qwen3.5-122B-A10B-FP8, a
+mixture-of-experts model with 122 billion parameters of which 10 billion are
+active per token, in the FP8 weights published by its authors (revision
+\texttt{a099dee7}\ldots), with its reasoning mode disabled.\footnote{\url{https://huggingface.co/Qwen/Qwen3.5-122B-A10B-FP8}, revision \texttt{a099dee70ccfcd8d5dda56aaa0b60cb8ecadabc9}, Apache 2.0 license. The model card is the source of the parameter counts, the language coverage and the sampling guidance quoted here.} Four considerations led to it; none was tested
+against an alternative model on this task. (i)~Large instruction-tuned
+models are an established substitute for crowd and expert annotators on
+closed-label text classification, including zero-shot classification from a
+list of labels with definitions
+\citep{ding2023gpt3,he2024annollm,tan2024survey},
+with the caveat that their labels must be validated per task
+\citep{gligoric2025unconfident}; this appendix therefore reports consistency
+rather than accuracy and the stage ends with a manual review
+(\S\ref{app:ka-post}). (ii)~The annotator must not be one of the systems the
+benchmark evaluates: language models used as judges favour their own outputs,
+and the bias grows with their ability to recognize them
+\citep{panickssery2024llm,liu2024narcissistic}. All 19 open-weight checkpoints
+in the evaluation matrix have at most 35 billion parameters and the
+122B-A10B model is not among them, although six of them belong to the same
+Qwen3.5 family (\S\ref{app:ka-limitations}). (iii)~Open weights with a pinned
+revision make the annotation reproducible and auditable, which an API model
+that can change silently does not offer, and open models have been shown to
+be viable annotators \citep{alizadeh2025opensource}. The Qwen family
+documents broad multilingual coverage, 119 languages including Portuguese for
+Qwen3 and 201 languages and dialects for Qwen3.5 according to their technical
+report and model card, and is the base of the Portuguese Tucano~2 models
+evaluated in the paper. (iv)~The model fits the
+available hardware: the FP8 weights occupy 115.37~GiB of the 191.5~GB of one
+NVIDIA B200, leaving a KV cache of 1,413,120 tokens, enough for the 50
+concurrent sequences of 20,480 tokens used by the run; a single GPU annotates
+the corpus in under four hours (\S\ref{app:ka-cost}) while the remaining GPUs
+of the evaluation budget stay free. The sampling parameters are the ones the
+model card recommends for its thinking mode (temperature~1.0, top-$p$~0.95,
+top-$k$~20, presence penalty~1.5); they were kept when the reasoning mode was
+switched off, so that the two configurations compared in a pilot differed in
+one setting only.
+
+\paragraph{Prompt.} The system message states the task (identify the one
+academic discipline whose knowledge is primarily required to determine the
+correct answer), forbids solving the question or identifying the answer,
+forbids classifying by superficial words or setting, states that exam and
+edition are contextual priors and not automatic labels, allows
+\texttt{UNCERTAIN} when no candidate fits, declares the question and the
+choices untrusted data, and asks for a JSON object with the four fields
+above. The user message gives the exam and the edition, the annotation rules
+$R_v$ as JSON, the numbered candidates $C_v(e)$ each with its definition, and
+the question and its choices as a JSON object. The adjudication prompt is the
+same message followed by the two proposals, each reduced to its pass number,
+subject and justification, and the instruction to assess them independently
+(``they may be wrong''), choosing either, another candidate or
+\texttt{UNCERTAIN}. Pass 2 never sees pass 1, and the adjudicator never sees
+the confidences. The prompt template has one version
+(\texttt{subject\_annotation\_v1}); the rules and the definitions are part of
+the taxonomy, so a new taxonomy version changes the prompt content, and the
+run manifest records the hash of both.
+
+\paragraph{Decoding and validation.} Inference runs offline in vLLM~0.25.0
+\citep{kwon2023efficient} on one GPU, with batches of 128 questions, at most 50 concurrent sequences,
+CUDA graphs enabled and prefix caching disabled. Each request is constrained
+by a JSON schema whose \texttt{subject} and \texttt{alternative\_subject}
+fields are enumerations over $C_v(e)\cup\{\texttt{UNCERTAIN}\}$, enforced by
+the XGrammar backend \citep{dong2024xgrammar}, with a budget of 8,192 output
+tokens. The parsed object is then validated locally: the subject must be a
+candidate or \texttt{UNCERTAIN}, the confidence a number in $[0,1]$, the
+justification between 1 and 400 characters, and duplicate keys, NaN values
+and reasoning tags are rejected. A request that fails validation is retried
+with a new seed, at most five times; the seed of every request is derived by
+hashing the base seed (42), the question identifier, the stage, the pass and
+the attempt, and is stored with the request. In the final run, 86,571
+requests succeeded and six were
+retried after the model returned an object that violated the schema
+(\texttt{invalid\_final\_schema}); all retries succeeded and every successful
+request ended at a stop token rather than at the token budget. Every input,
+candidate list, attempt, parsed result and token count is written to a SQLite
+checkpoint, and a run resumes only under the same source revision, model
+revision, taxonomy, prompt and code hashes.
+
+\paragraph{Aggregation.} The two passes agree on an admissible subject for
+92.08\% of the questions in the final run (accepted), and 3,299 questions
+(7.92\%) went to adjudication. The adjudicator sided with pass~1 in 1,574
+cases, with pass~2 in 1,640, chose a third subject in 77 and abstained in 8;
+the earlier full runs show the same pattern (1.1: 1,778, 1,543, 73 and 88;
+1.2: 1,561, 1,618, 70 and 23). The near symmetry between the two passes is
+expected, since they are exchangeable samples from the same model.
+
+% -----------------------------------------------------------------------------
+\subsection{Taxonomy evolution}
+\label{app:ka-taxonomy}
+
+\paragraph{Motivation.} The labels must support MMLU-style reporting by
+subject while matching what Brazilian exams assess: a school curriculum in
+the vestibular, military and olympiad exams, and the professions and degree
+programmes of the professional, civil-service and ENADE exams. No official
+classification of fields covers both, and the first version was written for
+the project. Every later version answers evidence from the previous run:
+questions on which the model abstained, labels with low reported confidence,
+and cases where the justification named a discipline that the candidate list
+did not contain. Table~\ref{tab:ka-versions} lists the versions and
+Figure~\ref{fig:ka-candidates} the candidates per exam.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lp{0.52\textwidth}p{0.30\textwidth}@{}}
+\toprule
+Version & Change with respect to the previous version & Evidence \\
+\midrule
+1.0 & 70 subjects in 11 macro areas, candidate lists for 15 exams, 8 annotation rules. & Written before any run. \\
+1.1 & Adds the ENEM (15 candidates) and IME (5) exams; adds Literature to BLUEX (9 to 10) and Public Policy and Public Administration to BNDES (29 to 30). Subjects, areas, definitions and rules unchanged. & Two exams added to the corpus. Pilots on 85 questions, then the first full run. \\
+1.2 & Adds 8 subjects (Occupational Therapy; Radiology and Medical Imaging; Aesthetics and Cosmetology; Theology and Religious Studies; Gastronomy and Culinary Arts; Public Safety and Physical Security; Computer Graphics; Human--Computer Interaction); merges 11 macro areas into 9 (Computer Science with Engineering, Architecture and Design; Natural and Earth Sciences with Agricultural and Veterinary Sciences; Social Sciences and Public Policy renamed), moving 24 subjects; widens the candidates of BACEN (18 to 26), BNDES (30 to 36), the residency exams (5 to 11), POSCOMP (9 to 12), BLUEX (10 to 11) and ENADE (70 to 78); refines 29 definitions; rewrites the uncertainty rule and adds 6 rules (compound labels, provided rules, language and metadata, missing context, source integrity, clinical/psychological/legal boundaries). & Audit of run 1.1: its 88 abstentions, 2,901 labels with confidence below 0.90 and targeted cases, 3,011 questions in all, of which 140 received an engineering assessment. Second full run. \\
+1.3 & Adds English Language to CNU (50 to 51), Professional Ethics to REVALIDA (5 to 6) and Professional Ethics and Social Security Law to the residency exams (11 to 13); refines 9 definitions; adds the label--justification consistency rule and edits two rules. & Analysis of run 1.2: its 23 abstentions and 48 targeted cases. Run on the 23 abstentions. \\
+1.4 & Refines the definition of English Language and edits three rules (language and metadata, source integrity, label--justification consistency). Candidates unchanged. & Run 1.3 on the 23 abstentions (14 labelled, 9 kept); 8 of the 9 removed by the dataset revision. Run on the 15 remaining questions, then the third full run. \\
+\bottomrule
+\end{tabular}
+\caption{Taxonomy versions. \emph{Evidence}: the material that motivated the version and the run made with it. The counts of the audits come from the taxonomy changelog; every other count is computed from the taxonomy files. The assessments that motivated 1.2 and 1.3 are engineering reviews of the model's output against the question text, not human gold labels.}
+\label{tab:ka-versions}
+\end{table*}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\KnowledgeAreaFigDir/taxonomy_versions.pdf}
+\caption{Candidate subjects per exam in each taxonomy version. Exams are grouped by academic level and sorted by size in the final dataset; ``--'' marks an exam without a candidate list in that version. ENADE admits every subject of the taxonomy; the vestibular, military and olympiad exams admit the school subjects; the professional exams admit the disciplines of their profession.}
+\label{fig:ka-candidates}
+\end{figure}
+
+\paragraph{Design.} Four properties hold in every version. The macro area is
+a function of the subject and is never offered to the model. Candidate lists
+only restrict: an exam-specific list is a subset of the global list, no rule
+may depend on the answer, and ENADE, whose booklets cover every degree
+programme, admits all subjects rather than a list inferred from the course
+named in the edition. Each subject has a definition that names the
+neighbouring subjects it excludes, so that the prompt carries the boundaries
+(Portuguese Language against Literature, Logic against Mathematics and
+Programming, Internal Medicine against General Surgery, the branches of Law
+against each other). And \texttt{UNCERTAIN} is a first-class label, so that a
+question whose discipline is missing from the list or whose statement is
+unreadable is not forced into a neighbour. Law is a macro area of its own with
+14 subjects, because the bar exam, the magistracy exam and the civil-service
+exams make it the largest field of the corpus; Logic is separate from
+Mathematics and from Programming because the informatics olympiad consists
+largely of puzzles solved from rules given in the statement.
+
+\paragraph{From 1.0 to 1.1.} Version 1.0 covered the 15 exams of the corpus
+at the time; ENEM and IME were added to the corpus afterwards and 1.1 gives
+them candidate lists drawn from the school subjects (15 for ENEM, including
+Communication Studies for its media items, and 5 for IME). Two candidates
+were added to existing lists (Literature to BLUEX, Public Policy and Public
+Administration to BNDES); subjects, areas, definitions and rules are
+identical, so 1.0 was never run and 1.1 is the baseline.
+
+\paragraph{From 1.1 to 1.2.} The audit of run 1.1 read its 88 abstentions
+and 2,901 labels with confidence below 0.90. It found three kinds of problem.
+Some disciplines were missing from the taxonomy altogether: radiology items in
+the residency and ENADE booklets, occupational therapy, aesthetics,
+gastronomy, theology and two computing fields; 1.2 adds the eight subjects.
+Some disciplines existed but were absent from the exam's list, so the model
+either abstained or chose a neighbour: criminal, civil and labour law in the
+BACEN exam, history, geography and sociology in BNDES, psychology, physics and
+law in the residency exams, information security in POSCOMP, sociology in
+BLUEX; 1.2 widens those lists. And some definitions and rules were
+ambiguous, which 1.2 addresses by refining 29 definitions and by adding six
+rules, among them that a question whose solution needs only arithmetic on
+rules fully supplied in the statement is Mathematics even in a legal or
+clinical narrative, that language comprehension is classified by the language
+assessed and not by the edition title, and that a missing passage or figure
+does not by itself prevent assignment. The merge of 11 macro areas into 9
+grouped areas that were too small to report on separately; no subject was
+renamed. The longer rules and definitions raised the longest prompt above the
+16,384-token context used by run 1.1, so run 1.2 used 20,480 tokens.
+
+\paragraph{From 1.2 to 1.4.} The analysis of run 1.2 read its 23
+abstentions and 48 targeted cases. Eight of the 23 were questions whose
+statement was unrecoverable (cross-referenced OBI items, a truncated POSCOMP
+stem, a BLUEX stem replaced by a formatting instruction), which are a
+source-quality problem and were later removed by the dataset revision. The
+remaining cases pointed to three candidate gaps (English comprehension in
+CNU, professional ethics in the medical exams, social-security law in the
+residency exams), to nine definitions and to a new rule requiring the chosen
+label to match the discipline named in the justification; the model had, in
+some cases, chosen a neighbour while asserting that the right subject was not
+in the list. Version 1.3 made those changes and was tested on the 23
+abstentions only: 14 received a subject and 9 stayed \texttt{UNCERTAIN}. Of
+the nine, eight were the unrecoverable statements; the ninth was an English
+item whose passage is missing. Version 1.4 refines the definition of English
+Language and three rules so that an item whose stem and choices are entirely
+in English is classified as English comprehension even without its passage,
+and was tested on the 15 questions left after the revision: 14 received a
+subject and one stayed \texttt{UNCERTAIN} (an IME English item whose
+identical 2010 copy received English Language in the same run, which shows
+sampling noise on an item without its supporting text; both copies were then
+removed as well).
+
+\paragraph{Decision.} Version 1.4 was frozen as the default taxonomy before
+the third full run. The run manifest records the SHA-256 of the taxonomy
+(\texttt{7c43673b}\ldots), of the exam aliases and of the code, and the
+figure script checks that the taxonomy stored with each run equals the
+packaged file of that version.
+
+% -----------------------------------------------------------------------------
+\subsection{Effect of each version on the labels}
+\label{app:ka-effect}
+
+\paragraph{Abstentions.} Table~\ref{tab:ka-uncertain} and
+Figure~\ref{fig:ka-uncertain} follow the abstentions. Of the 88 questions on
+which run 1.1 abstained, 78 received a subject in run 1.2 and 10 did not;
+13 questions that 1.1 had labelled became \texttt{UNCERTAIN} in 1.2, for a
+total of 23. Run 1.3 on those 23 labelled 14; the dataset revision removed 8
+of the 9 it kept; run 1.4 on the 15 remaining labelled 14. The third full
+run abstained on 8 questions, none of which any earlier run had abstained on:
+two adjudication errors in which the adjudicator asserted that a candidate
+was absent from the list, three questions whose discipline is a candidate gap
+of the vestibular and residency lists (a Maria da Penha law item in ENEM, a
+federative-organization item in COMVEST, a health-regulation item in a
+psychiatry residency exam), one boundary case and two questions whose
+supporting table or chart is missing. The post-annotation resolved them
+(\S\ref{app:ka-post}).
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Stage & Items & Labelled & Uncertain & Removed \\
+\midrule
+Full run, taxonomy 1.1 & 41,653 & 41,565 & 88 & -- \\
+Full run, taxonomy 1.2 & 41,653 & 41,630 & 23 & -- \\
+\quad of the 88 abstentions of 1.1 & 88 & 78 & 10 & -- \\
+Run on the abstentions, taxonomy 1.3 & 23 & 14 & 9 & -- \\
+Dataset revision & 9 & -- & 1 & 8 \\
+Run on the remaining, taxonomy 1.4 & 15 & 14 & 1 & -- \\
+Full run, taxonomy 1.4 & 41,636 & 41,628 & 8 & -- \\
+Post-annotation & 8 & 6 & 0 & 2 \\
+\bottomrule
+\end{tabular}
+\caption{Abstentions at each stage. \emph{Labelled}: questions that received a subject at that stage; \emph{Uncertain}: questions left \texttt{UNCERTAIN}; \emph{Removed}: questions removed from the dataset because their statement is unrecoverable. The 23 abstentions of run 1.2 are the 10 kept from run 1.1 plus 13 new ones; the 8 abstentions of run 1.4 are all new.}
+\label{tab:ka-uncertain}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\KnowledgeAreaFigDir/uncertain_flow.pdf}
+\caption{What became of the abstentions after the first full run. Each bar is the set of questions entering the stage; the first bar is the 88 abstentions of run 1.1 as labelled by run 1.2, and the fifth is the 8 new abstentions of run 1.4.}
+\label{fig:ka-uncertain}
+\end{figure}
+
+\paragraph{Label changes.} On the 41,636 questions common to the three full
+runs, 3,316 labels (7.96\%) changed from 1.1 to 1.2 and 1,855 (4.46\%) from
+1.2 to 1.4. The within-run disagreement between the two passes is 7.82\% in
+run 1.2 and 7.92\% in run 1.4 on the same questions, so the change from 1.2
+to 1.4 is below the level at which one version fails to reproduce its own
+labels, and the change from 1.1 to 1.2 is at that level overall but well
+above it in three exams whose candidate lists 1.2 widened
+(Figure~\ref{fig:ka-changes}, with the disagreement of run 1.4 as reference):
+21.56\% of the BACEN labels changed (disagreement 6.45\%), 15.69\% of the
+residency labels (11.05\%) and 9.91\% of POSCOMP (5.91\%); ENADE (12.84\%
+against 12.69\%) and BNDES (8.97\% against 8.33\%) are at their floor and CNU
+(11.20\% against 15.48\%) below it, as are AFA (0.09\%), IME (1.05\%), CFCES
+(2.12\%) and FUVEST (2.59\%), whose lists did not change. From 1.2 to 1.4 no
+exam exceeds its floor; the largest change share is again CNU (12.83\%), the
+one exam whose list changed between those versions (English Language). 907 questions of run 1.2
+carry a subject that was not a candidate of their exam in 1.1 (ENADE 406,
+BACEN 198, residency 141, POSCOMP 73, BNDES 65, BLUEX 24), and 549 carry one
+of the eight new subjects (Radiology and Medical Imaging 167, Gastronomy and
+Culinary Arts 99, Computer Graphics 65, Aesthetics and Cosmetology 58,
+Occupational Therapy 56, Theology and Religious Studies 54, Public Safety and
+Physical Security 25, Human--Computer Interaction 25). The macro area is more
+stable than the subject: 92.04\% of the questions keep their subject from
+1.1 to 1.2 and 96.38\% keep their macro area once the 1.1 subjects are
+projected onto the nine areas of 1.2; from 1.2 to 1.4 the figures are
+95.54\% and 97.76\%. Table~\ref{tab:ka-transitions} lists the most frequent
+transitions. Those from 1.1 to 1.2 follow the changes of the version: Logic to
+Mathematics and Finance, Physics and Statistics to Mathematics follow the
+provided-rules rule; Internal Medicine and Physics to Radiology, and Nutrition
+to Gastronomy, follow the new subjects. Those from 1.2 to 1.4, whose
+definitions differ in one subject, are the boundaries that the two passes
+also disagree on within a run (General Surgery and Internal Medicine,
+Communication Studies and Portuguese Language, Mathematics and Logic,
+Constitutional and Administrative Law), with one exception, Professional Ethics
+to Civil Law and Civil Procedure, two subjects whose definitions 1.3 refined.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\KnowledgeAreaFigDir/label_changes_by_version.pdf}
+\caption{Share of each exam's labels that changed between consecutive full runs, next to the share on which the two passes of run 1.4 disagree. A change share above the disagreement marks an exam whose labels the version moved beyond the sampling noise of the method; the exams clearly above it from 1.1 to 1.2 are among those whose candidate lists 1.2 widened.}
+\label{fig:ka-changes}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}llr@{}}
+\toprule
+From & To & $n$ \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Run 1.1 to run 1.2}} \\
+Logic & Mathematics & 87 \\
+Business Law & Civil Law and Civil Procedure & 53 \\
+Internal Medicine & General Surgery & 53 \\
+Internal Medicine & Radiology and Medical Imaging & 51 \\
+Physics & Radiology and Medical Imaging & 49 \\
+Family and Community Med.\ and Public Health & Internal Medicine & 49 \\
+Finance and Financial Systems & Mathematics & 47 \\
+Nutrition & Gastronomy and Culinary Arts & 46 \\
+Physics & Mathematics & 46 \\
+Probability and Statistics & Mathematics & 44 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Run 1.2 to run 1.4}} \\
+General Surgery & Internal Medicine & 49 \\
+Professional Ethics & Civil Law and Civil Procedure & 41 \\
+Communication Studies & Portuguese Language & 37 \\
+Mathematics & Logic & 34 \\
+Internal Medicine & Family and Community Med.\ and Public Health & 30 \\
+Literature & Portuguese Language & 26 \\
+Programming, Algorithms and Data Structures & Logic & 25 \\
+Constitutional Law & Administrative Law & 24 \\
+Tax and Financial Law & Constitutional Law & 23 \\
+Public Policy and Public Administration & Administrative Law & 22 \\
+\bottomrule
+\end{tabular}
+\caption{The ten most frequent subject transitions between consecutive full runs on the 41,636 common questions.}
+\label{tab:ka-transitions}
+\end{table}
+
+\paragraph{Consistency across runs.} The agreement between passes is
+91.64\%, 92.14\% and 92.08\% in the three full runs and the adjudication
+rate 8.36\%, 7.86\% and 7.92\%; the taxonomy versions did not change how
+often the model is consistent with itself, only where it abstains and which
+subject it chooses.
+
+\paragraph{Reading.} A version that reduces abstentions and moves labels in
+the exams whose lists it widened is doing what it was written to do; whether
+the new labels are right is a separate question that these numbers do not
+answer. The evidence files behind 1.2 and 1.3 are engineering reviews of the
+model's output against the question text and were not produced by domain
+experts; the 549 questions on new subjects and the largest transitions are the
+natural sample for a human validation, which has not been done.
+
+% -----------------------------------------------------------------------------
+\subsection{Final label distribution}
+\label{app:ka-distribution}
+
+\paragraph{By level and macro area.} The two levels have different
+profiles (Table~\ref{tab:ka-areas}). High-school questions are 38.05\%
+Mathematics, Statistics and Logic (two subjects, driven by ENEM and OBI),
+24.40\% Languages, 20.77\% Natural Sciences and 15.03\% Humanities, with 149
+programming items from OBI and 22 Physical Education items as the only
+labels outside those areas; three areas (Law, Economics, Social Sciences)
+have no high-school question, since no vestibular list contains their
+subjects. Undergraduate questions are 35.40\% Law, followed by Health
+Sciences (12.94\%), Economics, Business and Accounting (10.70\%) and
+Computing, Engineering, Architecture and Design (10.69\%). Over the whole
+dataset Law holds 27.07\% of the questions and the smallest area, Social and
+Applied Social Sciences, 5.94\% (2,472 questions), above the minimum of
+2,000 per area that the evaluation protocol requires.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Macro area & Subjects & Questions & Share \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{High school (9,789 questions)}} \\
+Mathematics, Statistics, and Logic & 2 & 3,725 & 38.05 \\
+Languages, Literature, Arts, and Communication & 6 & 2,389 & 24.40 \\
+Natural, Earth, Agricultural and Veterinary Sciences & 3 & 2,033 & 20.77 \\
+Humanities & 4 & 1,471 & 15.03 \\
+Computing, Engineering, Architecture, and Design & 1 & 149 & 1.52 \\
+Health Sciences & 1 & 22 & 0.22 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Undergraduate (31,845 questions)}} \\
+Law & 14 & 11,272 & 35.40 \\
+Health Sciences & 15 & 4,122 & 12.94 \\
+Economics, Business, and Accounting & 4 & 3,409 & 10.70 \\
+Computing, Engineering, Architecture, and Design & 12 & 3,405 & 10.69 \\
+Social and Applied Social Sciences & 9 & 2,472 & 7.76 \\
+Humanities & 7 & 2,321 & 7.29 \\
+Languages, Literature, Arts, and Communication & 7 & 1,975 & 6.20 \\
+Natural, Earth, Agricultural and Veterinary Sciences & 7 & 1,534 & 4.82 \\
+Mathematics, Statistics, and Logic & 3 & 1,335 & 4.19 \\
+\bottomrule
+\end{tabular}
+\caption{Macro areas of the final dataset per academic level. \emph{Subjects}: distinct subjects used at that level; \emph{Share}: percentage of the level's questions. Over the whole dataset: Law 27.07\%; Mathematics, Statistics and Logic 12.15\%; Languages 10.48\%; Health Sciences 9.95\%; Humanities 9.11\%; Natural Sciences 8.57\%; Computing 8.54\%; Economics 8.19\%; Social Sciences 5.94\%.}
+\label{tab:ka-areas}
+\end{table}
+
+\paragraph{By subject.} All 78 subjects are used (Figure~\ref{fig:ka-subjects},
+Table~\ref{tab:ka-subjects}). Mathematics is the largest with 2,803
+questions, followed by Civil Law and Civil Procedure (2,547), Logic (1,979),
+Criminal Law and Criminal Procedure (1,839), Portuguese Language (1,755),
+Constitutional Law (1,595), Labor Law and Labor Procedure (1,549) and
+Business Administration (1,328). The tail is long: 14 subjects have fewer
+than 100 questions and six fewer than 50, the smallest being Public Safety
+and Physical Security (13), Human--Computer Interaction (25), Linguistics
+(42), Social Security Law (42) and Human Rights (43). Only 17 subjects occur
+at high-school level, and three of them (Spanish Language, Communication
+Studies, Physical Education) with fewer than 30 questions there.
+
+\begin{figure*}[p]
+\centering
+\includegraphics[width=\textwidth]{\KnowledgeAreaFigDir/subjects_by_level.pdf}
+\caption{Questions per subject in the final dataset, stacked by academic level and grouped by macro area in taxonomy order. The scale is linear and shared by the two panels; the total is printed next to each bar.}
+\label{fig:ka-subjects}
+\end{figure*}
+
+\begin{table*}[p]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Subject & HS & UG & Total \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Languages, Literature, Arts, and Communication}} \\
+Portuguese Language & 1,054 & 701 & 1,755 \\
+English Language & 735 & 319 & 1,054 \\
+Spanish Language & 6 & 218 & 224 \\
+Literature & 479 & 100 & 579 \\
+Linguistics & -- & 42 & 42 \\
+Arts & 87 & 121 & 208 \\
+Communication Studies & 28 & 474 & 502 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Mathematics, Statistics, and Logic}} \\
+Mathematics & 1,874 & 929 & 2,803 \\
+Logic & 1,851 & 128 & 1,979 \\
+Probability and Statistics & -- & 278 & 278 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Computing, Engineering, Architecture, and Design}} \\
+Programming, Algorithms and Data Structures & 149 & 537 & 686 \\
+Computer Systems and Architecture & -- & 254 & 254 \\
+Theory of Computation & -- & 112 & 112 \\
+Software Engineering and Databases & -- & 617 & 617 \\
+Computer Networks and Distributed Systems & -- & 384 & 384 \\
+Artificial Intelligence, Data Science and Computer Vision & -- & 110 & 110 \\
+Information Security & -- & 137 & 137 \\
+Engineering & -- & 747 & 747 \\
+Architecture and Urban Planning & -- & 193 & 193 \\
+Design & -- & 225 & 225 \\
+Computer Graphics & -- & 64 & 64 \\
+Human--Computer Interaction & -- & 25 & 25 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Natural, Earth, Agricultural and Veterinary Sciences}} \\
+Physics & 880 & 223 & 1,103 \\
+Chemistry & 582 & 285 & 867 \\
+Biology & 571 & 184 & 755 \\
+Earth and Environmental Sciences & -- & 255 & 255 \\
+Agronomy & -- & 307 & 307 \\
+Veterinary Medicine & -- & 120 & 120 \\
+Animal Science & -- & 160 & 160 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Humanities}} \\
+History & 645 & 237 & 882 \\
+Geography & 519 & 222 & 741 \\
+Philosophy & 114 & 330 & 444 \\
+Sociology & 193 & 530 & 723 \\
+Psychology & -- & 317 & 317 \\
+Education and Pedagogy & -- & 632 & 632 \\
+Theology and Religious Studies & -- & 53 & 53 \\
+\bottomrule
+\end{tabular}
+\hfill
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Subject & HS & UG & Total \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Social and Applied Social Sciences}} \\
+Political Science & -- & 84 & 84 \\
+International Relations & -- & 147 & 147 \\
+Public Policy and Public Administration & -- & 370 & 370 \\
+Social Work & -- & 127 & 127 \\
+Information Science & -- & 509 & 509 \\
+Tourism & -- & 125 & 125 \\
+Professional Ethics & -- & 999 & 999 \\
+Gastronomy and Culinary Arts & -- & 98 & 98 \\
+Public Safety and Physical Security & -- & 13 & 13 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Economics, Business, and Accounting}} \\
+Economics & -- & 568 & 568 \\
+Business Administration & -- & 1,328 & 1,328 \\
+Finance and Financial Systems & -- & 404 & 404 \\
+Accounting & -- & 1,109 & 1,109 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Law}} \\
+Constitutional Law & -- & 1,595 & 1,595 \\
+Administrative Law & -- & 1,030 & 1,030 \\
+Civil Law and Civil Procedure & -- & 2,547 & 2,547 \\
+Criminal Law and Criminal Procedure & -- & 1,839 & 1,839 \\
+Labor Law and Labor Procedure & -- & 1,549 & 1,549 \\
+Business Law & -- & 935 & 935 \\
+Tax and Financial Law & -- & 875 & 875 \\
+International Law & -- & 289 & 289 \\
+Environmental Law & -- & 223 & 223 \\
+Consumer Law & -- & 147 & 147 \\
+Electoral Law & -- & 44 & 44 \\
+Social Security Law & -- & 42 & 42 \\
+Human Rights & -- & 43 & 43 \\
+Child and Adolescent Law & -- & 114 & 114 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Health Sciences}} \\
+Internal Medicine & -- & 1,126 & 1,126 \\
+General Surgery & -- & 545 & 545 \\
+Pediatrics & -- & 416 & 416 \\
+Obstetrics and Gynecology & -- & 366 & 366 \\
+Family and Community Medicine and Public Health & -- & 478 & 478 \\
+Biomedicine & -- & 64 & 64 \\
+Nursing & -- & 98 & 98 \\
+Pharmacy & -- & 102 & 102 \\
+Physical Therapy and Speech-Language Pathology & -- & 217 & 217 \\
+Nutrition & -- & 163 & 163 \\
+Dentistry & -- & 113 & 113 \\
+Physical Education & 22 & 155 & 177 \\
+Occupational Therapy & -- & 53 & 53 \\
+Radiology and Medical Imaging & -- & 168 & 168 \\
+Aesthetics and Cosmetology & -- & 58 & 58 \\
+\bottomrule
+\end{tabular}
+\caption{The 78 subjects of taxonomy 1.4 and the questions assigned to each in the final dataset. \emph{HS}: high school; \emph{UG}: undergraduate; ``--'': no question of that level received the subject (the subject is not a candidate of any exam of that level).}
+\label{tab:ka-subjects}
+\end{table*}
+
+\paragraph{By exam.} Table~\ref{tab:ka-exams} and Figure~\ref{fig:ka-exams}
+show the labels of each exam. The exams with a declared scope stay inside it:
+OAB is 91.3\% Law and 8.0\% Social and Applied Social Sciences (Professional
+Ethics, a candidate of the bar exam), ENAM 97.1\% Law, REVALIDA 98.2\% and the
+residency exams 94.3\% Health Sciences, CFCES 88.7\% Accounting, OBI 93.5\%
+Mathematics, Statistics and Logic (80.65\% Logic) and POSCOMP 69.7\%
+Computing and 30.3\% Mathematics, Statistics and Logic. The broad exams use
+their lists widely: ENADE uses 77 of its 78 candidates and all nine areas
+with Business Administration first at only 8.47\%; BNDES uses 35 of 36, CNU
+39 of 51 and BACEN all 26. The vestibular exams spread over the school
+subjects with no subject above 24\% in ENEM, FUVEST, BLUEX and COMVEST, while
+the military academies split between languages and exact sciences (AFA:
+Portuguese 26.45\%, Mathematics 25.71\%; IME: English 34.83\%, Mathematics
+26.15\%). Since the exam and the edition are shown to the model, these
+shares describe the labels, not an independent check of them.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrlrlr@{}}
+\toprule
+Exam & $n$ & Cand. & Areas & Subjects & Most frequent subject & \% & Second subject & \% \\
+\midrule
+\multicolumn{9}{@{}l}{\emph{High school (9,789)}} \\
+ENEM & 2,687 & 15 & 5 & 15 & Mathematics & 23.7 & Portuguese Language & 12.5 \\
+OBI & 2,295 & 3 & 2 & 3 & Logic & 80.7 & Mathematics & 12.9 \\
+FUVEST & 1,659 & 13 & 5 & 13 & History & 12.8 & Mathematics & 12.4 \\
+AFA & 1,085 & 4 & 3 & 4 & Portuguese Language & 26.5 & Mathematics & 25.7 \\
+IME & 956 & 5 & 3 & 5 & English Language & 34.8 & Mathematics & 26.2 \\
+BLUEX & 656 & 11 & 4 & 11 & Mathematics & 18.0 & Literature & 17.4 \\
+COMVEST & 451 & 11 & 4 & 11 & Mathematics & 19.7 & Geography & 14.0 \\
+\midrule
+\multicolumn{9}{@{}l}{\emph{Undergraduate (31,845)}} \\
+ENADE & 10,785 & 78 & 9 & 77 & Business Administration & 8.5 & Engineering & 6.6 \\
+OAB & 10,251 & 16 & 3 & 16 & Civil Law and Civil Procedure & 21.4 & Criminal Law and Criminal Procedure & 16.5 \\
+BNDES & 4,048 & 36 & 8 & 35 & Information Science & 10.5 & Portuguese Language & 8.2 \\
+Res.\ USP/Unicamp & 1,574 & 13 & 5 & 13 & Internal Medicine & 45.2 & General Surgery & 25.1 \\
+POSCOMP & 1,302 & 12 & 2 & 12 & Programming, Algorithms and Data Structures & 23.0 & Mathematics & 22.3 \\
+REVALIDA & 1,195 & 6 & 2 & 6 & Internal Medicine & 29.0 & Pediatrics & 21.6 \\
+BACEN & 1,178 & 26 & 7 & 26 & Portuguese Language & 15.1 & Finance and Financial Systems & 7.4 \\
+CFCES & 707 & 11 & 4 & 7 & Accounting & 88.7 & Business Law & 5.0 \\
+CNU & 491 & 51 & 9 & 39 & Public Policy and Public Administration & 15.3 & Administrative Law & 11.0 \\
+ENAM & 314 & 11 & 3 & 10 & Civil Law and Civil Procedure & 36.6 & Constitutional Law & 27.1 \\
+\bottomrule
+\end{tabular}
+\caption{Labels per exam in the final dataset, sorted by size within each level. \emph{Cand.}: candidate subjects of the exam in taxonomy 1.4; \emph{Areas} and \emph{Subjects}: distinct macro areas and subjects assigned to the exam's questions; \emph{\%}: share of the exam's questions with the most frequent and the second most frequent subject.}
+\label{tab:ka-exams}
+\end{table*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{\KnowledgeAreaFigDir/macro_area_by_exam.pdf}
+\caption{Share of each exam's questions assigned to every macro area (\%) in the final dataset. Exams are grouped by academic level and sorted by size; empty cells are macro areas without any question of that exam, and ``$<$1'' marks shares below one percent.}
+\label{fig:ka-exams}
+\end{figure*}
+
+% -----------------------------------------------------------------------------
+\subsection{Post-annotation}
+\label{app:ka-post}
+
+The eight abstentions of the final run were read by the authors and resolved
+in one of two ways, recorded in two versioned lists that a separate command
+applies to the run's export without touching the checkpoint. Six received a
+manual subject, always one of the exam's candidates: in two cases the
+adjudicator had rejected the subject of one pass claiming that it was not in
+the list when it was (Spanish Language in a BNDES Spanish-comprehension item,
+Professional Ethics in a bar-exam item on the statute of the profession), and
+the pass's subject was restored; in three cases the question's discipline is
+missing from the exam's list by design (no law subject in ENEM or COMVEST, no
+administrative law in the residency exams) and the closest candidate was
+chosen, with the alternative recorded; one is a boundary case between
+General Surgery and Pediatrics in a head-and-neck surgery exam. These rows
+carry the status \emph{manual}, a null confidence, a justification that
+starts with the words ``manual assignment'' and the two model passes for
+audit. Two questions were removed because their supporting chart or table is
+missing from the extracted text; they join the 17 questions removed by the
+dataset revision for the same family of defects (7 stems replaced by a
+formatting instruction, 6 self-referential OBI items, 2 truncated stems and 2
+items without their supporting text). The final dataset has 41,634 questions,
+38,337 accepted, 3,291 adjudicated and 6 manual, no \texttt{UNCERTAIN}, and
+was published as \texttt{bench-temp-2/mmlu-pt-knowledge-annotated} at
+revision \texttt{fb9d509a}\ldots. The two adjudication errors contradict the
+label--justification consistency rule of taxonomy 1.4 and are failures of the
+model on single items rather than gaps of the taxonomy, which is why they were
+corrected by hand instead of motivating a further version.
+
+% -----------------------------------------------------------------------------
+\subsection{Cost and reproducibility}
+\label{app:ka-cost}
+
+Table~\ref{tab:ka-cost} summarizes the final run. The 41,636 questions were
+annotated on one NVIDIA B200 in 13,119~s (3\,h\,39\,min) from the start of
+the job to the end of the export, of which 112~s were spent loading the
+115.37~GiB of FP8 weights and initializing the engine, and 12,892~s were
+spent inside generation batches (6,199~s for pass~1, 6,117~s for pass~2 and
+576~s for the 3,299 adjudications). The run processed 311.2 million prompt
+tokens and 6.2 million completion tokens: each of the two passes sends
+148.4 million prompt tokens, 3,564 per question on average (2,020 at
+high-school and 4,039 at undergraduate level, where the candidate lists are
+longer; the longest prompt, an ENADE item, has 10,367 tokens), and receives about 72 completion tokens, the JSON object. Prefix
+caching was disabled, so the prompt-token count is the full cost of
+re-reading the rules and definitions for every question and an upper bound
+for a re-run with caching. The earlier full runs cost 8,894~s and 162.4
+million prompt tokens (1.1) and 11,301~s and 253.5 million (1.2): the
+rules and definitions added in 1.2 raised the prompt tokens by 56\% and the
+session time by 27\%, with the same number of batches. Reproducibility rests
+on the run manifest, which records the source revision and its hash, the
+model identifier and resolved revision, the taxonomy and alias hashes, the
+prompt version and system message, the code hashes, the library versions and
+the engine settings, and on the checkpoint, which stores the seed of every
+request. Sampling at temperature~1 with per-request seeds reproduces the same
+labels only on the same hardware, kernels and batch composition; on another
+stack the labels should be expected to differ at the level of the within-run
+disagreement.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Hardware and engine & \\
+\midrule
+GPU & 1$\times$ NVIDIA B200, 191.5~GB \\
+Weights (FP8) & 115.37~GiB, loaded in 30.3~s \\
+Engine & vLLM 0.25.0, XGrammar, CUDA graphs on \\
+KV cache & 1,413,120 tokens \\
+Context limit / output budget & 20,480 / 8,192 tokens \\
+Batch size / concurrent sequences & 128 / 50 \\
+Prefix caching & off \\
+Job start to export & 13,119~s (3\,h\,39\,min) \\
+Engine ready after & 112~s \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Stage & Requests & Prompt tokens & Compl.\ tokens & Batch time \\
+\midrule
+Pass 1 & 41,636 & 148,407,132 & 2,981,987 & 6,199~s \\
+Pass 2 & 41,636 & 148,407,132 & 2,981,000 & 6,117~s \\
+Adjudication & 3,299 & 14,429,317 & 255,387 & 576~s \\
+Total & 86,571 & 311,243,581 & 6,218,374 & 12,892~s \\
+\midrule
+Run 1.1 (taxonomy 1.1) & 86,788 & 162,405,925 & 6,197,422 & 8,693~s \\
+Run 1.2 (taxonomy 1.2) & 86,578 & 253,486,513 & 6,239,772 & 11,032~s \\
+\bottomrule
+\end{tabular}
+\caption{Cost of the final run (top and middle) and totals of the two earlier full runs (bottom). \emph{Requests}: successful model requests; the six requests retried after a schema violation are excluded from the counts and included in the batch time. \emph{Batch time}: sum of the durations of the generation batches, deduplicated by batch; it excludes engine start-up and export.}
+\label{tab:ka-cost}
+\end{table}
+
+% -----------------------------------------------------------------------------
+\subsection{Limitations}
+\label{app:ka-limitations}
+
+\emph{No gold labels.} No question has a human-assigned subject, so nothing in
+this appendix measures accuracy: agreement between passes, stability between
+versions and the shares per exam measure the consistency of one model with
+itself, and the audits that motivated the versions are engineering reviews of
+the model's output, not expert annotation.
+\emph{One model, not ablated.} Model, prompt template, decoding and
+aggregation were fixed before the first run; the choice of model is motivated
+by prior work, openness, size and hardware fit (\S\ref{app:ka-method}), not
+by a comparison on this task, and six of the evaluated checkpoints belong to
+the annotator's family, so a family-level affinity between the labels and
+those models cannot be excluded.
+\emph{Sampling noise.} The two passes disagree on about 8\% of the questions,
+and the adjudicator is the same model; a change between versions on an exam is
+interpretable only where it exceeds that level, and the 1.2-to-1.4 changes
+are mostly within it.
+\emph{Small targeted runs.} Versions 1.3 and 1.4 were tested on 23 and 15
+questions before the third full run; their effect on the rest of the corpus
+is only visible through the full run, where it is confounded with sampling.
+\emph{Metadata in the prompt.} The exam and the edition are shown to the
+model as context, so the per-exam shares of \S\ref{app:ka-distribution} are
+not an independent check of the labels.
+\emph{Uncalibrated confidence.} The reported confidence is a number the model
+writes; 21 of the 23 abstentions of run 1.2 carried a confidence of 0.90 or
+more.
+\emph{One label per question.} Interdisciplinary questions receive one
+subject, with an alternative stored but unused, and the candidate lists of the
+vestibular and residency exams do not contain every discipline their
+questions touch, as three of the six manual assignments show.
+\emph{Constrained decoding.} The grammar guarantees an admissible label, not a
+correct one, and format restrictions can affect the quality of a model's
+reasoning \citep{tam2024letme}; the run constrains only the final object,
+with the reasoning mode off.
+\emph{Project-specific taxonomy.} The subjects were written for these 17
+exams and do not follow an official classification of fields; per-subject
+results are not directly comparable to other benchmarks, and 14 subjects have
+fewer than 100 questions.
+\emph{Changing source.} Run 1.4 annotated a revised corpus, so 17 questions of
+the earlier runs are absent from the comparison, and the final dataset drops
+two more.
