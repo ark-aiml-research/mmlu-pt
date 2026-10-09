@@ -1,0 +1,339 @@
+% =============================================================================
+% Appendix: dataset revision (removal of questions with unrecoverable defects).
+%
+% Usage: \input this file after \appendix in the paper.
+% Required packages: booktabs. Assumes UTF-8 input and T1 font encoding (both
+% provided by the ACL template). No figures, no bibliography.
+%
+% Every number comes from config/removed_questions.json, the revised outputs
+% output/04 - revised and output/06 - revised, the abstention subset
+% output/knowledge-annotation-work/subsets/full-run-2-uncertain-revised, the
+% exports and manifests of the annotation runs full-run-2,
+% uncertain-taxonomy-v1.3, uncertain-taxonomy-v1.4 and full-run-taxonomy-v1.4
+% (with its post-annotation/ directory) and the audit
+% taxonomy-v1.2-audit/reviewed_cases.json, and is printed by
+% ablations/revision/make_summary.py, which also checks the artifacts against
+% each other. The knowledge-area appendix is mentioned in prose only and is
+% never referenced with \ref, so this file compiles on its own.
+% =============================================================================
+
+\section{Dataset Revision: Removal of Questions with Unrecoverable Defects}
+\label{app:rev}
+
+Nineteen questions were removed from the filtered corpus of 41,653 questions
+(0.046\%) because the task they pose cannot be recovered from the dataset: the
+statement was replaced or truncated during extraction or pre-processing, the
+supporting text, chart or table that the statement refers to was lost, or the
+item is one of a block that can only be solved jointly. As evaluation items
+they could only be answered by chance. None of them was removed for being
+hard, for receiving an unexpected label or because the annotation passes
+disagreed. The defects were found as a by-product of the knowledge-area
+annotation, whose annotator may abstain, and completed by a string-pattern
+sweep. This appendix describes the defect families and the removal criterion
+(\S\ref{app:rev-criteria}), how the questions were found
+(\S\ref{app:rev-identification}), the edge cases that were read and kept
+(\S\ref{app:rev-validation}), the procedure that applied the removal with an
+audit trail (\S\ref{app:rev-procedure}), its effect on the published datasets
+(\S\ref{app:rev-effect}) and its limitations (\S\ref{app:rev-limitations}).
+
+\paragraph{Summary.} (1)~Five defect families, 19 questions from six exams:
+six self-referential OBI items, seven BLUEX items whose statement was
+replaced by a formatting instruction, two truncated POSCOMP items, two
+identical IME items without their reading passage and two items (COMVEST,
+ENEM) whose chart or table is missing. (2)~Ten were abstentions of the
+annotation run with taxonomy~1.2, seven were found by searching the corpus
+for the same defect patterns, and two were abstentions of the final run.
+(3)~Three groups of look-alike questions were read and kept: 78 of the 80
+questions whose statement starts with an ``INSTRUÇÕES'' header, 19 questions
+whose last choice carries the heading of the next reading passage, and two
+questions whose supporting text is missing but whose task is identifiable.
+(4)~Removal is applied by a content hash of exam, edition, item number,
+statement and choices, never by row index, into a new directory with a
+manifest, a removal log and a reload check; the original stages are never
+modified. (5)~The filtered corpus goes from 41,653 to 41,634 questions and
+the deduplicated corpus from 37,887 to 37,873; five of the 19 questions had
+already been removed by the deduplication. (6)~The three affected Hub
+datasets were republished at revisions \texttt{e0f638e0}\ldots\ (revised
+corpus), \texttt{54ba11ff}\ldots\ (deduplicated corpus) and
+\texttt{fb9d509a}\ldots\ (annotated corpus).
+
+% -----------------------------------------------------------------------------
+\subsection{Defect families and removal criterion}
+\label{app:rev-criteria}
+
+Table~\ref{tab:rev-removed} lists the 19 questions by family.
+
+\paragraph{Self-referential block.} The second phase of the 2012 Brazilian
+Informatics Olympiad opens with three items whose statement is only ``A
+resposta da questão $N$ é:'' (``The answer to question $N$ is:'') and whose
+choices are the letters A to E; item~1 refers to item~2, item~2 to item~3 and
+item~3 to item~1. The three form one logic puzzle that is solved jointly. As
+independent rows, which is what the dataset format preserves, each is
+undecidable. The block appears in the level-1 and the level-2 booklets, hence
+six rows.
+
+\paragraph{Statement replaced by a formatting instruction.} In seven BLUEX
+items (UNICAMP 2018, 2020, 2023 and twice 2024; USP 2020 and 2022) the
+statement is the Portuguese instruction ``Seu único objetivo é detectar as
+expressões matemáticas, convertê-las para o padrão LaTeX\ldots'' (``Your only
+goal is to detect the mathematical expressions, convert them to LaTeX\ldots'')
+followed by a worked example about a function $h(x)$. The instruction belongs
+to the pre-processing of the source and overwrote the original statement. The
+choices are those of the original literature, history or grammar question and
+are orphaned; the original statement is not recoverable from the dataset.
+
+\paragraph{Truncated statement.} Two POSCOMP 2024 items (19 and 20) kept only
+the header ``INSTRUÇÕES'' and the final question (``the percentage of time in
+which the computation takes less than 65 seconds is'', ``the approximate mean
+time the software takes to compute is''), without the data or the algorithm
+that define the computation time.
+
+\paragraph{Missing supporting text.} Item~36 of the IME entrance exams of
+2010 and 2011 is the English-comprehension question ``What task below could
+Lammert B. Otten be legally in charge of?'', with the choices ``suing a
+criminal'', ``prescribing drugs'', ``piloting a plane'', ``saying a mass'' and
+``filling in a cavity''. The reading passage that introduces the person is
+absent. The two rows are identical in statement and choices and carry
+different answer keys (A in 2010, D in 2011).
+
+\paragraph{Missing supporting data.} COMVEST 2017 item~63 refers to ``o
+gráfico abaixo'' (``the chart below'') and is cut before the relation or the
+values it asks about; ENEM 2018 item~136 is the single sentence ``Com base
+nessas informações, o banco que transferiu a maior quantia via TED é o banco''
+(``Based on this information, the bank that transferred the largest amount is
+bank'') with the choices 1 to 5 and no table.
+
+\paragraph{Criterion.} A question is removed on one of two grounds only: its
+statement or supporting material cannot be recovered from the dataset, so
+that the task is not answerable; or it depends on a block of items that the
+one-row-per-question format does not preserve. Questions whose supporting
+material is missing but whose task is still identifiable from the statement
+and the choices are kept, and treated as an annotation matter
+(\S\ref{app:rev-validation}). Difficulty, disagreement between the annotation
+passes and unexpected labels are not grounds for removal.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lp{6.6cm}rrp{4.2cm}@{}}
+\toprule
+Family & Exam, edition and item & Stage 04 & Stage 06 & Detection \\
+\midrule
+Self-referential block & OBI 2012, phase 2, levels 1 and 2, items 1, 2 and 3 & 6 & 3 & abstention, run 1.2 (6) \\
+Statement replaced by instruction & BLUEX: UNICAMP 2018 item 2; UNICAMP 2020 item 68; UNICAMP 2023 item 9; UNICAMP 2024 items 7 and 12; USP 2020 item 37; USP 2022 item 65 & 7 & 6 & abstention, run 1.2 (1); pattern sweep (6) \\
+Truncated statement & POSCOMP 2024 items 19 and 20 & 2 & 2 & abstention, run 1.2 (1); pattern sweep (1) \\
+Missing supporting text & IME 2010 and 2011, item 36 & 2 & 1 & abstention, run 1.2 (2); confirmed by run 1.4 on the abstention subset \\
+Missing supporting data & COMVEST 2017 item 63; ENEM 2018 item 136 & 2 & 2 & abstention, run 1.4 (2) \\
+\midrule
+Total & & 19 & 14 & \\
+\bottomrule
+\end{tabular}
+\caption{The removed questions. \emph{Stage 04}: rows removed from the filtered corpus (41,653 questions); \emph{Stage 06}: rows removed from the semantically deduplicated corpus (37,887 questions), where five of the listed questions were already absent because the exact deduplication had removed them as copies of another listed question (the level-2 copies of the three OBI items, UNICAMP 2024 item 12 and the 2010 copy of the IME item). \emph{Detection}: how each question entered the list, with the number of questions in parentheses; run 1.2 and run 1.4 are the full knowledge-area annotation runs with taxonomies 1.2 and 1.4.}
+\label{tab:rev-removed}
+\end{table*}
+
+% -----------------------------------------------------------------------------
+\subsection{Identification}
+\label{app:rev-identification}
+
+The questions were not found by a dedicated quality audit of the corpus but
+through the knowledge-area annotation, in which a language model assigns a
+subject to every question and may abstain with \texttt{UNCERTAIN}. A
+statement that does not pose a task tends to produce an abstention, so the
+abstentions of each full run were read, and the ones whose cause was the
+source rather than the taxonomy were set aside. Table~\ref{tab:rev-funnel}
+follows the list through the steps described next.
+
+\paragraph{Abstentions as a defect detector.} The engineering audit of the
+first full run (taxonomy~1.1) read 140 of its labels and abstentions and
+tagged 23 of them as source issues; 15 of the 19 questions removed here are
+among those 23, but at that point they were only marked for correction at the
+source. The second full run, with taxonomy~1.2, ended with 23 abstentions on
+the 41,653 questions. Running the experimental taxonomy~1.3 on those 23
+questions labelled 14 and left 9 abstentions. The 9 were read: 8 had no
+recoverable statement (the six OBI items, UNICAMP 2018 item~2 and POSCOMP 2024
+item~20) and the ninth, AFA 2019 item~45, is an English-comprehension item
+without its passage but with an identifiable task, which was kept.
+
+\paragraph{Pattern sweep.} The 8 questions were then used as patterns over
+the filtered and the deduplicated stages. The literal instruction string
+matches exactly 7 rows of the filtered corpus: UNICAMP 2018 item~2 and 6
+BLUEX items that run~1.2 had labelled from their orphaned choices, as
+Portuguese Language, Literature, History or, in one case, Mathematics, with
+confidences between 0.85 and 0.95; the string ``A resposta da questão''
+matches exactly the 6 OBI rows; and the ``INSTRUÇÕES'' header matches 80
+rows, among which only POSCOMP 2024 item~19 shares the truncation of item~20
+(\S\ref{app:rev-validation}). The sweep added 7 questions that the annotator
+had not flagged, and the list reached 15 questions on 7~October~2026. The
+abstention subset of run~1.2 was revised with that list (23 to 15 questions)
+and became the input of the experiment with taxonomy~1.4.
+
+\paragraph{Identical copies with different labels.} Run~1.4 on the 15
+questions labelled 14 and abstained on one, the 2011 copy of IME item~36,
+while giving English Language to its identical 2010 copy; in run~1.2 both had
+been abstentions and in run~1.3 both had received English Language. Two rows
+with the same statement and choices oscillating between a label and an
+abstention confirmed that the question depends on the missing passage, and
+both were removed, bringing the list to 17. The filtered corpus revised with
+those 17 questions (41,636 rows) was published as the base of the third full
+run.
+
+\paragraph{Abstentions of the final run.} The third full run, with
+taxonomy~1.4, ended with 8 abstentions, none of which had been an abstention
+of an earlier run. All 8 were read: 6 received a subject by hand, and 2 were
+removed on 8~October~2026 because the chart or table their statement refers to
+is missing (COMVEST 2017 item~63, ENEM 2018 item~136). The list reached its
+final size of 19, and the revised filtered and deduplicated corpora were
+regenerated from the original stages with the complete list.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Step & Examined & Unc. & Added & List \\
+\midrule
+Full run 1.2 & 41,653 & 23 & -- & 0 \\
+Run 1.3 on the abstentions & 23 & 9 & -- & 0 \\
+Reading of the 9 abstentions & 9 & 1 & 8 & 8 \\
+Pattern sweep, stages 04 and 06 & 41,653 & -- & 7 & 15 \\
+Run 1.4 on the abstentions & 15 & 1 & -- & 15 \\
+Reading of the IME copies & 2 & -- & 2 & 17 \\
+Full run 1.4 & 41,636 & 8 & -- & 17 \\
+Post-annotation & 8 & 0 & 2 & 19 \\
+\bottomrule
+\end{tabular}
+\caption{How the removal list was built. \emph{Examined}: questions annotated or read at the step; \emph{Unc.}: questions left \texttt{UNCERTAIN} by the step (for the reading steps, abstentions kept in the dataset); \emph{Added}: questions added to the list; \emph{List}: size of the list after the step. The list was created on 7~October~2026 with 15 questions and completed on 8~October~2026. The 6 abstentions of the post-annotation that were not removed received a subject by hand.}
+\label{tab:rev-funnel}
+\end{table}
+
+% -----------------------------------------------------------------------------
+\subsection{Manual validation of edge cases}
+\label{app:rev-validation}
+
+Before the removal was applied, the groups of questions that share a surface
+feature with a removed question were read one by one and kept, because they
+do not share the defect.
+
+\paragraph{Questions with an instruction header.} 80 rows start with
+``INSTRUÇÕES'' or ``Instruções:'' (65 from POSCOMP 2024, 13 from three BACEN
+editions, two of 2005 and 2006 and one undated, one from ENADE 2006 and one
+from ENADE 2007). In all but the two POSCOMP items removed, the full
+statement follows the header, including the shared supporting text of the
+BACEN and ENADE question blocks. POSCOMP 2024 item~66,
+whose statement is only ``Assinale a alternativa correta'' (``Mark the correct
+alternative''), was kept because its choices are self-contained assertions
+about the IP protocol.
+
+\paragraph{Next passage appended to the last choice.} In 19 rows of COMVEST
+2011 to 2015 (7, 5, 2 and 3 rows in 2011, 2012, 2014 and 2015) and of BLUEX
+USP 2020 and 2024 (one each), the last choice carries, after its real text,
+the heading of the next reading passage (``Texto para as questões\ldots''). The
+correct choice and the others are intact before the noise, so the item
+remains answerable and identifiable. These rows are recorded as a formatting
+clean-up to be made, not as removals.
+
+\paragraph{Missing support with an identifiable task.} AFA 2019 item~45 (an
+English fragment with English choices) and COMVEST 2015 item~38 (a technique
+used by Mendel, with its infographic missing) were kept: the competence being
+assessed is recognizable from the statement and the choices, and the question
+of which subject to assign is handled by the annotation taxonomy. The two IME
+items were initially in this group and moved to the removal list only after
+run~1.4 split their labels.
+
+% -----------------------------------------------------------------------------
+\subsection{Procedure}
+\label{app:rev-procedure}
+
+\paragraph{Identity.} Each listed question is identified by the SHA-256 of
+the canonical JSON of its exam, edition, item number, statement and choices,
+the same identifier the annotation uses. Removal is applied by identity, never
+by row index, so one list serves every pipeline stage and every subset, whose
+row orders differ. The versioned list records, for each question, the
+identifier, exam, edition and item number, a category, the reason and the
+evidence that brought it to the list, together with the creation and update
+dates.
+
+\paragraph{Tool.} The \texttt{revise} command of \texttt{mmlu\_pt.revision}
+reads a dataset saved to disk, refuses to write into an existing directory and
+never modifies its input. It writes the revised dataset, the same records as
+JSON Lines, a removal log with the input row index, identifier, exam,
+edition, item number, category and reason of every removed row, and a
+manifest with the SHA-256 of the input files, the output files and the list,
+the number of input, removed and output rows, and the listed identifiers that
+were absent from the input. If the exam, edition or item number of a row
+differ from the list entry with the same identifier, the run aborts. After
+writing, the tool reloads the output and verifies that the kept rows are
+identical to the input rows and in the same order before publishing the
+directory. The \texttt{publish} command re-hashes the output before pushing
+it to the Hub and records the repository and the resulting revision in the
+manifest. The last two removals were also applied to the export of run~1.4 by
+the post-annotation command of the annotation tool, under the same list and
+identity, so that the annotated dataset and the revised corpus contain the
+same identifiers in the same order.
+
+% -----------------------------------------------------------------------------
+\subsection{Effect on the datasets}
+\label{app:rev-effect}
+
+Table~\ref{tab:rev-datasets} gives the row counts. The filtered corpus
+(stage~04 of the pipeline, published as \texttt{bench-temp/mmlu-pt-filtered})
+loses all 19 questions and has 41,634 rows. The semantically deduplicated
+corpus (stage~06) loses 14: the other five listed questions were already
+absent because the exact deduplication, whose key is the normalized
+statement, had removed each of them as a copy of another listed question that
+the stage kept (the level-2 copies of the three OBI items, identical to the
+level-1 copies; UNICAMP 2024 item~12, whose statement is identical to that of
+UNICAMP 2018 item~2; and the 2010 copy of the IME item). By exam,
+the removal takes 7 questions from BLUEX, 6 from OBI, 2 from POSCOMP, 2 from
+IME and one each from COMVEST and ENEM. The intermediate revision with 17
+questions (41,636 rows) was the input of the third full annotation run and is
+superseded; it survives only as the source revision recorded in that run's
+manifest. The identifiers of the final annotated dataset coincide, in the
+same order, with those of the revised filtered corpus.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrll@{}}
+\toprule
+Dataset & Input & Removed & Absent & Output & Hub repository & Revision \\
+\midrule
+Filtered corpus, 17-question list & 41,653 & 17 & 0 & 41,636 & \texttt{bench-temp-2/mmlu-pt-revised} & \texttt{0e8b69a1}\ldots\ (superseded) \\
+Filtered corpus, 19-question list & 41,653 & 19 & 0 & 41,634 & \texttt{bench-temp-2/mmlu-pt-revised} & \texttt{e0f638e0}\ldots \\
+Deduplicated corpus & 37,887 & 14 & 5 & 37,873 & \texttt{bench-temp-2/mmlu-pt-deduplicated} & \texttt{54ba11ff}\ldots \\
+Abstentions of run 1.2, 15-question list & 23 & 8 & 7 & 15 & -- & -- \\
+Annotated export of run 1.4 & 41,636 & 2 & 0 & 41,634 & \texttt{bench-temp-2/mmlu-pt-knowledge-annotated} & \texttt{fb9d509a}\ldots \\
+\bottomrule
+\end{tabular}
+\caption{Datasets revised with the list, in the order in which they were produced. \emph{Absent}: listed questions not present in the input, so not removed from it; for the deduplicated corpus they had been removed by the deduplication, and for the abstention subset they were never abstentions. The abstention subset is a local working dataset and was not published. The three published revisions were pushed on 8~October~2026.}
+\label{tab:rev-datasets}
+\end{table*}
+
+% -----------------------------------------------------------------------------
+\subsection{Limitations}
+\label{app:rev-limitations}
+
+The detector is the abstention of one annotation model, complemented by
+string patterns derived from the abstentions it produced; only defects that
+make the model abstain or that share a pattern with one of them were found.
+The corpus was not audited question by question by a person, and the sweep is
+string-based and tied to the exams in which the patterns occurred, so
+truncated statements that lack a distinctive marker, such as the two POSCOMP
+items, are found only when the annotator abstains. The audit of the first
+full run tagged 23 questions as source issues and 8 of them remain in the
+dataset: six whose photograph, chart or text is missing but whose task was
+judged identifiable (ENADE 2004 item~25 of the occupational-therapy booklet,
+four BNDES items of 2008 and 2010, AFA 2019 item~45) and two that were not
+re-examined under the removal criterion, BLUEX UNICAMP 2023 item~3, whose
+statement field contains an explanatory text rather than a question, and ENEM
+2020 item~1, whose poster is missing. The 19 rows with the next passage
+appended to a choice, and other extraction artefacts of the same kind, are
+still in the dataset. ``Unrecoverable'' was judged against the dataset, not
+against the source PDFs, from which a statement could in principle be
+re-extracted. Finally, the identical IME copies were caught only because the
+annotation diverged between them; copies that received the same label would
+have escaped the detector.
