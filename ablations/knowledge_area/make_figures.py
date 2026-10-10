@@ -32,6 +32,7 @@ BENCHMARK_DIR = REPO_ROOT / "output" / "fewshot-work" / "main"
 DEDUPLICATED_DIR = REPO_ROOT / "output" / "06 - revised" / "huggingface"
 MANUAL_PATH = REPO_ROOT / "config" / "manual_annotations.json"
 REMOVALS_PATH = REPO_ROOT / "config" / "removed_questions.json"
+EXCLUDED_TEST_PATH = REPO_ROOT / "config" / "excluded_test_questions.json"
 
 # Taxonomy 1.0 was committed as mmlu_pt_taxonomy.json in b2aec7e and deleted in 66d2f73.
 TAXONOMY_V1_0_PATH = ABLATION_DIR / "assets" / "mmlu_pt_taxonomy_v1_0.json"
@@ -257,9 +258,10 @@ def load_benchmark() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     ids = {split: set(frame["id"]) for split, frame in frames.items()}
     if any(len(ids[split]) != len(frame) for split, frame in frames.items()):
         raise ValueError("Duplicate published IDs.")
-    if ids["test"] & ids["dev"] or ids["test"] != deduplicated_ids - ids["dev"]:
+    excluded = {entry["annotation_id"] for entry in read_json(EXCLUDED_TEST_PATH)["exclusions"]}
+    if ids["test"] & ids["dev"] or ids["test"] != deduplicated_ids - ids["dev"] - excluded:
         raise ValueError("Test selection or global dev separation is inconsistent.")
-    expected = {"test": {"high_school": 8705, "undergraduate": 29095},
+    expected = {"test": {"high_school": 8704, "undergraduate": 29094},
                 "dev": {"high_school": 30, "undergraduate": 45}}
     for split, frame in frames.items():
         if frame["academic_level"].value_counts().to_dict() != expected[split]:

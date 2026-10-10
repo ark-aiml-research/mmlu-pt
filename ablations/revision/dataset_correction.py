@@ -102,6 +102,8 @@ def main() -> None:
     parser.add_argument("--mmlu-backup", type=Path, required=True)
     parser.add_argument("--benchmark-backup", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, default=MMLU_ROOT / "output/dataset-correction")
+    parser.add_argument("--title", default="Impacto da correção da base deduplicada")
+    parser.add_argument("--summary", default="Os testes foram filtrados pela base deduplicada revisada e mantêm as anotações existentes.")
     args = parser.parse_args()
     disable_progress_bars()
     args.output_dir.mkdir(parents=True, exist_ok=False)
@@ -141,8 +143,7 @@ def main() -> None:
     metrics.sort_values(keys + ["model"]).to_csv(args.output_dir / "metrics.csv", index=False)
     pd.DataFrame(dataset_counts).to_csv(args.output_dir / "counts.csv", index=False)
     aggregate = metrics[(metrics.aggregation.isin(["micro", "macro"])) & (metrics.config == "_all")]
-    lines = ["# Impacto da correção da base deduplicada", "",
-             "Os testes foram filtrados pela base deduplicada revisada e mantêm as anotações existentes.",
+    lines = [f"# {args.title}", "", args.summary,
              "Resultados recalculados das predições registradas, sem novas inferências.", "",
              "| Dataset | Teste anterior | Teste corrigido | Removidas |", "| --- | ---: | ---: | ---: |"]
     for name, count in checks.items():

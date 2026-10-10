@@ -12,10 +12,11 @@ from pathlib import Path
 from . import audit, publish, rationale
 from .config import (DEFAULT_OUTPUT_DIR, PROMPT_VERSION, REASONING_EFFORTS, RunConfig, letter, level_repo,
                      read_jsonl, run_id, slug, timestamp, write_json)
-from .selection import build_strata, build_text_index, join_deduplicated, load_input, load_source, row_ids, validate_columns
+from .selection import (build_strata, build_text_index, exclude_test, join_deduplicated, load_input, load_source,
+                        row_ids, validate_columns)
 
 OPTIONAL_TYPES = {"source_revision": str, "source_path": str, "deduplicated_revision": str,
-                  "deduplicated_path": str, "dev_from": str, "rationale_limit": int}
+                  "deduplicated_path": str, "dev_from": str, "exclude_test": str, "rationale_limit": int}
 
 
 def environment_default(name: str, default):
@@ -142,7 +143,7 @@ def run(config: RunConfig, run_dir_argument: Path | None) -> int:
         return 2
     deduplicated, test_source = load_input(config.deduplicated_source, config.deduplicated_revision,
                                          config.split, config.deduplicated_path)
-    data = join_deduplicated(annotated, deduplicated)
+    data, source["excluded_test"] = exclude_test(join_deduplicated(annotated, deduplicated), config.exclude_test)
     source["test_source"] = test_source
     built = None
     if config.dev_from:

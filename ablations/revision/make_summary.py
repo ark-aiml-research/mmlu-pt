@@ -20,6 +20,7 @@ from mmlu_pt.annotation.knowledge_area.dataset import annotation_id
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 REMOVALS_PATH = REPO_ROOT / "config" / "removed_questions.json"
+EXCLUDED_TEST_PATH = REPO_ROOT / "config" / "excluded_test_questions.json"
 OUTPUT_DIR = REPO_ROOT / "output"
 STAGE_04 = OUTPUT_DIR / "04 - filtered-huggingface"
 STAGE_06 = OUTPUT_DIR / "06 - semantic-deduplicated" / "huggingface"
@@ -383,10 +384,11 @@ def published_split_table() -> pd.DataFrame:
         rows.append({"level": level, **counts, "repository": repository,
                      "revision": manifest["published"][repository]["revision"]})
     deduplicated = set(load_stage(REVISED_06 / "huggingface")["annotation_id"])
-    if identities["test"] & identities["dev"] or identities["test"] != deduplicated - identities["dev"]:
+    excluded = {entry["annotation_id"] for entry in read_json(EXCLUDED_TEST_PATH)["exclusions"]}
+    if identities["test"] & identities["dev"] or identities["test"] != deduplicated - identities["dev"] - excluded:
         raise ValueError("Published test selection or global dev separation is inconsistent.")
     table = pd.DataFrame(rows)
-    if table[["test", "dev"]].values.tolist() != [[8705, 30], [29095, 45]]:
+    if table[["test", "dev"]].values.tolist() != [[8704, 30], [29094, 45]]:
         raise ValueError("Unexpected published split counts.")
     return table
 

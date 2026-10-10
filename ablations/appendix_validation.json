@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-10-10T18:13:09.710937-03:00",
-  "editorial_source": "manuscript/NAACL_27___Portuguese_MMLU__Copy_ (1).zip",
-  "editorial_source_sha256": "4b103dbc105472b79c8a57e330bccb7b6c568c1dd8d845da0b10981fe703f3f7",
-  "backup": "backups/appendix-update-20261010-180410",
+  "generated_at": "2026-10-10T20:11:20.021301-03:00",
+  "editorial_source": "manuscript/NAACL_27___Portuguese_MMLU__Copy_ (2).zip",
+  "editorial_source_sha256": "e7c6a0f4515eb098188b204bd6879c8ca8c2ec1d4d7c0925f2d6fe7aac3a001a",
+  "backup": "backups/dataset-correction-2-20261010-192821",
   "population": {
-    "test": 37800,
-    "high_school_test": 8705,
-    "undergraduate_test": 29095,
+    "test": 37798,
+    "high_school_test": 8704,
+    "undergraduate_test": 29094,
     "dev": 75
   },
   "checks": {
@@ -36,7 +36,7 @@
   },
   "latex_compilation_note": "No LaTeX compiler was available; structural checks were static.",
   "files_sha256": {
-    "ablations/README_appendices.md": "9906f4a774df0f4f759696ae8b63ace0a4b9aa0e8e8039f631cafc9f710bce94",
+    "ablations/README_appendices.md": "0634e70d38cd3c812dedc257a725dd1c6b22f298bad80664e837a7d6025ffcfa",
     "ablations/deduplication/aggregates/evaluation_aggregations.csv": "afae111cb18ed466855e49ef16c393cb1d14d554a9be06c612b72e099121924f",
     "ablations/deduplication/aggregates/evaluation_decomposition.csv": "8debe547264f6d92a25775d6db81467898f8921fc5969f3a66fdf53821a34b61",
     "ablations/deduplication/aggregates/evaluation_exams.csv": "75d2df6dadc16efd0135f51d0bb320887fa17ebf1cba0f226c3ba1b53d60251e",
@@ -50,21 +50,22 @@
     "ablations/knowledge_area/aggregates/annotation_prompt_tokens_1.4.csv": "10692aa5da76253e07debc1eb3af2a53e0de94ebd3996c0825cb398d9bfe0cc3",
     "ablations/knowledge_area/aggregates/annotation_runs.csv": "8551006a9afef0a3dc095689540ab0c323115dbb7e0ad8a716eced113123bf18",
     "ablations/knowledge_area/aggregates/annotation_uncertain_chain.csv": "0248f42c8f67bef2d28cc80de3c709f8a7a737d8a91a166ebf278df4589e17cc",
-    "ablations/knowledge_area/aggregates/manifest.json": "f289625ca5e0948adbf4037c2e91347a195be7abe48b8c67cd25ea6b7f83ee3c",
-    "ablations/knowledge_area/aggregates/split_counts.csv": "1b5e6beb1bdc4cb0fe804b3372695dd75b7fd07a084d076dbae7b657e65f3429",
-    "ablations/knowledge_area/aggregates/test_exam_area_pct.csv": "c19d521e0191932048d3fae5684d1532f1ef08de0e168bf1e5ff0b66e172f4b5",
-    "ablations/knowledge_area/aggregates/test_exam_subject_pct.csv": "0f0df0d68b7ba21560e0eb9e553d575da17b50101d854efb20ab509a05815540",
-    "ablations/knowledge_area/aggregates/test_exams.csv": "467332a8a2de460d85dff5e7d3e93c88c2b2ab976be47c2f7c03ef6a7708cc05",
-    "ablations/knowledge_area/aggregates/test_level_area.csv": "fd434ec252d2978c678f11f7f376f3b809d6bd52548d1d1a3acc52a509678a8b",
-    "ablations/knowledge_area/aggregates/test_statuses.csv": "df53ef0e4b3441ebce58d124c4236fe8ead72b231bff7fc3b87e7c05f480b3eb",
-    "ablations/knowledge_area/aggregates/test_subjects.csv": "bb477bf1b3cb875c59971928e0d3f76b5eee013718f57d5e48cbc832dd65286d",
-    "ablations/knowledge_area/appendix_knowledge_area_short.tex": "1ad2a5c499c840949d75d58ea33d0dd9fe4764103d4a2f8de42cbaffe5593a7e",
-    "ablations/knowledge_area/figures/macro_area_by_exam.pdf": "2d200d86118acef1d5496589803c1a0a8422a0ab541c660ab1a9a858f9244c14",
-    "ablations/knowledge_area/figures/subjects_by_level.pdf": "2c145679057fde392af094c4c42e0befcba1c2e81a4acd0790e93a07703e1970",
-    "ablations/knowledge_area/make_figures.py": "cbf0dd43ff28dac3666644d9e810a74d8c5ca2499c25eb6e8500633e516fe15a",
-    "ablations/revision/aggregates/manifest.json": "60244524594c4c8f02d878edadd98601b4b8838525c296be8530954869117700",
-    "ablations/revision/aggregates/published_splits.csv": "6c02818014e9fdbdaca8bc70bd1a59ed974909c33d746d27f773929f37fbbd70",
-    "ablations/revision/appendix_dataset_revision_short.tex": "b1e9f4bb853fa68e63616f575c17d5c87da6c658337cab92b5d281c195d688e4",
-    "ablations/revision/make_summary.py": "1cd27bdc55a38aa6ba1d21cd82268430179346a84bedcc1f2394ba2301279c4e"
-  }
+    "ablations/knowledge_area/aggregates/manifest.json": "e6bd568f9fd034f3b6f2e4e9109472210e1a816cf563607ece6804240dfbe038",
+    "ablations/knowledge_area/aggregates/split_counts.csv": "8a415eebecfdb12d6c8bc6bf9021c666cef0b0ff1c8441019d5e825ec6facf95",
+    "ablations/knowledge_area/aggregates/test_exam_area_pct.csv": "cc322032b8096791d276d470edf328a7dd9fe1ad0c334eb72646c237e78ab4f9",
+    "ablations/knowledge_area/aggregates/test_exam_subject_pct.csv": "733a3a65bdeb9ce9daa47fec092323b9e690f6daf53c62d1b6a09101f053120e",
+    "ablations/knowledge_area/aggregates/test_exams.csv": "da88b8b24bbdc1c65a950926d3e1ac1eb694feb1f8d4fec7d0f3639104f9349a",
+    "ablations/knowledge_area/aggregates/test_level_area.csv": "94ab16fdf74259cb713e075146d025cd99e3c2e4517be892d74c0e580e15d85c",
+    "ablations/knowledge_area/aggregates/test_statuses.csv": "baea46ee574955c4522f8dd4e0fb7f1ef6183f3ac22620c02e11d7879ce3b6d8",
+    "ablations/knowledge_area/aggregates/test_subjects.csv": "153accb910e3e2fafcf9882e07420030316271aad3c4820f975037f26e22c70c",
+    "ablations/knowledge_area/appendix_knowledge_area_short.tex": "9bb0da964232650dfb1c2644e7996e88184923429d58199e81fa97f5ba04cbec",
+    "ablations/knowledge_area/figures/macro_area_by_exam.pdf": "2f937268591999768d73b6fe8a80a8ac5263dda5f28f4df23408f018d7154cd8",
+    "ablations/knowledge_area/figures/subjects_by_level.pdf": "12435b94610bf86624131251def0cecb3b58c540f534e0dba2f4808bc7542deb",
+    "ablations/knowledge_area/make_figures.py": "70c737904392c9f86bf0016d08fb3ebaf08f923e6d156b886ddd82c3965e3e85",
+    "ablations/revision/aggregates/manifest.json": "3f0ceeb4f43b0a084c5f8afa79e67d667635e873de18a5287e5f4696470ddcaf",
+    "ablations/revision/aggregates/published_splits.csv": "a67fce4033908043df69f383148ffba484d6e7089a847f0b1993d6d244898e8d",
+    "ablations/revision/appendix_dataset_revision_short.tex": "74c776c6deda02dfb7175a4a63dca6101093c9f1d83415e76dd54de5afe8325a",
+    "ablations/revision/make_summary.py": "9e566bfa05c49b84c0ed5997483fd435573d90ec40e4bf9383fef4f2f974c0bd"
+  },
+  "note": "Dataset correction 2: two test copies of dev demonstrations excluded (config/excluded_test_questions.json); appendix sources regenerated. Overleaf-ready copies in manuscript/overleaf-update/."
 }

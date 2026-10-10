@@ -1,12 +1,12 @@
 {
-  "test_rows": 37800,
+  "test_rows": 37798,
   "dev_rows": 75,
   "test_subjects": 78,
   "test_subjects_below_100": 15,
   "test_subjects_below_50": 7,
   "test_smallest_area": 2224,
   "test_statuses": {
-    "accepted": 34855,
+    "accepted": 34853,
     "adjudicated": 2939,
     "manual": 6
   },
@@ -61,8 +61,8 @@
     "local_path": "/raid/aluno_paulosantana/repositories/mmlu-pt/output/06 - revised/huggingface"
   },
   "published": {
-    "bench-temp-2/mmlu-pt-high-school": "10b711e8692a7f29084cca15f1923d97b3f9062b",
-    "bench-temp-2/mmlu-pt-undergraduate": "4e7123a1918f574e36bea38f2a9bcc4728100bd9"
+    "bench-temp-2/mmlu-pt-high-school": "3938710959f204ae54ed257fcfe4ffed7c459046",
+    "bench-temp-2/mmlu-pt-undergraduate": "026191bef1e9690c0dc118c81ef6ab427d285bf6"
   },
   "checks": {
     "unique_ids": true,
@@ -76,12 +76,12 @@
     "annotation_prompt_tokens_1.4.csv": "10692aa5da76253e07debc1eb3af2a53e0de94ebd3996c0825cb398d9bfe0cc3",
     "annotation_runs.csv": "8551006a9afef0a3dc095689540ab0c323115dbb7e0ad8a716eced113123bf18",
     "annotation_uncertain_chain.csv": "0248f42c8f67bef2d28cc80de3c709f8a7a737d8a91a166ebf278df4589e17cc",
-    "split_counts.csv": "1b5e6beb1bdc4cb0fe804b3372695dd75b7fd07a084d076dbae7b657e65f3429",
-    "test_exam_area_pct.csv": "c19d521e0191932048d3fae5684d1532f1ef08de0e168bf1e5ff0b66e172f4b5",
-    "test_exam_subject_pct.csv": "0f0df0d68b7ba21560e0eb9e553d575da17b50101d854efb20ab509a05815540",
-    "test_exams.csv": "467332a8a2de460d85dff5e7d3e93c88c2b2ab976be47c2f7c03ef6a7708cc05",
-    "test_level_area.csv": "fd434ec252d2978c678f11f7f376f3b809d6bd52548d1d1a3acc52a509678a8b",
-    "test_statuses.csv": "df53ef0e4b3441ebce58d124c4236fe8ead72b231bff7fc3b87e7c05f480b3eb",
-    "test_subjects.csv": "bb477bf1b3cb875c59971928e0d3f76b5eee013718f57d5e48cbc832dd65286d"
+    "split_counts.csv": "8a415eebecfdb12d6c8bc6bf9021c666cef0b0ff1c8441019d5e825ec6facf95",
+    "test_exam_area_pct.csv": "cc322032b8096791d276d470edf328a7dd9fe1ad0c334eb72646c237e78ab4f9",
+    "test_exam_subject_pct.csv": "733a3a65bdeb9ce9daa47fec092323b9e690f6daf53c62d1b6a09101f053120e",
+    "test_exams.csv": "da88b8b24bbdc1c65a950926d3e1ac1eb694feb1f8d4fec7d0f3639104f9349a",
+    "test_level_area.csv": "94ab16fdf74259cb713e075146d025cd99e3c2e4517be892d74c0e580e15d85c",
+    "test_statuses.csv": "baea46ee574955c4522f8dd4e0fb7f1ef6183f3ac22620c02e11d7879ce3b6d8",
+    "test_subjects.csv": "153accb910e3e2fafcf9882e07420030316271aad3c4820f975037f26e22c70c"
   }
 }

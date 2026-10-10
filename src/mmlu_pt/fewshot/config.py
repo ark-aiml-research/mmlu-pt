@@ -12,6 +12,7 @@ DEFAULT_DEDUPLICATED_SOURCE = "bench-temp-2/mmlu-pt-deduplicated"
 DEFAULT_HIGH_SCHOOL_REPO = "bench-temp-2/mmlu-pt-high-school"
 DEFAULT_UNDERGRADUATE_REPO = "bench-temp-2/mmlu-pt-undergraduate"
 DEFAULT_OUTPUT_DIR = Path("output/fewshot-work")
+DEFAULT_EXCLUDE_TEST = "config/excluded_test_questions.json"
 DEFAULT_MODEL = "gpt-5.6-sol"
 LEVELS = ("high_school", "undergraduate")
 LETTERS = "ABCDE"
@@ -34,6 +35,7 @@ class RunConfig:
     deduplicated_revision: str | None = None
     deduplicated_path: str | None = None
     dev_from: str | None = None
+    exclude_test: str | None = DEFAULT_EXCLUDE_TEST
     split: str = "train"
     high_school_repo: str = DEFAULT_HIGH_SCHOOL_REPO
     undergraduate_repo: str = DEFAULT_UNDERGRADUATE_REPO
@@ -85,6 +87,9 @@ def run_id(config: RunConfig, source: dict, prompt_digest: str) -> str:
                 "reasoning_effort": config.reasoning_effort, "prompt_hash": prompt_digest,
                 "shared_prefix_chars": config.shared_prefix_chars,
                 "test_source": source.get("test_source"), "dev_snapshot": source.get("dev_snapshot")}
+    # Only added when present, so runs without exclusions keep their original identity.
+    if source.get("excluded_test"):
+        identity["excluded_test"] = source["excluded_test"]
     return digest(identity)[:12]
 
 

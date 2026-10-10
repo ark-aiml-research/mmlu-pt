@@ -1,5 +1,6 @@
 """Source loading, stable row identities and deterministic per-stratum ranking."""
 
+import json
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -56,6 +57,19 @@ def join_deduplicated(annotated: Dataset, deduplicated: Dataset) -> Dataset:
     if originals.keys() - seen:
         raise ValueError(f"Missing annotations for {len(originals.keys() - seen)} deduplicated IDs")
     return annotated.select(indices)
+
+
+def exclude_test(data: Dataset, path: str | None) -> tuple[Dataset, dict | None]:
+    """Drop the listed questions from the test population; every listed ID must be present."""
+    if not path:
+        return data, None
+    listed = {entry["annotation_id"] for entry in json.loads(Path(path).read_text(encoding="utf-8"))["exclusions"]}
+    ids = row_ids(data)
+    missing = listed - set(ids)
+    if missing:
+        raise ValueError(f"Excluded IDs absent from the test population: {sorted(missing)}")
+    kept = [index for index, identifier in enumerate(ids) if identifier not in listed]
+    return data.select(kept), {"path": path, "ids": sorted(listed), "sha256": digest(sorted(listed))}
 
 
 def validate_columns(data: Dataset) -> list[str]:

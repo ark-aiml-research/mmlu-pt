@@ -268,8 +268,11 @@ uv run --group annotation python -m mmlu_pt.fewshot.cli verify --run-dir output/
 Rerunning the same `--run-dir` reuses `rationale.jsonl`, so a run interrupted
 before publishing resumes without new API calls; `--no-push` builds locally.
 Use `--dev-from output/fewshot-work/main/datasets` with a new run directory to
-reuse the current demonstrations without rationale API calls. The corrected
-test has 8,705 high-school and 29,095 undergraduate questions (37,800 total).
+reuse the current demonstrations without rationale API calls. Questions listed in
+[config/excluded_test_questions.json](config/excluded_test_questions.json) (`--exclude-test`,
+default) are dropped from the test population: two retained copies of dev
+demonstrations that deduplication removed. The corrected test has 8,704
+high-school and 29,094 undergraduate questions (37,798 total).
 
 The run directory holds `manifest.json`, `selection.json`, `audit.json`,
 `audit.md`, `rationale.jsonl`, `datasets/<level>/<config>` and the dataset cards.
@@ -288,9 +291,13 @@ The default output is `output/hard-direct-v2`, with Hugging Face and JSONL
 datasets, an input-hash manifest, per-question audit, scores and confidence
 intervals for all evaluated models in each protocol and their paired mean,
 composition statistics and panel sensitivity. The expected test contains
-4,584 high-school and 10,685 undergraduate items. Both protocols participate in
+4,584 high-school and 10,684 undergraduate items. Both protocols participate in
 selection, so the selected models' scores remain conditioned on construction.
-No new inference or Hub publication is performed. See
+The builder reuses recorded predictions and writes local artifacts. The published
+snapshots are [high school](https://huggingface.co/datasets/bench-temp-2/mmlu-pt-high-school-hard)
+and [undergraduate](https://huggingface.co/datasets/bench-temp-2/mmlu-pt-undergraduate-hard).
+Exact Hub revisions and full round-trip checks are recorded in
+`output/hard-direct-v2/publication.json`. See
 [the methodology and CLI guide](docs/hard_direct_methodology.md) for details.
 [Alternative filtering tables](ablations/hard/README.md) preserve the recorded
 mean-based comparisons for a future ablation study.

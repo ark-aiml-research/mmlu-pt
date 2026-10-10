@@ -1,8 +1,8 @@
 # Paper appendices
 
 The four short appendices follow the editorial base in the manuscript ZIP.
-Benchmark distributions describe the 37,800 test questions (8,705 high-school
-and 29,095 undergraduate); the 75 dev examples are reported separately.
+Benchmark distributions describe the 37,798 test questions (8,704 high-school
+and 29,094 undergraduate); the 75 dev examples are reported separately.
 Annotation-run statistics describe the corpus processed by each run. The
 19-model deduplication comparison evaluates the pipeline-stage corpora before
 item revision and construction of the published splits.

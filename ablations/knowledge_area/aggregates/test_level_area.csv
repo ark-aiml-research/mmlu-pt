@@ -1,19 +1,19 @@
 level,macro_area,subjects,questions,share
-high_school,"Languages, Literature, Arts, and Communication",6,2320,26.651349798966113
-high_school,"Mathematics, Statistics, and Logic",2,2811,32.291786329695576
-high_school,"Computing, Engineering, Architecture, and Design",1,80,0.9190120620333142
-high_school,"Natural, Earth, Agricultural and Veterinary Sciences",3,2013,23.12464101091327
-high_school,Humanities,4,1464,16.81792073520965
+high_school,"Languages, Literature, Arts, and Communication",6,2320,26.654411764705884
+high_school,"Mathematics, Statistics, and Logic",2,2811,32.29549632352941
+high_school,"Computing, Engineering, Architecture, and Design",1,79,0.9076286764705882
+high_school,"Natural, Earth, Agricultural and Veterinary Sciences",3,2013,23.12729779411765
+high_school,Humanities,4,1464,16.81985294117647
 high_school,Social and Applied Social Sciences,0,0,0.0
 high_school,"Economics, Business, and Accounting",0,0,0.0
 high_school,Law,0,0,0.0
-high_school,Health Sciences,1,17,0.19529006318207925
-undergraduate,"Languages, Literature, Arts, and Communication",7,1691,5.811995188176662
-undergraduate,"Mathematics, Statistics, and Logic",3,1182,4.062553703385461
-undergraduate,"Computing, Engineering, Architecture, and Design",12,3286,11.294036776078364
-undergraduate,"Natural, Earth, Agricultural and Veterinary Sciences",7,1368,4.701838803918199
-undergraduate,Humanities,7,1534,5.2723835710603195
-undergraduate,Social and Applied Social Sciences,9,2224,7.643925073036605
-undergraduate,"Economics, Business, and Accounting",4,3340,11.47963567623303
-undergraduate,Law,14,10475,36.002749613335624
-undergraduate,Health Sciences,15,3995,13.730881594775735
+high_school,Health Sciences,1,17,0.1953125
+undergraduate,"Languages, Literature, Arts, and Communication",7,1691,5.812194954286107
+undergraduate,"Mathematics, Statistics, and Logic",3,1181,4.059256204028322
+undergraduate,"Computing, Engineering, Architecture, and Design",12,3286,11.294424967347219
+undergraduate,"Natural, Earth, Agricultural and Veterinary Sciences",7,1368,4.702000412456177
+undergraduate,Humanities,7,1534,5.272564789991064
+undergraduate,Social and Applied Social Sciences,9,2224,7.644187805045714
+undergraduate,"Economics, Business, and Accounting",4,3340,11.48003024678628
+undergraduate,Law,14,10475,36.003987076373136
+undergraduate,Health Sciences,15,3995,13.731353543685984

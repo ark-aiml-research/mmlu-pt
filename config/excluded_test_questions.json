@@ -1,0 +1,28 @@
+{
+  "description": "Questões excluídas do split test por serem cópias de demonstrações dev. A identidade é o SHA-256 de exam, exam_edition, num, question e choices (annotation_id). A deduplicação semântica removeu a cópia usada em dev e manteve esta; as demonstrações foram sorteadas antes da deduplicação e a checagem de texto compartilhado só compara questões do mesmo caderno. Ver docs/dataset_correction.md.",
+  "created_at": "2026-10-10",
+  "exclusions": [
+    {
+      "annotation_id": "4736768b99f383394e836abe4ba02771d0e61befb1c67a71a7b2252dee98c774",
+      "exam": "OBI",
+      "exam_edition": "Olimpíada Brasileira de Informática 2021 Fase 1 nível 1",
+      "num": "9",
+      "config": "high_school/computing_engineering_architecture_and_design",
+      "dev_annotation_id": "632a9241e9222abcf1a7ea520c5f9d6b7a32089d516372fb86c209e66ac484d6",
+      "dev_item": "Olimpíada Brasileira de Informática 2021 Fase 1 nível 2, item 3",
+      "cosine": 0.9971,
+      "reason": "Mesmas alternativas e gabarito da demonstração dev da mesma configuração; no 5-shot a resposta aparece no prompt."
+    },
+    {
+      "annotation_id": "71dae7d7e20f2bc4c67d4187c6a29361e72b8ecf38ed0792d89b4056cbd4363d",
+      "exam": "ENADE",
+      "exam_edition": "ENADE 2017 - ciencias_biologicas_licenciatura",
+      "num": "3",
+      "config": "undergraduate/mathematics_statistics_and_logic",
+      "dev_annotation_id": "9405b9b77c0c48aa7b505ea5a5b7b02e06464283f1a12666fb395e46cb50c03c",
+      "dev_item": "ENADE 2017 - engenharia_civil, item 3",
+      "cosine": 0.9931,
+      "reason": "Mesmas alternativas e gabarito da demonstração dev da mesma configuração; no 5-shot a resposta aparece no prompt."
+    }
+  ]
+}

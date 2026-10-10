@@ -6,10 +6,10 @@ macro_area,subject,high_school,undergraduate,total
 "Languages, Literature, Arts, and Communication",Linguistics,0,37,37
 "Languages, Literature, Arts, and Communication",Arts,87,119,206
 "Languages, Literature, Arts, and Communication",Communication Studies,27,361,388
-"Mathematics, Statistics, and Logic",Mathematics,1749,812,2561
+"Mathematics, Statistics, and Logic",Mathematics,1749,811,2560
 "Mathematics, Statistics, and Logic",Logic,1062,110,1172
 "Mathematics, Statistics, and Logic",Probability and Statistics,0,260,260
-"Computing, Engineering, Architecture, and Design","Programming, Algorithms and Data Structures",80,522,602
+"Computing, Engineering, Architecture, and Design","Programming, Algorithms and Data Structures",79,522,601
 "Computing, Engineering, Architecture, and Design",Computer Systems and Architecture,0,250,250
 "Computing, Engineering, Architecture, and Design",Theory of Computation,0,110,110
 "Computing, Engineering, Architecture, and Design",Software Engineering and Databases,0,610,610
