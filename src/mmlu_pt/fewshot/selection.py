@@ -1,8 +1,9 @@
 """Source loading, stable row identities and deterministic per-stratum ranking."""
 
 from collections import Counter, defaultdict
+from pathlib import Path
 
-from datasets import Dataset, load_dataset
+from datasets import Dataset, load_dataset, load_from_disk
 from huggingface_hub import HfApi
 
 from mmlu_pt.annotation.knowledge_area.dataset import IDENTITY_FIELDS, annotation_id
@@ -11,11 +12,50 @@ from .config import ID_COLUMN, LEVELS, RATIONALE_COLUMN, REQUIRED_COLUMNS, RunCo
 
 
 def load_source(config: RunConfig) -> tuple[Dataset, dict]:
-    revision = HfApi().dataset_info(config.source, revision=config.source_revision).sha
-    data = load_dataset(config.source, revision=revision, split=config.split)
-    source = {"identifier": config.source, "revision": revision, "split": config.split,
+    return load_input(config.source, config.source_revision, config.split, config.source_path)
+
+
+def load_input(identifier: str, revision: str | None, split: str, path: str | None = None) -> tuple[Dataset, dict]:
+    if path:
+        data = load_from_disk(path)
+        if not isinstance(data, Dataset):
+            data = data[split]
+    else:
+        revision = HfApi().dataset_info(identifier, revision=revision).sha
+        data = load_dataset(identifier, revision=revision, split=split)
+    source = {"identifier": identifier, "revision": revision, "split": split,
               "rows": len(data), "fingerprint": data._fingerprint, "features": data.features.to_dict()}
+    if path:
+        source["local_path"] = str(Path(path).resolve())
     return data, source
+
+
+def join_deduplicated(annotated: Dataset, deduplicated: Dataset) -> Dataset:
+    """Keep annotated records selected by deduplication, checking every original field."""
+    fields = deduplicated.column_names
+    missing = set(fields) - set(annotated.column_names)
+    if missing:
+        raise ValueError(f"Missing original columns in annotations: {sorted(missing)}")
+    originals = {}
+    for row in deduplicated:
+        identifier = annotation_id(row)
+        if identifier in originals:
+            raise ValueError(f"Duplicate deduplicated ID: {identifier}")
+        originals[identifier] = row
+    indices, seen = [], set()
+    for index, row in enumerate(annotated.select_columns(fields)):
+        identifier = annotation_id(row)
+        if identifier in seen:
+            raise ValueError(f"Duplicate annotated ID: {identifier}")
+        seen.add(identifier)
+        if identifier not in originals:
+            continue
+        if row != originals[identifier]:
+            raise ValueError(f"Annotations differ from original question: {identifier}")
+        indices.append(index)
+    if originals.keys() - seen:
+        raise ValueError(f"Missing annotations for {len(originals.keys() - seen)} deduplicated IDs")
+    return annotated.select(indices)
 
 
 def validate_columns(data: Dataset) -> list[str]:

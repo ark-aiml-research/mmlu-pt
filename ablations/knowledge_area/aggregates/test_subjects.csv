@@ -1,0 +1,79 @@
+macro_area,subject,high_school,undergraduate,total
+"Languages, Literature, Arts, and Communication",Portuguese Language,1042,581,1623
+"Languages, Literature, Arts, and Communication",English Language,683,300,983
+"Languages, Literature, Arts, and Communication",Spanish Language,6,200,206
+"Languages, Literature, Arts, and Communication",Literature,475,93,568
+"Languages, Literature, Arts, and Communication",Linguistics,0,37,37
+"Languages, Literature, Arts, and Communication",Arts,87,119,206
+"Languages, Literature, Arts, and Communication",Communication Studies,27,361,388
+"Mathematics, Statistics, and Logic",Mathematics,1749,812,2561
+"Mathematics, Statistics, and Logic",Logic,1062,110,1172
+"Mathematics, Statistics, and Logic",Probability and Statistics,0,260,260
+"Computing, Engineering, Architecture, and Design","Programming, Algorithms and Data Structures",80,522,602
+"Computing, Engineering, Architecture, and Design",Computer Systems and Architecture,0,250,250
+"Computing, Engineering, Architecture, and Design",Theory of Computation,0,110,110
+"Computing, Engineering, Architecture, and Design",Software Engineering and Databases,0,610,610
+"Computing, Engineering, Architecture, and Design",Computer Networks and Distributed Systems,0,379,379
+"Computing, Engineering, Architecture, and Design","Artificial Intelligence, Data Science and Computer Vision",0,91,91
+"Computing, Engineering, Architecture, and Design",Information Security,0,135,135
+"Computing, Engineering, Architecture, and Design",Engineering,0,692,692
+"Computing, Engineering, Architecture, and Design",Architecture and Urban Planning,0,192,192
+"Computing, Engineering, Architecture, and Design",Design,0,218,218
+"Computing, Engineering, Architecture, and Design",Computer Graphics,0,64,64
+"Computing, Engineering, Architecture, and Design",Human-Computer Interaction,0,23,23
+"Natural, Earth, Agricultural and Veterinary Sciences",Physics,879,184,1063
+"Natural, Earth, Agricultural and Veterinary Sciences",Chemistry,566,250,816
+"Natural, Earth, Agricultural and Veterinary Sciences",Biology,568,159,727
+"Natural, Earth, Agricultural and Veterinary Sciences",Earth and Environmental Sciences,0,234,234
+"Natural, Earth, Agricultural and Veterinary Sciences",Agronomy,0,262,262
+"Natural, Earth, Agricultural and Veterinary Sciences",Veterinary Medicine,0,119,119
+"Natural, Earth, Agricultural and Veterinary Sciences",Animal Science,0,160,160
+Humanities,History,641,195,836
+Humanities,Geography,516,152,668
+Humanities,Philosophy,114,265,379
+Humanities,Sociology,193,204,397
+Humanities,Psychology,0,270,270
+Humanities,Education and Pedagogy,0,395,395
+Humanities,Theology and Religious Studies,0,53,53
+Social and Applied Social Sciences,Political Science,0,43,43
+Social and Applied Social Sciences,International Relations,0,146,146
+Social and Applied Social Sciences,Public Policy and Public Administration,0,260,260
+Social and Applied Social Sciences,Social Work,0,127,127
+Social and Applied Social Sciences,Information Science,0,500,500
+Social and Applied Social Sciences,Tourism,0,124,124
+Social and Applied Social Sciences,Professional Ethics,0,914,914
+Social and Applied Social Sciences,Gastronomy and Culinary Arts,0,97,97
+Social and Applied Social Sciences,Public Safety and Physical Security,0,13,13
+"Economics, Business, and Accounting",Economics,0,539,539
+"Economics, Business, and Accounting",Business Administration,0,1305,1305
+"Economics, Business, and Accounting",Finance and Financial Systems,0,399,399
+"Economics, Business, and Accounting",Accounting,0,1097,1097
+Law,Constitutional Law,0,1439,1439
+Law,Administrative Law,0,949,949
+Law,Civil Law and Civil Procedure,0,2317,2317
+Law,Criminal Law and Criminal Procedure,0,1749,1749
+Law,Labor Law and Labor Procedure,0,1440,1440
+Law,Business Law,0,898,898
+Law,Tax and Financial Law,0,798,798
+Law,International Law,0,283,283
+Law,Environmental Law,0,222,222
+Law,Consumer Law,0,147,147
+Law,Electoral Law,0,41,41
+Law,Social Security Law,0,42,42
+Law,Human Rights,0,37,37
+Law,Child and Adolescent Law,0,113,113
+Health Sciences,Internal Medicine,0,1088,1088
+Health Sciences,General Surgery,0,503,503
+Health Sciences,Pediatrics,0,415,415
+Health Sciences,Obstetrics and Gynecology,0,365,365
+Health Sciences,Family and Community Medicine and Public Health,0,469,469
+Health Sciences,Biomedicine,0,64,64
+Health Sciences,Nursing,0,98,98
+Health Sciences,Pharmacy,0,102,102
+Health Sciences,Physical Therapy and Speech-Language Pathology,0,217,217
+Health Sciences,Nutrition,0,137,137
+Health Sciences,Dentistry,0,113,113
+Health Sciences,Physical Education,17,146,163
+Health Sciences,Occupational Therapy,0,53,53
+Health Sciences,Radiology and Medical Imaging,0,167,167
+Health Sciences,Aesthetics and Cosmetology,0,58,58

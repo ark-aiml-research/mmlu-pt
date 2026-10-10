@@ -1,0 +1,4 @@
+version,run_id,source,source_revision,rows,accepted,adjudicated,uncertain,agreement_pct,adjudicated_pct,adj_pass_1,adj_pass_2,adj_third,adj_uncertain,max_model_len,ready_seconds,session_seconds
+1.1,a777aaac987d0966,bench-temp/mmlu-pt-filtered,bef2dcfb,41653,38171,3394,88,91.64045807024705,8.35954192975296,1778,1543,73,88,16384,101.333045,8894.260492
+1.2,4e053d1ce260f6ae,bench-temp/mmlu-pt-filtered,bef2dcfb,41653,38381,3249,23,92.14462343648717,7.8553765635128325,1561,1618,70,23,20480,159.000353,11300.679448
+1.4,1640098255bb0bed,bench-temp-2/mmlu-pt-revised,0e8b69a1,41636,38337,3291,8,92.07656835430878,7.923431645691228,1574,1640,77,8,20480,111.626272,13119.022292

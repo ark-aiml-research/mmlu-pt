@@ -1,5 +1,6 @@
 """Generate the figures and verification summary for the knowledge-area annotation appendix."""
 
+import argparse
 import hashlib
 import json
 import re
@@ -10,11 +11,13 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from datasets import load_from_disk
 from matplotlib import ticker
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.figure import Figure
 
 from mmlu_pt.annotation.knowledge_area.config import DEFAULT_ALIASES, PACKAGE_DIR, UNCERTAIN
+from mmlu_pt.annotation.knowledge_area.dataset import annotation_id
 from mmlu_pt.annotation.knowledge_area.taxonomy import Taxonomy, load_taxonomy
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -25,6 +28,8 @@ WORK_DIR = REPO_ROOT / "output" / "knowledge-annotation-work"
 FULL_RUNS = {"1.1": WORK_DIR / "full-run", "1.2": WORK_DIR / "full-run-2", "1.4": WORK_DIR / "full-run-taxonomy-v1.4"}
 SUBSET_RUNS = {"1.3": WORK_DIR / "uncertain-taxonomy-v1.3", "1.4": WORK_DIR / "uncertain-taxonomy-v1.4"}
 POST_DIR = FULL_RUNS["1.4"] / "post-annotation"
+BENCHMARK_DIR = REPO_ROOT / "output" / "fewshot-work" / "main"
+DEDUPLICATED_DIR = REPO_ROOT / "output" / "06 - revised" / "huggingface"
 MANUAL_PATH = REPO_ROOT / "config" / "manual_annotations.json"
 REMOVALS_PATH = REPO_ROOT / "config" / "removed_questions.json"
 
@@ -217,6 +222,88 @@ def load_final() -> tuple[pd.DataFrame, dict]:
     if frame["annotation_id"].isin(removed_ids).any():
         raise ValueError("A removed question is still in the final dataset.")
     return frame, manifest
+
+
+def load_benchmark() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
+    """Load the published splits and verify selection and annotation provenance."""
+    annotated = load_from_disk(str(POST_DIR / "huggingface"))
+    originals = {row["annotation_id"]: row for row in annotated}
+    deduplicated = load_from_disk(str(DEDUPLICATED_DIR))
+    deduplicated_ids = {annotation_id(row) for row in deduplicated}
+    if len(deduplicated_ids) != len(deduplicated):
+        raise ValueError("Duplicate deduplicated IDs.")
+    for row in deduplicated:
+        source = originals[annotation_id(row)]
+        if any(source[key] != value for key, value in row.items()):
+            raise ValueError("Deduplicated question differs from its annotated source.")
+    rows = {"test": [], "dev": []}
+    for level in LEVELS:
+        for path in sorted((BENCHMARK_DIR / "datasets" / level).iterdir()):
+            if not path.is_dir():
+                continue
+            dataset = load_from_disk(str(path))
+            for split in rows:
+                for row in dataset[split]:
+                    identifier = row["annotation_id"]
+                    if row["id"] != identifier or annotation_id(row) != identifier:
+                        raise ValueError("Published ID differs from its content hash.")
+                    if row["academic_level"] != level:
+                        raise ValueError("Published row is in the wrong level.")
+                    source = originals[identifier]
+                    if any(row[key] != value for key, value in source.items()):
+                        raise ValueError("Published row differs from its annotation source.")
+                    rows[split].append(row)
+    frames = {split: pd.DataFrame(records) for split, records in rows.items()}
+    ids = {split: set(frame["id"]) for split, frame in frames.items()}
+    if any(len(ids[split]) != len(frame) for split, frame in frames.items()):
+        raise ValueError("Duplicate published IDs.")
+    if ids["test"] & ids["dev"] or ids["test"] != deduplicated_ids - ids["dev"]:
+        raise ValueError("Test selection or global dev separation is inconsistent.")
+    expected = {"test": {"high_school": 8705, "undergraduate": 29095},
+                "dev": {"high_school": 30, "undergraduate": 45}}
+    for split, frame in frames.items():
+        if frame["academic_level"].value_counts().to_dict() != expected[split]:
+            raise ValueError(f"Unexpected {split} counts.")
+    return frames["test"], frames["dev"], read_json(BENCHMARK_DIR / "manifest.json")
+
+
+def export_aggregates(output_dir: Path, test: pd.DataFrame, dev: pd.DataFrame,
+                      taxonomy: Taxonomy, manifest: dict, runs: dict, exports: dict,
+                      attempts: dict, joined: pd.DataFrame, chain: pd.DataFrame) -> None:
+    """Export the populations used by the appendix separately."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    tables = {
+        "test_level_area": level_area_table(test, taxonomy),
+        "test_subjects": subject_table(test, taxonomy),
+        "test_exams": exam_table(test, taxonomy),
+        "test_exam_area_pct": 100 * pd.crosstab(test["exam"], test["macro_area"], normalize="index"),
+        "test_exam_subject_pct": 100 * pd.crosstab(test["exam"], test["subject"], normalize="index"),
+        "test_statuses": test.groupby(["academic_level", "annotation_status"]).size().rename("questions"),
+        "split_counts": pd.concat([frame["academic_level"].value_counts().rename(split)
+                                   for split, frame in (("test", test), ("dev", dev))], axis=1),
+        "annotation_runs": run_outcomes(runs, exports),
+        "annotation_label_changes": change_shares_by_exam(joined),
+        "annotation_uncertain_chain": chain,
+        "annotation_cost_1.4": stage_cost(attempts["1.4"]),
+        "annotation_prompt_tokens_1.4": prompt_token_stats(attempts["1.4"], exports["1.4"]),
+    }
+    for name, table in tables.items():
+        table.to_csv(output_dir / f"{name}.csv", index=not isinstance(table.index, pd.RangeIndex))
+    subjects = tables["test_subjects"]
+    summary = {"test_rows": len(test), "dev_rows": len(dev),
+               "test_subjects": int((subjects["total"] > 0).sum()),
+               "test_subjects_below_100": int((subjects["total"] < 100).sum()),
+               "test_subjects_below_50": int((subjects["total"] < 50).sum()),
+               "test_smallest_area": int(test["macro_area"].value_counts().min()),
+               "test_statuses": test["annotation_status"].value_counts().to_dict(),
+               "annotation_source": {key: manifest["source"][key] for key in ("identifier", "revision", "rows")},
+               "selection_source": manifest["source"]["test_source"],
+               "published": {repo: value["revision"] for repo, value in manifest["published"].items()},
+               "checks": {"unique_ids": True, "global_dev_separation": True,
+                          "exact_deduplicated_test_selection": True, "annotation_content_equal": True},
+               "files_sha256": {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+                                for path in sorted(output_dir.glob("*.csv"))}}
+    (output_dir / "manifest.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n")
 
 
 def parse_engine_log(run_dir: Path) -> dict:
@@ -800,6 +887,12 @@ def save_figure(figure: Figure, name: str) -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-dir", type=Path, default=ABLATION_DIR,
+                        help="Directory for figures/ and aggregates/.")
+    args = parser.parse_args()
+    global FIGURE_DIR
+    FIGURE_DIR = args.output_dir / "figures"
     inputs = [*FULL_RUNS.values(), *SUBSET_RUNS.values(), POST_DIR, TAXONOMY_V1_0_PATH, MANUAL_PATH, REMOVALS_PATH]
     missing = [path for path in inputs if not path.exists()]
     if missing:
@@ -813,7 +906,8 @@ def main() -> int:
                    for version, path in SUBSET_RUNS.items()}
     subsets = {version: load_export(path, subset_runs[version]) for version, path in SUBSET_RUNS.items()}
     attempts = {version: load_attempts(path) for version, path in FULL_RUNS.items()}
-    final, final_manifest = load_final()
+    annotated, final_manifest = load_final()
+    final, dev, benchmark_manifest = load_benchmark()
     joined = joined_labels(exports)
     chain = uncertain_chain(exports, subsets, final_manifest)
     taxonomy = taxonomies["1.4"]
@@ -822,17 +916,21 @@ def main() -> int:
     print_runs_section(runs, exports, joined, taxonomies)
     print_uncertain_section(chain)
     print_distribution_section(final, taxonomy)
+    print("Dev counts:", dev["academic_level"].value_counts().to_dict())
     print_post_annotation_section(final_manifest)
     print_cost_section(runs, attempts, exports)
 
     plt.rcParams.update(STYLE)
-    FIGURE_DIR.mkdir(exist_ok=True)
+    FIGURE_DIR.mkdir(parents=True, exist_ok=True)
+    annotation_exams = exam_table(annotated, taxonomy)
     exams = exam_table(final, taxonomy)
-    save_figure(plot_candidates_by_version(candidate_matrix(taxonomies), exams, taxonomy), "taxonomy_versions.pdf")
-    save_figure(plot_label_changes(change_shares_by_exam(joined), exams), "label_changes_by_version.pdf")
+    save_figure(plot_candidates_by_version(candidate_matrix(taxonomies), annotation_exams, taxonomy), "taxonomy_versions.pdf")
+    save_figure(plot_label_changes(change_shares_by_exam(joined), annotation_exams), "label_changes_by_version.pdf")
     save_figure(plot_uncertain_chain(chain), "uncertain_flow.pdf")
     save_figure(plot_macro_area_by_exam(final, exams, taxonomy), "macro_area_by_exam.pdf")
     save_figure(plot_subjects_by_level(subject_table(final, taxonomy), taxonomy), "subjects_by_level.pdf")
+    export_aggregates(args.output_dir / "aggregates", final, dev, taxonomy, benchmark_manifest,
+                      runs, exports, attempts, joined, chain)
     print(f"\nFigures written to {FIGURE_DIR}")
     return 0
 

@@ -2,10 +2,51 @@
 
 from pathlib import Path
 
-from datasets import Dataset, DatasetDict, Value, get_dataset_config_names, load_dataset
-from huggingface_hub import DatasetCard
+from datasets import Dataset, DatasetDict, Value, get_dataset_config_names, load_dataset, load_from_disk
+from huggingface_hub import DatasetCard, HfApi
 
-from .config import ID_COLUMN, OUTPUT_COLUMNS, RATIONALE_COLUMN, RunConfig, letter
+from mmlu_pt.annotation.knowledge_area.dataset import annotation_id
+
+from .config import ID_COLUMN, LEVELS, OUTPUT_COLUMNS, RATIONALE_COLUMN, REQUIRED_COLUMNS, RunConfig, digest, letter, slug
+
+
+def reuse_configs(annotated: Dataset, data: Dataset, snapshot: Path, shots: int) -> tuple[dict, dict]:
+    """Retain the original demonstrations and filter test records by stable identity."""
+    annotations = {annotation_id(row): row for row in annotated.select_columns(list(REQUIRED_COLUMNS))}
+    selected_ids = {annotation_id(row) for row in data}
+    built = {level: {} for level in LEVELS}
+    dev_records = []
+    for path in sorted(snapshot.glob("*/*/dataset_dict.json")):
+        level, area = path.parent.parent.name, path.parent.name
+        if level not in built:
+            raise ValueError(f"Unknown snapshot academic level: {level}")
+        original = load_from_disk(str(path.parent))
+        if not isinstance(original, DatasetDict) or set(original) != {"test", "dev"}:
+            raise ValueError(f"Expected test/dev DatasetDict: {path.parent}")
+        if len(original["dev"]) != shots or original["test"].features != original["dev"].features:
+            raise ValueError(f"Invalid snapshot dev/schema: {path.parent}")
+        if not set(OUTPUT_COLUMNS).issubset(original["test"].column_names):
+            raise ValueError(f"Snapshot is missing public columns: {path.parent}")
+        for split in original:
+            for row in original[split]:
+                identifier = row[ID_COLUMN]
+                fields = {field: row[field] for field in REQUIRED_COLUMNS}
+                if (annotation_id(row) != identifier or annotations.get(identifier) != fields
+                        or row["academic_level"] != level or slug(row["macro_area"]) != area):
+                    raise ValueError(f"Snapshot content differs from annotations: {identifier}")
+        dev_records.extend(list(original["dev"]))
+        for row in original["dev"]:
+            rationale = row[RATIONALE_COLUMN]
+            if not isinstance(rationale, str) or not rationale.endswith("\nResposta: " + letter(row["answer"])):
+                raise ValueError(f"Invalid dev rationale: {row[ID_COLUMN]}")
+        indices = [i for i, identifier in enumerate(original["test"][ID_COLUMN]) if identifier in selected_ids]
+        test = original["test"].select(indices)
+        if any(value is not None for value in test[RATIONALE_COLUMN]):
+            raise ValueError(f"Test rationale is not null: {path.parent}")
+        built[level][area] = DatasetDict({"test": test, "dev": original["dev"]})
+    if any(not configs for configs in built.values()):
+        raise ValueError("Dev snapshot must contain both academic levels")
+    return built, {"sha256_records": digest(dev_records), "rows": len(dev_records)}
 
 
 def build_config(data: Dataset, ids: list[str], stratum_indices: list[int], dev_entries: list[dict],
@@ -20,15 +61,22 @@ def build_config(data: Dataset, ids: list[str], stratum_indices: list[int], dev_
 
 
 def with_columns(subset: Dataset, ids: list[str], rationales: list[str | None]) -> Dataset:
+    source_columns = subset.column_names
     subset = subset.add_column(ID_COLUMN, ids, feature=Value("string"))
     subset = subset.add_column(RATIONALE_COLUMN, rationales, feature=Value("string"))
-    return subset.select_columns(list(OUTPUT_COLUMNS))
+    return subset.select_columns([ID_COLUMN, *source_columns, RATIONALE_COLUMN])
 
 
 def save_configs(run_dir: Path, built: dict[str, dict[str, DatasetDict]]) -> None:
     for level, configs in built.items():
         for name, dataset_dict in configs.items():
-            dataset_dict.save_to_disk(str(run_dir / "datasets" / level / name))
+            path = run_dir / "datasets" / level / name
+            dataset_dict.save_to_disk(str(path))
+            exported = load_from_disk(str(path))
+            for split in dataset_dict:
+                if (dataset_dict[split].features != exported[split].features
+                        or list(dataset_dict[split]) != list(exported[split])):
+                    raise ValueError(f"Export differs from source: {level}/{name}/{split}")
 
 
 def summarize(built: dict[str, dict[str, DatasetDict]]) -> dict[str, dict[str, dict[str, int]]]:
@@ -38,6 +86,7 @@ def summarize(built: dict[str, dict[str, DatasetDict]]) -> dict[str, dict[str, d
 
 def card_body(level: str, repo: str, summary: dict[str, dict[str, int]], manifest: dict) -> str:
     source = manifest["source"]
+    test_source = source["test_source"]
     rows = [f"| `{name}` | {counts['test']} | {counts['dev']} |" for name, counts in summary.items()]
     first = next(iter(summary))
     return f"""# {repo}
@@ -53,7 +102,8 @@ Few-shot rows were removed from every `test` split. `{RATIONALE_COLUMN}` is null
 
 ## Provenance
 
-- source: `{source['identifier']}` at revision `{source['revision']}` (split `{source['split']}`, {source['rows']} rows)
+- test selection: `{test_source['identifier']}` at revision `{test_source['revision']}` (split `{test_source['split']}`, {test_source['rows']} rows)
+- annotations: `{source['identifier']}` at revision `{source['revision']}`
 - few-shot selection: seed {manifest['config']['seed']}, ranked by a hash of the stable row `id`
 - rationales: `{manifest['config']['model']}` (reasoning effort `{manifest['config']['reasoning_effort']}`),
   prompt `{manifest['prompt_version']}` hash `{manifest['prompt_hash'][:16]}`, gold answer provided to the generator
@@ -69,7 +119,7 @@ dev = load_dataset("{repo}", "{first}", split="dev")
 
 
 def push_level(repo: str, configs: dict[str, DatasetDict], body: str, config: RunConfig, run: str) -> dict[str, str]:
-    if repo.strip().rstrip("/") == config.source.strip().rstrip("/"):
+    if repo.strip().rstrip("/") in {config.source.strip().rstrip("/"), config.deduplicated_source.strip().rstrip("/")}:
         raise ValueError("Refusing to overwrite the source dataset")
     if config.dry_run:
         raise ValueError("Dry runs cannot be pushed to the Hub")
@@ -81,17 +131,20 @@ def push_level(repo: str, configs: dict[str, DatasetDict], body: str, config: Ru
     card = DatasetCard.load(repo)
     card.text = body
     card.push_to_hub(repo, commit_message=f"dataset card (run {run})")
+    commits["revision"] = HfApi().dataset_info(repo).sha
     return commits
 
 
-def verify_published(repo: str, expected: dict[str, dict[str, int]], shots: int) -> dict:
+def verify_published(repo: str, expected: dict[str, dict[str, int]], shots: int,
+                     local_dir: Path | None = None, revision: str | None = None) -> dict:
     """Reload every config from the Hub and compare with the counts recorded in the manifest."""
     problems, dev_ids, test_ids = [], set(), set()
-    names = sorted(get_dataset_config_names(repo))
+    revision = revision or HfApi().dataset_info(repo).sha
+    names = sorted(get_dataset_config_names(repo, revision=revision))
     if names != sorted(expected):
         problems.append(f"configs on the Hub {names} differ from manifest {sorted(expected)}")
     for name in names:
-        dataset_dict = load_dataset(repo, name)
+        dataset_dict = load_dataset(repo, name, revision=revision)
         if set(dataset_dict) != {"test", "dev"}:
             problems.append(f"{name}: splits {sorted(dataset_dict)}")
             continue
@@ -101,6 +154,15 @@ def verify_published(repo: str, expected: dict[str, dict[str, int]], shots: int)
             problems.append(f"{name}: test={len(test)} dev={len(dev)}, expected {counts}")
         if test.features != dev.features:
             problems.append(f"{name}: test and dev features differ")
+        if local_dir:
+            local = load_from_disk(str(local_dir / name))
+            for split in ("test", "dev"):
+                if local[split].features != dataset_dict[split].features or list(local[split]) != list(dataset_dict[split]):
+                    problems.append(f"{name}/{split}: published content differs from local snapshot")
+        for split, subset, seen in (("dev", dev, dev_ids), ("test", test, test_ids)):
+            identifiers = subset[ID_COLUMN]
+            if len(set(identifiers)) != len(identifiers) or seen.intersection(identifiers):
+                problems.append(f"{name}: duplicate {split} IDs")
         for row in dev:
             if not row[RATIONALE_COLUMN] or not row[RATIONALE_COLUMN].endswith("\nResposta: " + letter(row["answer"])):
                 problems.append(f"{name}: dev row {row[ID_COLUMN][:12]} rationale does not end with the gold letter")

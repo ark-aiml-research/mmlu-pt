@@ -1,0 +1,18 @@
+level,exam,n,candidates,macro_areas,subjects,top,top_share,second,second_share
+high_school,ENEM,2669,15,5,15,Mathematics,23.791682278006743,Portuguese Language,12.588984638441364
+high_school,FUVEST,1654,13,5,13,History,12.817412333736396,Mathematics,12.4546553808948
+high_school,OBI,1318,3,2,3,Logic,80.57663125948406,Mathematics,13.353566009104703
+high_school,AFA,1082,4,3,4,Portuguese Language,26.524953789279113,Mathematics,25.600739371534196
+high_school,IME,878,5,3,5,English Language,32.23234624145786,Mathematics,28.35990888382688
+high_school,BLUEX,654,11,4,11,Mathematics,17.889908256880734,Literature,17.2782874617737
+high_school,COMVEST,450,11,4,11,Mathematics,19.77777777777778,Geography,14.0
+undergraduate,OAB,9501,16,3,16,Civil Law and Civil Procedure,20.73465950952531,Criminal Law and Criminal Procedure,16.882433428060203
+undergraduate,ENADE,9215,78,9,77,Business Administration,9.712425393380357,Engineering,7.1405317417254475
+undergraduate,BNDES,4003,36,8,35,Information Science,10.567074693979515,Portuguese Language,8.24381713714714
+undergraduate,RESIDENCIA_USP_UNICAMP,1488,13,5,13,Internal Medicine,45.22849462365591,General Surgery,23.723118279569892
+undergraduate,POSCOMP,1294,12,2,12,"Programming, Algorithms and Data Structures",23.10664605873261,Mathematics,22.256568778979908
+undergraduate,REVALIDA,1194,6,2,6,Internal Medicine,28.97822445561139,Pediatrics,21.52428810720268
+undergraduate,BACEN,1016,26,7,26,Portuguese Language,9.940944881889763,Finance and Financial Systems,8.26771653543307
+undergraduate,CFCES,694,11,4,7,Accounting,88.61671469740634,Business Law,4.899135446685879
+undergraduate,CNU,376,51,9,39,Public Policy and Public Administration,14.095744680851064,Business Administration,9.574468085106384
+undergraduate,ENAM,314,11,3,10,Civil Law and Civil Procedure,36.62420382165605,Constitutional Law,27.070063694267517

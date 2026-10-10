@@ -234,8 +234,9 @@ Switch back to curating with `uv sync --group nemo-curator`.
 
 ## Few-shot splits by level and macro-area
 
-`mmlu_pt.fewshot` reorganizes an annotated dataset (default
-`bench-temp-2/mmlu-pt-knowledge-annotated`) into two Hub datasets, one per
+`mmlu_pt.fewshot` selects test questions from `bench-temp-2/mmlu-pt-deduplicated`
+and joins annotations from `bench-temp-2/mmlu-pt-knowledge-annotated` by stable
+question identity. It builds two Hub datasets, one per
 `academic_level`, each with one config per `macro_area` and splits `test`
 (evaluation) and `dev` (five few-shot demonstrations). Demonstrations are
 ranked deterministically per stratum (seed 42, hash of the stable row `id`),
@@ -247,29 +248,52 @@ ranking; every decision is recorded in `audit.md`.
 
 ```
 bench-temp-2/mmlu-pt-high-school        bench-temp-2/mmlu-pt-undergraduate
-├── stem/{test,dev}                     ├── law/{test,dev}
-├── languages_and_arts/{test,dev}       ├── stem/{test,dev}
-├── humanities_and_social_sciences/…    ├── business_and_economics/{test,dev}
-└── health_sciences/{test,dev}          └── … (9 configs)
+└── <macro-area>/{test,dev} (6 configs) └── <macro-area>/{test,dev} (9 configs)
 ```
 
 Columns are identical in both splits: `id`, the source columns and `rationale`
-(null in `test`). Source, revision, target repositories, seed, shots, model and
+(null in `test`). Annotation source, deduplicated source, their revisions and optional local paths,
+dev snapshot (`--dev-from`), target repositories, seed, shots, model and
 reasoning effort are CLI flags (or `MMLU_FEWSHOT_<FIELD>` variables).
 
 ```bash
 # Selection, audit and local build without API calls or publishing
 uv run --group annotation python -m mmlu_pt.fewshot.cli run --dry-run --run-dir output/fewshot-work/dry
 # Full run: needs OPENAI_API_KEY and a Hugging Face token with write access
-uv run --group annotation python -m mmlu_pt.fewshot.cli run --run-dir output/fewshot-work/main
-# Reload the published datasets and check counts, schema and dev/test disjointness
+uv run --group annotation python -m mmlu_pt.fewshot.cli run --run-dir output/fewshot-work/new
+# Reload the pinned published datasets and compare their complete content with the local snapshot
 uv run --group annotation python -m mmlu_pt.fewshot.cli verify --run-dir output/fewshot-work/main
 ```
 
 Rerunning the same `--run-dir` reuses `rationale.jsonl`, so a run interrupted
 before publishing resumes without new API calls; `--no-push` builds locally.
+Use `--dev-from output/fewshot-work/main/datasets` with a new run directory to
+reuse the current demonstrations without rationale API calls. The corrected
+test has 8,705 high-school and 29,095 undergraduate questions (37,800 total).
+
 The run directory holds `manifest.json`, `selection.json`, `audit.json`,
 `audit.md`, `rationale.jsonl`, `datasets/<level>/<config>` and the dataset cards.
+
+## Hard subsets by removing unanimously easy questions
+
+`python -m mmlu_pt.hard` builds **MMLU-PT-Hard-Direct v2** locally from
+`light-benchmark/output/exp-mmlu-pt-direct` and the snapshot in
+`output/fewshot-work/main/datasets`. A question is removed only when
+`gemini-3.8-flash`, `google/gemma-4-31B-it` and `Qwen/Qwen3.5-27B` all have a
+recorded `extractive_match` of one in both 0-shot and 5-shot: six correct answers.
+The test retains intermediate questions and preserves source order and
+schema; each retained config reuses its original `dev` split.
+
+The default output is `output/hard-direct-v2`, with Hugging Face and JSONL
+datasets, an input-hash manifest, per-question audit, scores and confidence
+intervals for all evaluated models in each protocol and their paired mean,
+composition statistics and panel sensitivity. The expected test contains
+4,584 high-school and 10,685 undergraduate items. Both protocols participate in
+selection, so the selected models' scores remain conditioned on construction.
+No new inference or Hub publication is performed. See
+[the methodology and CLI guide](docs/hard_direct_methodology.md) for details.
+[Alternative filtering tables](ablations/hard/README.md) preserve the recorded
+mean-based comparisons for a future ablation study.
 
 ## Outputs
 
@@ -726,3 +750,11 @@ ablations/
 The code is distributed under the [Apache License 2.0](LICENSE). Review the
 terms of the original sources and published datasets before redistributing the
 data.
+
+## Dataset correction and impact
+
+The complete original artifacts and working files were copied and verified before
+correction in `backups/dataset-correction-20261010-170232/` in both repositories.
+The corrected datasets, predictions and analyses occupy their original paths.
+See [the correction record](docs/dataset_correction.md) for pinned revisions,
+validation and the impact report.

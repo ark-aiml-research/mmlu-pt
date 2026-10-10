@@ -66,7 +66,8 @@ def rationale_checks(record: dict | None, gold: str, choice_count: int, config: 
     return reasons
 
 
-def final_checks(built: dict, source_rows: int, shots: int) -> dict:
+def final_checks(built: dict, source_rows: int, shots: int,
+                 expected_test_ids: set[str] | None = None) -> dict:
     """Disjointness and count checks over the built configs of every level."""
     dev_ids, test_ids, problems = set(), set(), []
     for level, configs in built.items():
@@ -76,12 +77,17 @@ def final_checks(built: dict, source_rows: int, shots: int) -> dict:
                 problems.append(f"{level}/{name}: dev has {len(dev)} rows, expected {shots}")
             if dev.features != test.features:
                 problems.append(f"{level}/{name}: dev and test features differ")
-            dev_ids.update(dev["id"])
-            test_ids.update(test["id"])
+            for label, subset, seen in (("dev", dev, dev_ids), ("test", test, test_ids)):
+                identifiers = subset["id"]
+                if len(set(identifiers)) != len(identifiers) or seen.intersection(identifiers):
+                    problems.append(f"{level}/{name}: duplicate {label} IDs")
+                seen.update(identifiers)
     overlap = dev_ids & test_ids
     if overlap:
         problems.append(f"{len(overlap)} ids appear in both dev and test")
-    if len(dev_ids) + len(test_ids) != source_rows:
+    if expected_test_ids is not None and test_ids != expected_test_ids:
+        problems.append(f"Test IDs differ: missing={len(expected_test_ids - test_ids)}, extra={len(test_ids - expected_test_ids)}")
+    if expected_test_ids is None and len(dev_ids) + len(test_ids) != source_rows:
         problems.append(f"dev + test = {len(dev_ids) + len(test_ids)} rows, source has {source_rows}")
     return {"dev_rows": len(dev_ids), "test_rows": len(test_ids), "source_rows": source_rows,
             "overlap": len(overlap), "problems": problems}

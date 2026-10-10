@@ -12,7 +12,7 @@
 % are read from ./figures; to change this, define the macro before the \input:
 %   \newcommand{\LengthAblationFigDir}{ablations/filtering/figures}
 % =============================================================================
-\providecommand{\LengthAblationFigDir}{figures}
+\providecommand{\LengthAblationFigDir}{ablations/filtering/figures}
 
 \section{Length Filtering Ablations}
 \label{app:lensimple}
@@ -94,7 +94,7 @@ kept (\%).}
 truncated stems, such as \emph{Assinale} or \emph{Imunidade:}, whereas
 four-word questions are already complete instructions whose content lies in
 the choices (\emph{Assinale a alternativa CORRETA:} alone occurs 141 times).
-We therefore set the minimum to four words, which removes 105 records; raising
+We therefore set the minimum to four words, which removes 105 records, raising
 it to five would remove 958, mostly from OAB, whose retention would fall to
 91.9\%. At the other end, the longest questions are legitimate reading
 passages, mostly from the Portuguese section of IME, which repeats the same
@@ -109,7 +109,7 @@ Markdown tables repeated in every option, where each cell separator counts as
 a word, and occasionally from text of the next question leaking into an
 option. The limit of 300 words sits at the 99.9th percentile. On its own it
 removes 42 records, 41 of them beyond those already removed by the question
-filter; CFCES is the most affected exam (97.9\% kept). Because the tail mixes
+filter, and CFCES is the most affected exam (97.9\% kept). Because the tail mixes
 legitimate options with errors, this limit is a conservative size cap rather
 than an error detector.
 
@@ -117,7 +117,7 @@ than an error detector.
 examples of up to 1,300 words. The last filter aligns the size of the whole
 example with the 1,000-word ceiling used for the question. It removes 36
 records, 12 each from AFA, BNDES and IME, all of them long reading passages.
-As a consequence, in the final data this filter already implies the question
+As a consequence, in the length-filtered corpus this filter already implies the question
 maximum, which is kept as a first-stage guard.
 
 \begin{table}[t]
@@ -148,12 +148,15 @@ $w_t$: both). Labels give removed and total records.}
 \label{fig:lensimple-removals}
 \end{figure}
 
-\paragraph{Overall effect.} The three filters remove 334 records and keep
-41,653 (99.205\%; Table~\ref{tab:lensimple-stages}): 98.1\% of the
+\paragraph{Overall effect.} These counts describe the length-filtering
+stage, before deduplication (Appendix~\ref{app:dedup-short}), item revision
+(Appendix~\ref{app:rev-short}) and the construction of the published
+splits. The three filters remove 334 records and keep
+41,653 (99.205\%, see Table~\ref{tab:lensimple-stages}). They retain 98.1\% of the
 high-school questions and 99.5\% of the undergraduate ones. The main side
 effect falls on IME, which keeps 86.9\% of its questions because of its long
 reading passages (Figure~\ref{fig:lensimple-removals}). Every other exam keeps
-at least 97.4\%, three exams (CNU, OBI and REVALIDA) lose no records, and no
+at least 97.4\%. Three exams (CNU, OBI and REVALIDA) lose no records. No
 exam's share of the dataset changes by more than 0.33 percentage points.
 
 \paragraph{Limitations.} Apart from the manual inspection, no quality labels

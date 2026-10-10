@@ -1,6 +1,7 @@
 """Command-line interface: select demonstrations, generate rationales, build and publish the splits."""
 
 import argparse
+import hashlib
 import importlib.metadata
 import json
 import os
@@ -11,9 +12,10 @@ from pathlib import Path
 from . import audit, publish, rationale
 from .config import (DEFAULT_OUTPUT_DIR, PROMPT_VERSION, REASONING_EFFORTS, RunConfig, letter, level_repo,
                      read_jsonl, run_id, slug, timestamp, write_json)
-from .selection import build_strata, build_text_index, load_source, row_ids, validate_columns
+from .selection import build_strata, build_text_index, join_deduplicated, load_input, load_source, row_ids, validate_columns
 
-OPTIONAL_TYPES = {"source_revision": str, "rationale_limit": int}
+OPTIONAL_TYPES = {"source_revision": str, "source_path": str, "deduplicated_revision": str,
+                  "deduplicated_path": str, "dev_from": str, "rationale_limit": int}
 
 
 def environment_default(name: str, default):
@@ -133,11 +135,18 @@ def fill_stratum(level: str, area: str, ranking: list[int], data, ids: list[str]
 
 
 def run(config: RunConfig, run_dir_argument: Path | None) -> int:
-    data, source = load_source(config)
-    problems = validate_columns(data)
+    annotated, source = load_source(config)
+    problems = validate_columns(annotated)
     if problems:
         print("Invalid source: " + "; ".join(problems))
         return 2
+    deduplicated, test_source = load_input(config.deduplicated_source, config.deduplicated_revision,
+                                         config.split, config.deduplicated_path)
+    data = join_deduplicated(annotated, deduplicated)
+    source["test_source"] = test_source
+    built = None
+    if config.dev_from:
+        built, source["dev_snapshot"] = publish.reuse_configs(annotated, data, Path(config.dev_from), config.shots)
     ids = row_ids(data)
     prompt_digest = rationale.prompt_hash(config)
     run = run_id(config, source, prompt_digest)
@@ -147,23 +156,36 @@ def run(config: RunConfig, run_dir_argument: Path | None) -> int:
 
     strata = build_strata(data, ids, config.seed)
     manifest["strata"] = {f"{level}/{area}": len(ranking) for (level, area), ranking in strata.items()}
-    text_index = build_text_index(data)
-    records = read_jsonl(run_dir / rationale.RATIONALE_FILE)
     budget = {"limit": config.call_limit(), "used": 0}
-    selection = [fill_stratum(level, area, ranking, data, ids, text_index, records, run_dir, config, prompt_digest, budget)
-                 for (level, area), ranking in strata.items()]
+    if built is None:
+        text_index = build_text_index(data)
+        records = read_jsonl(run_dir / rationale.RATIONALE_FILE)
+        selection = [fill_stratum(level, area, ranking, data, ids, text_index, records, run_dir, config, prompt_digest, budget)
+                     for (level, area), ranking in strata.items()]
+        dev_ids = {entry["id"] for stratum in selection for entry in stratum["dev"]}
+        built = {}
+        for stratum in selection:
+            ranking = strata[(stratum["level"], stratum["macro_area"])]
+            built.setdefault(stratum["level"], {})[stratum["config_name"]] = publish.build_config(
+                data, ids, ranking, stratum["dev"], dev_ids)
+    else:
+        selection = []
+        for level, configs in built.items():
+            for name, dataset in configs.items():
+                entries = [{"id": row["id"], "rank_position": index + 1, "exam": row["exam"],
+                            "exam_edition": row["exam_edition"], "num": row["num"],
+                            "answer_letter": letter(row["answer"]), "status": "ok"}
+                           for index, row in enumerate(dataset["dev"])]
+                selection.append({"level": level, "macro_area": dataset["dev"][0]["macro_area"],
+                                  "config_name": name, "stratum_rows": len(dataset["test"]),
+                                  "ranking_considered": len(entries), "dev": entries, "excluded": []})
+        dev_ids = {identifier for configs in built.values() for dataset in configs.values() for identifier in dataset["dev"]["id"]}
     write_json(run_dir / "selection.json", selection)
-
-    dev_ids = {entry["id"] for stratum in selection for entry in stratum["dev"]}
-    built = {}
-    for stratum in selection:
-        ranking = strata[(stratum["level"], stratum["macro_area"])]
-        built.setdefault(stratum["level"], {})[stratum["config_name"]] = publish.build_config(
-            data, ids, ranking, stratum["dev"], dev_ids)
-    final = audit.final_checks(built, len(data), config.shots)
+    final = audit.final_checks(built, len(data), config.shots, set(ids) - dev_ids)
     audit.write_reports(run_dir, selection, final)
     publish.save_configs(run_dir, built)
-    manifest |= {"summary": publish.summarize(built), "api_calls": budget["used"], "status": "built"}
+    manifest |= {"summary": publish.summarize(built), "api_calls": budget["used"], "status": "built",
+                 "test_ids_sha256": hashlib.sha256("\n".join(sorted(set(ids) - dev_ids)).encode()).hexdigest()}
     write_json(run_dir / "manifest.json", manifest)
     print(f"dev rows: {final['dev_rows']}, test rows: {final['test_rows']}, API calls: {budget['used']}")
     if final["problems"]:
@@ -188,15 +210,18 @@ def verify(run_dir: Path) -> int:
     config = RunConfig(**manifest["config"])
     problems, dev_ids, test_ids = [], set(), set()
     for level, summary in manifest["summary"].items():
-        result = publish.verify_published(level_repo(config, level), summary, config.shots)
+        repo = level_repo(config, level)
+        revision = manifest.get("published", {}).get(repo, {}).get("revision")
+        result = publish.verify_published(repo, summary, config.shots, run_dir / "datasets" / level, revision)
         print(f"{result['repo']}: configs {result['configs']}, {len(result['problems'])} problems")
         problems += [f"{result['repo']}: {problem}" for problem in result["problems"]]
         dev_ids |= result["dev_ids"]
         test_ids |= result["test_ids"]
     if dev_ids & test_ids:
         problems.append(f"{len(dev_ids & test_ids)} ids appear in both dev and test across repos")
-    if len(dev_ids) + len(test_ids) != manifest["source"]["rows"]:
-        problems.append(f"dev + test = {len(dev_ids) + len(test_ids)}, source has {manifest['source']['rows']}")
+    expected = manifest.get("test_ids_sha256")
+    if expected and hashlib.sha256("\n".join(sorted(test_ids)).encode()).hexdigest() != expected:
+        problems.append("Published test IDs differ from selected deduplicated IDs")
     print(f"dev ids: {len(dev_ids)}, test ids: {len(test_ids)}, source rows: {manifest['source']['rows']}")
     for problem in problems:
         print("PROBLEM: " + problem)

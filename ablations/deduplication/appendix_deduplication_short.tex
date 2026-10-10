@@ -8,32 +8,20 @@
 % Shorter companion of appendix_deduplication.tex, with an additional analysis
 % of the impact on model evaluation. Figures and corpus statistics are generated
 % by ablations/deduplication/make_figures.py. Evaluation scores come from
-% light-benchmark/output/experiments/exp-mmlu-pt-{filtered,deduplicated}.csv;
-% stage and subgroup statistics use the corresponding prediction parquets in
-% light-benchmark/output/details and the dataset records at each pipeline stage.
-% By default figures are read from ./figures; to change this,
+% light-benchmark/output/old/experiments/exp-mmlu-pt-{filtered,deduplicated}.csv;
+% ablations/deduplication/evaluation_summary.py verifies the scores and computes
+% stage and subgroup statistics using the corresponding prediction parquets in
+% light-benchmark/output/old/details and the dataset records at each pipeline stage.
+% By default figures are read from ablations/deduplication/figures; to change this,
 % define the macro before the \input, e.g.
 %   \newcommand{\DedupAblationFigDir}{ablations/deduplication/figures}
 % =============================================================================
-\providecommand{\DedupAblationFigDir}{figures}
+\providecommand{\DedupAblationFigDir}{ablations/deduplication/figures}
 
 \section{Deduplication Ablation Studies}
 \label{app:dedup-short}
 
-Brazilian exams reuse items. The same question is often printed in several
-booklets of one administration (for example, ENADE's general-education
-questions are shared by all courses of a year, and OBI levels share
-problems), and each copy is extracted separately, with its own formatting and
-extraction errors. At the same time, many genuinely different questions share
-a long context, such as several questions about one reading passage or a
-logic-puzzle scenario reused with a different question. Deduplication must
-remove the first kind of redundancy while keeping the second. After length
-filtering (Appendix~\ref{app:lensimple}), the pipeline applies two stages:
-\emph{exact deduplication} on the normalized question text, followed by
-\emph{semantic deduplication} with text embeddings
-(Table~\ref{tab:dedup-short-stages}). This appendix summarizes the ablation
-studies behind the second stage and the effect of the final selection on
-model evaluation.
+Brazilian exams reuse items. The same question is often printed in several booklets of one administration (for example, ENADE's general-education questions are shared by all courses of a year, and OBI levels share problems), and each copy is extracted separately, with its own formatting and extraction errors. At the same time, many genuinely different questions share a long context, such as several questions about one reading passage or a logic-puzzle scenario reused with a different question. Deduplication must remove the first kind of redundancy while keeping the second. After length filtering (Appendix~\ref{app:lensimple}), the pipeline applies two stages: \emph{exact deduplication} on the normalized question text, followed by \emph{semantic deduplication} with text embeddings (Table~\ref{tab:dedup-short-stages}). This appendix summarizes the ablation studies behind the second stage and the effect of item selection on model evaluation at this pipeline stage.
 
 \begin{table}[t]
 \centering
@@ -56,7 +44,7 @@ undergraduate retention 91.503\%.}
 \end{table}
 
 \paragraph{Summary.} The studies led to four decisions.
-(1)~Questions are compared together with their answer choices; comparing
+(1)~Questions are compared together with their answer choices, comparing
 the question alone links different questions on the same passage.
 (2)~Lexical near-duplicate detection with MinHash--LSH is not reliable
 enough for automatic removal: collisions alone have a precision of at most
@@ -74,10 +62,9 @@ covers every duplicate it finds.
 \subsection{Setup}
 \label{app:dedup-short-setup}
 
-\paragraph{Data.} Exact deduplication keeps one record per normalized
-question (Unicode normalization, lower case and collapsed whitespace). The pairwise studies below analyze an
+\paragraph{Data.} Exact deduplication keeps one record per normalized question (Unicode normalization, lower case and collapsed whitespace). The pairwise studies below analyze an
 earlier snapshot of its output with 39,120 records from 17 exams, taken
-before the pipeline started discarding questions with images; the reference
+before the pipeline started discarding questions with images, the reference
 panel described next contains no such question.
 
 \paragraph{Reference panel.} No labelled set of duplicate exam questions
@@ -141,14 +128,14 @@ eight settings tested: even the strictest setting would remove about two
 non-duplicates for every three duplicates. Stricter settings trade false
 positives for missed duplicates (84 false positives and 62 misses for the
 strictest, 254 and 3 for the loosest), and the random seed alone changes MCC
-from 0.22 to 0.39. \emph{Decision:} LSH is only a candidate generator; its
+from 0.22 to 0.39. \emph{Decision:} LSH is only a candidate generator, its
 candidates need an explicit verification step.
 
 \paragraph{Verified LSH rules.} A search over 7,840 rules combined the LSH
 settings with a verification step that keeps a candidate only if its exact
 character Jaccard similarity reaches a threshold. The best rule uses 8-grams
 and a threshold of 0.94, with a precision of 0.955, a recall of 0.687 and an
-MCC of 0.721 (Table~\ref{tab:dedup-short-rules}); the nested
+MCC of 0.721 (Table~\ref{tab:dedup-short-rules}). The nested
 cross-validation selects it in 48 of 50 folds. The threshold, not the LSH
 setting, determines the result: 23 rules with different settings tie exactly
 at the best MCC. The rule is precise, but its recall is capped: no rule with
@@ -267,7 +254,7 @@ question with its choices unless stated otherwise.}
 \paragraph{Errors and the choice of representatives.} All six false
 positives of the embedding rule are OBI logic puzzles in which two questions
 share a scenario but ask different things (cosine similarities between 0.976
-and 0.985); the only missed duplicate is a pair of ENADE questions with a
+and 0.985), the only missed duplicate is a pair of ENADE questions with a
 similarity of 0.963. We also tested NeMo Curator's semantic deduplication,
 which first clusters the embeddings. Clustering did not change which pairs
 are flagged, but in 37 to 41 cases the record that justified a removal was
@@ -303,7 +290,7 @@ records.}
 Removals are very unequal across exams
 (Figure~\ref{fig:dedup-short-removals}). OBI keeps 57.6\% of its records,
 losing 22.7\% in the exact stage and 25.4\% of the rest in the semantic
-stage; ENADE and BACEN keep about 86\%, CNU loses 23.2\% in the exact stage
+stage. ENADE and BACEN keep about 86\%, CNU loses 23.2\% in the exact stage
 alone, and four exams lose nothing. ENADE, OBI and the USP/Unicamp residency
 exams account for 90\% of the semantic removals, which matches the panel:
 these exams print the same items in several booklets. No lexical stage is
@@ -314,7 +301,10 @@ lexical rule finds while avoiding five of its false positives.
 \subsection{Impact on model evaluation}
 \label{app:dedup-short-evaluation}
 
-\paragraph{Protocol.} We evaluate 19 models in a zero-shot setting, with
+\paragraph{Protocol.} This ablation compares the filtered and deduplicated
+corpora at the deduplication stage, before the item revision
+(Appendix~\ref{app:rev-short}) and the construction of the published test/dev
+splits. It evaluates 19 models in a zero-shot setting, with
 temperature zero and a generation limit of 128 tokens. The prompt requests
 only the uppercase letter of the correct answer. Microaccuracy is the mean
 of the binary per-item \texttt{extractive\_match} scores. Starting from the
@@ -326,8 +316,8 @@ evaluation protocol.
 \paragraph{Scores and ranking.} Microaccuracy increases for all 19 models
 (Table~\ref{tab:dedup-short-evaluation}), by 0.355 percentage points (pp) on
 average, with individual changes from 0.063 to 0.668~pp. The intermediate
-selection after exact deduplication gives a mean increase of 0.095~pp;
-semantic deduplication adds a further 0.260~pp. The ranking is nearly
+selection after exact deduplication gives a mean increase of 0.095~pp.
+Semantic deduplication adds a further 0.260~pp. The ranking is nearly
 unchanged (Spearman's $\rho=0.9982$): the only pairwise reversal is between
 Llama-3.1-8B and Nemotron-3-Nano-4B. Gemma-4-31B remains first, with
 microaccuracy changing from 79.46\% to 79.61\%.
@@ -364,7 +354,7 @@ Mean & 53.02 & 53.37 & +0.355 \\
 \bottomrule
 \end{tabular}
 \caption{Microaccuracy (\%) before and after deduplication, ordered by the
-deduplicated score. Deltas use unrounded scores; the final row is the
+deduplicated score at this pipeline stage. Deltas use unrounded scores; the final row is the
 unweighted mean across models. Gemma uses \texttt{-it} checkpoints and
 Llama and Tucano2 use \texttt{-Instruct}. Tucano2 abbreviates
 \texttt{Tucano2-qwen}; Nemotron denotes \texttt{NVIDIA-Nemotron-3-Nano}
@@ -376,7 +366,7 @@ with the \texttt{-BF16} suffix.}
 on aggregation (Table~\ref{tab:dedup-short-evaluation-aggregation}). Giving
 each of the 17 exams equal weight yields a mean decrease of 0.104~pp, with
 decreases for 15 of the 19 models. Within high-school items, all models
-increase, by 2.099~pp on average; within undergraduate items, 15 models
+increase by 2.099~pp on average. Within undergraduate items, 15 models
 decrease, with a mean change of $-0.204$~pp. Equal weighting by exam is a
 sensitivity analysis, distinct from macroaccuracy over knowledge areas.
 
@@ -402,7 +392,7 @@ weight to each of the 17 exams. Deltas use unrounded scores.}
 \end{table}
 
 Holding exam proportions at their filtered-set values gives a mean change
-of $-0.182$~pp; changing to the deduplicated exam proportions contributes
+of $-0.182$~pp, changing to the deduplicated exam proportions contributes
 $+0.537$~pp, yielding the observed $+0.355$~pp. This decomposition shows how
 changes in corpus composition account for the aggregate increase while
 the relative ordering of models remains largely stable. These are
@@ -417,12 +407,10 @@ The reference panel contains only lexically similar pairs from the same exam,
 so it cannot measure how many duplicates with little character overlap, or
 across exams, remain in the corpus. Its labels come from an LLM validated by a
 single human annotator on 47 pairs. The same panel was used to select the
-lexical rule, the embedding model and the threshold; nested cross-validation
+lexical rule, the embedding model, and the threshold. Nested cross-validation
 separates selection from evaluation, but comparisons on the full panel are
 optimistic. The threshold is set by a few pairs near 0.974, and the full-panel
 precision (0.968, with a 95\% lower bound of 0.933) falls slightly short of
 the 0.95 bound we required for LSH collisions. The remaining risk is
 concentrated in OBI, where all false positives occur and 193 removals fall at
-or below the highest false-positive similarity. Finally, the exact stage
-compares questions without their choices, so it also merges records that
-share a question but differ in their choices; this choice was not ablated.
+or below the highest false-positive similarity.

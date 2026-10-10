@@ -24,7 +24,7 @@ the supporting text, chart or table it refers to was lost, or the item belongs
 to a block that can only be solved jointly. As evaluation items they could
 only be answered by chance. The defects were found as a by-product of the
 knowledge-area annotation, whose annotator may abstain, and completed by a
-string-pattern sweep; nothing was removed for difficulty, for an unexpected
+string-pattern sweep. Nothing was removed for difficulty, for an unexpected
 label or because the annotation passes disagreed.
 
 \paragraph{Summary.} (1)~Five defect families, 19 questions from six exams
@@ -35,14 +35,14 @@ read and kept: 78 of 80 questions with an ``INSTRUÇÕES'' header, 19 whose
 last choice carries the heading of the next passage, and two whose support is
 missing but whose task is identifiable. (4)~Removal is applied by a content
 hash, never by row index, into a new directory with a manifest, a removal log
-and a reload check; the original stages are never modified. (5)~The filtered
+and a reload check, the original stages are never modified. (5)~The filtered
 corpus goes from 41,653 to 41,634 questions and the deduplicated corpus from
 37,887 to 37,873 (Table~\ref{tab:rev-short-datasets}).
 
 \paragraph{Defects and criterion.} The second phase of the 2012 Informatics
 Olympiad opens with three items whose statement is only ``A resposta da
 questão $N$ é:'' (``The answer to question $N$ is:'') with the letters A to E
-as choices; they form one puzzle and are undecidable as independent rows, in
+as choices, they form one puzzle and are undecidable as independent rows, in
 two booklets (six rows). In seven BLUEX items the statement is a
 pre-processing instruction (``Seu único objetivo é detectar as expressões
 matemáticas, convertê-las para o padrão LaTeX\ldots'') with a worked example,
@@ -50,7 +50,7 @@ and the choices of the original literature, history or grammar question are
 orphaned. Two POSCOMP 2024 items kept only an ``INSTRUÇÕES'' header and the
 final question, without the data that define the computation time. Item~36 of
 IME 2010 and 2011 asks ``What task below could Lammert B. Otten be legally in
-charge of?'' without its reading passage; the two rows are identical and carry
+charge of?'' without its reading passage, the two rows are identical and carry
 different answer keys. COMVEST 2017 item~63 and ENEM 2018 item~136 refer to a
 chart or table that is missing. A question is removed on two grounds only:
 the statement or its supporting material is not recoverable from the dataset,
@@ -61,6 +61,7 @@ preserve.
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{
 \begin{tabular}{@{}lp{3.0cm}rrl@{}}
 \toprule
 Family & Items & S04 & S06 & Detection \\
@@ -74,22 +75,23 @@ Missing data & COMVEST 2017 (63); ENEM 2018 (136) & 2 & 2 & abst.\ 1.4 \\
 Total & & 19 & 14 & \\
 \bottomrule
 \end{tabular}
+}
 \caption{The removed questions, with item numbers in parentheses. \emph{S04}, \emph{S06}: rows removed from the filtered (41,653) and the semantically deduplicated (37,887) corpora; five listed questions were already absent from the latter because the exact deduplication had removed them as copies of another listed question. \emph{Detection}: abstention of the full annotation run with taxonomy 1.2 or 1.4, or the pattern sweep.}
 \label{tab:rev-short-removed}
 \end{table}
 
 \paragraph{Identification.} The full annotation run with taxonomy~1.2 ended
-with 23 abstentions on 41,653 questions; the experimental taxonomy~1.3 run on
+with 23 abstentions on 41,653 questions. The experimental taxonomy~1.3 run on
 them labelled 14 and left 9, of which 8 had no recoverable statement and one
 (AFA 2019 item~45, an English item without its passage but with an
 identifiable task) was kept. The 8 were used as string patterns over the
 filtered and deduplicated stages: the instruction string matches exactly 7
-rows, 6 of which run~1.2 had labelled from their orphaned choices; ``A
-resposta da questão'' matches exactly the 6 OBI rows; and the ``INSTRUÇÕES''
+rows, 6 of which run~1.2 had labelled from their orphaned choices, ``A
+resposta da questão'' matches exactly the 6 OBI rows, and the ``INSTRUÇÕES''
 header matches 80 rows, of which only POSCOMP item~19 shares the truncation
 of item~20. The list reached 15 questions on 7~October~2026. Taxonomy~1.4,
 run on the 15 remaining abstentions, labelled the 2010 copy of the IME item
-and abstained on the identical 2011 copy; the oscillation confirmed the
+and abstained on the identical 2011 copy, the oscillation confirmed the
 dependence on the missing passage and both were removed (17). The filtered
 corpus revised with those 17 (41,636 rows) was the base of the final full
 run, which ended with 8 abstentions, none repeated from earlier runs: 6
@@ -101,9 +103,9 @@ from the original stages with the complete list.
 question were read and kept: 80 rows starting with ``INSTRUÇÕES'' or
 ``Instruções:'' (65 POSCOMP 2024, 13 BACEN, one each ENADE 2006 and 2007),
 all of which carry the full statement after the header except the two
-POSCOMP items; 19 rows of COMVEST 2011--2015 and BLUEX USP 2020 and 2024
+POSCOMP items, 19 rows of COMVEST 2011--2015 and BLUEX USP 2020 and 2024
 whose last choice carries, after its real text, the heading of the next
-passage, which remain answerable and are recorded as a formatting clean-up;
+passage, which remain answerable and are recorded as a formatting clean-up,
 and AFA 2019 item~45 and COMVEST 2015 item~38, where the competence assessed
 is recognizable despite the missing support.
 
@@ -113,38 +115,75 @@ choices, the identifier the annotation uses, so one list serves every stage
 and subset. The revision tool reads a dataset saved to disk, refuses an
 existing output directory, never modifies its input, writes the revised
 dataset with a removal log (input row index, identifier, exam, edition, item,
-category, reason) and a manifest (hashes of input, output and list; removed
+category, reason) and a manifest (hashes of input, output and list, removed
 and absent identifiers), aborts if the metadata of a row differs from its
 list entry, and reloads the output to verify that the kept rows are identical
 to the input rows in the same order. Publishing re-hashes the output and
 records the Hub revision in the manifest. The deduplicated corpus loses 14
 questions: the other five were already removed by the exact deduplication as
 copies of another listed question (the level-2 OBI items, UNICAMP 2024
-item~12 and the 2010 IME copy). The final annotated dataset has the same
+item~12 and the 2010 IME copy). The annotated source corpus has the same
 identifiers, in the same order, as the revised filtered corpus.
 
 \begin{table}[t]
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{
 \begin{tabular}{@{}lrrrl@{}}
 \toprule
 Dataset & Input & Rem. & Output & Revision \\
 \midrule
-Filtered, 17-question list & 41,653 & 17 & 41,636 & \texttt{0e8b69a1}\ldots\ (superseded) \\
-Filtered, 19-question list & 41,653 & 19 & 41,634 & \texttt{e0f638e0}\ldots \\
-Deduplicated & 37,887 & 14 & 37,873 & \texttt{54ba11ff}\ldots \\
+Filtered, 17-question list & 41,653 & 17 & 41,636 & \textcolor{red}{\texttt{0e8b69a1}}\ldots\ (superseded) \\
+Filtered, 19-question list & 41,653 & 19 & 41,634 & \textcolor{red}{\texttt{e0f638e0}}\ldots \\
+Deduplicated & 37,887 & 14 & 37,873 & \textcolor{red}{\texttt{54ba11ff}}\ldots \\
 Abstentions of run 1.2 & 23 & 8 & 15 & -- \\
-Annotated export of run 1.4 & 41,636 & 2 & 41,634 & \texttt{fb9d509a}\ldots \\
+Annotated export of run 1.4 & 41,636 & 2 & 41,634 & \textcolor{red}{\texttt{fb9d509a}}\ldots \\
 \bottomrule
 \end{tabular}
-\caption{Datasets revised with the list. \emph{Rem.}: rows removed. Revisions are those of \texttt{bench-temp-2/mmlu-pt-revised} (filtered), \texttt{bench-temp-2/mmlu-pt-deduplicated} and \texttt{bench-temp-2/mmlu-pt-knowledge-annotated}, pushed on 8~October~2026; the abstention subset is a local working dataset.}
+}
+\caption{Datasets revised with the list. \emph{Rem.}: rows removed. Revisions are those of \textcolor{red}{\texttt{bench-temp-2/mmlu-pt-revised} (filtered), \texttt{bench-temp-2/mmlu-pt-deduplicated} and \texttt{bench-temp-2/mmlu-pt-knowledge-annotated}, pushed on 8~October~2026}; the abstention subset is a local working dataset.}
 \label{tab:rev-short-datasets}
+\end{table}
+
+\paragraph{Published splits.} The final test questions are selected from
+the 37,873-row revised deduplicated corpus. Their annotations come from the
+41,634-row annotated source corpus: each selected question is joined by
+\texttt{annotation\_id}, with unique identifiers, complete annotation
+coverage and equality of all original question fields. The academic level
+and macro area define the configurations. Each configuration has five dev
+examples with answer rationales; their identifiers are excluded globally
+from the test set. The published splits contain 37,800 test questions and
+75 dev examples (Table~\ref{tab:rev-short-splits}), with preserved source
+annotations and deterministic record order. Evaluation uses these test
+splits in the zero-shot and five-shot protocols, with the dev examples
+providing the demonstrations for the latter.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{@{}lrrl@{}}
+\toprule
+Level & Test & Dev & Revision \\
+\midrule
+High school & 8,705 & 30 & \texttt{10b711e8}\ldots \\
+Undergraduate & 29,095 & 45 & \texttt{4e7123a1}\ldots \\
+\midrule
+Total & 37,800 & 75 & -- \\
+\bottomrule
+\end{tabular}
+\caption{Published splits of \texttt{bench-temp-2/mmlu-pt-high-school} and
+\texttt{bench-temp-2/mmlu-pt-undergraduate}, respectively. Dev supplies
+few-shot demonstrations; test contains the evaluation questions.
+The full revisions are
+\texttt{10b711e8692a7f29084c}\allowbreak\texttt{ca15f1923d97b3f9062b} and
+\texttt{4e7123a1918f574e36be}\allowbreak\texttt{a38f2a9bcc4728100bd9}.}
+\label{tab:rev-short-splits}
 \end{table}
 
 \paragraph{Limitations.} The detector is the abstention of one annotation
 model plus string patterns derived from its abstentions, so only defects that
-make the model abstain or share a pattern with one of them were found; the
+make the model abstain or share a pattern with one of them were found. The
 corpus was not audited question by question. The engineering audit of the
 first full run tagged 23 questions as source issues and 8 remain: six with a
 missing photograph, chart or text but an identifiable task, and two not

@@ -1,0 +1,179 @@
+{
+  "models": 19,
+  "populations": {
+    "filtered": 41653,
+    "exact": 39042,
+    "deduplicated": 37887
+  },
+  "spearman_rho": 0.9982456140350877,
+  "exact_delta_mean_pp": 0.0953846012026185,
+  "semantic_delta_mean_pp": 0.25994593340157945,
+  "within_exam_mean_pp": -0.18168332326551184,
+  "composition_mean_pp": 0.5370138578697093,
+  "sources": [
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Polygl0t/Tucano2-qwen-0.5B-Instruct/2026-10-05T22-53-23.407225/details_mmlu-pt-filtered|0_2026-10-05T22-53-23.407225.parquet",
+      "sha256": "5c57e8ee44dcd1c04f6e36beb3de30ecaf6ae5263bd3bfd62db3c05ef14efefa"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Polygl0t/Tucano2-qwen-0.5B-Instruct/2026-10-05T22-53-23.407225/details_mmlu-pt-deduplicated|0_2026-10-05T22-53-23.407225.parquet",
+      "sha256": "299e6c63fc824617e4c3761fcbe51fb0fb9954174c4aca0287e8cecdf5b43810"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Polygl0t/Tucano2-qwen-1.5B-Instruct/2026-10-05T23-00-28.604971/details_mmlu-pt-filtered|0_2026-10-05T23-00-28.604971.parquet",
+      "sha256": "f1cef7500c6a551e312d1d57b9dc78a8b9e78bf15a9cbf18bcc63bbb9fba8fee"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Polygl0t/Tucano2-qwen-1.5B-Instruct/2026-10-05T23-00-28.604971/details_mmlu-pt-deduplicated|0_2026-10-05T23-00-28.604971.parquet",
+      "sha256": "5e0b0b594268c5c36f8a9646b95f26b9627e47b34242ce651594766fb9e9ca52"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Polygl0t/Tucano2-qwen-3.7B-Instruct/2026-10-05T23-09-52.366856/details_mmlu-pt-filtered|0_2026-10-05T23-09-52.366856.parquet",
+      "sha256": "8b9ab64b2dda79ac0a2d9b79d18ecb3c39527068cc1c3ee89dea6222a2266882"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Polygl0t/Tucano2-qwen-3.7B-Instruct/2026-10-05T23-09-52.366856/details_mmlu-pt-deduplicated|0_2026-10-05T23-09-52.366856.parquet",
+      "sha256": "88c82cf0061768d52f84fd23c84f77ea5f45deba9ff21b7cb70e7208443f6fcf"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-0.8B/2026-10-05T21-39-43.953601/details_mmlu-pt-filtered|0_2026-10-05T21-39-43.953601.parquet",
+      "sha256": "99c01eadc1af035a069b59107e6faaf6a7733d3b875d4ec48f97a046d8fe288b"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-0.8B/2026-10-05T21-39-43.953601/details_mmlu-pt-deduplicated|0_2026-10-05T21-39-43.953601.parquet",
+      "sha256": "36b09653150801560fcb2a0eb8f2c308f47f5e9b05438ffea2797cd9f3f18a7a"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-27B/2026-10-05T22-23-35.927148/details_mmlu-pt-filtered|0_2026-10-05T22-23-35.927148.parquet",
+      "sha256": "fc13fd218039b581bf0c4d7b89d7f5db1fba19052ace86c156a3016cb519c192"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-27B/2026-10-05T22-23-35.927148/details_mmlu-pt-deduplicated|0_2026-10-05T22-23-35.927148.parquet",
+      "sha256": "04385dd5179c2e15400a65ba9e5ad99ab355dded841b3e58b5d221da5442f064"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-2B/2026-10-05T21-46-00.060743/details_mmlu-pt-filtered|0_2026-10-05T21-46-00.060743.parquet",
+      "sha256": "afdcd06d6d9c1a930aa9f5230a79a28117a333258f3d34a373f7fbb87305797a"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-2B/2026-10-05T21-46-00.060743/details_mmlu-pt-deduplicated|0_2026-10-05T21-46-00.060743.parquet",
+      "sha256": "d4cf94bf8bdafb85a0736bc1ece1b43ed78bf0a3c53346799cbab0e5437a4fb5"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-35B-A3B/2026-10-05T22-36-46.960437/details_mmlu-pt-filtered|0_2026-10-05T22-36-46.960437.parquet",
+      "sha256": "4aad51565e92d4820a60d176c75777773c8f820413e5375b8351695f784b3090"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-35B-A3B/2026-10-05T22-36-46.960437/details_mmlu-pt-deduplicated|0_2026-10-05T22-36-46.960437.parquet",
+      "sha256": "8fb47ecc0a688655a2f1973a3ce7e63f19402919a1df12c8c03724acf65593cd"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-4B/2026-10-05T21-53-28.198648/details_mmlu-pt-filtered|0_2026-10-05T21-53-28.198648.parquet",
+      "sha256": "9a2614ffd4c96d322be48c7738006d5fe9848b9e5fa4e0c0621793b781c83d2d"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-4B/2026-10-05T21-53-28.198648/details_mmlu-pt-deduplicated|0_2026-10-05T21-53-28.198648.parquet",
+      "sha256": "4ad9b17e420e6675bb578bd99e86fcd76f0eee3d7ae236e39fba836bdb2643a2"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-9B/2026-10-05T22-02-26.887265/details_mmlu-pt-filtered|0_2026-10-05T22-02-26.887265.parquet",
+      "sha256": "ec52b85717c665e6c08fe9def3555345e5a4b570d35815f3846aff317e8da984"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/Qwen/Qwen3.5-9B/2026-10-05T22-02-26.887265/details_mmlu-pt-deduplicated|0_2026-10-05T22-02-26.887265.parquet",
+      "sha256": "9e1bd93921ee01b1d141651c334688eaf53d67e14963091c9204245e93796b2d"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/google/gemma-4-12B-it/2026-10-05T21-41-09.731887/details_mmlu-pt-filtered|0_2026-10-05T21-41-09.731887.parquet",
+      "sha256": "228de93b0d6680ba198213629f9aaee5d01673ca33fc27aea290ba21e3a2d786"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/google/gemma-4-12B-it/2026-10-05T21-41-09.731887/details_mmlu-pt-deduplicated|0_2026-10-05T21-41-09.731887.parquet",
+      "sha256": "969622ad9c2ee49cc6600fb0d7e48ca92c1b0bf1ac0f867caa9cf62418061fa6"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/google/gemma-4-26B-A4B-it/2026-10-05T22-31-33.479018/details_mmlu-pt-filtered|0_2026-10-05T22-31-33.479018.parquet",
+      "sha256": "a26c36fe92b68a2d4c8432ab5d1bc8eec4c577d2e8a821965a45fb4bd6093273"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/google/gemma-4-26B-A4B-it/2026-10-05T22-31-33.479018/details_mmlu-pt-deduplicated|0_2026-10-05T22-31-33.479018.parquet",
+      "sha256": "bfc45bbb2d4ada8393845d4c19d25bec375433df880693508911dc7ff965795c"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/google/gemma-4-31B-it/2026-10-05T22-54-44.653287/details_mmlu-pt-filtered|0_2026-10-05T22-54-44.653287.parquet",
+      "sha256": "9ffe9fc3cf33632d0dd3b33636dffdd9174519e79af3e3b93f1e8e0eb6a2bb89"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/google/gemma-4-31B-it/2026-10-05T22-54-44.653287/details_mmlu-pt-deduplicated|0_2026-10-05T22-54-44.653287.parquet",
+      "sha256": "9b9ceadf64c42c426fd695edf6dbb97244609fe822108abbfad97d49cc804d3d"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/google/gemma-4-E2B-it/2026-10-05T21-22-29.456282/details_mmlu-pt-filtered|0_2026-10-05T21-22-29.456282.parquet",
+      "sha256": "f56324b27ba636086a2f816975d4b77476060573a2c9beaf14dde01e937fc15a"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/google/gemma-4-E2B-it/2026-10-05T21-22-29.456282/details_mmlu-pt-deduplicated|0_2026-10-05T21-22-29.456282.parquet",
+      "sha256": "63038569a2cd42d5ce2c1b03b892e1eaef72b9d811c3b62b56fe733902afc57b"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/google/gemma-4-E4B-it/2026-10-05T21-30-03.443323/details_mmlu-pt-filtered|0_2026-10-05T21-30-03.443323.parquet",
+      "sha256": "0588364c0304ebb487328ba2261ebfa42d40c8d5357b2bad180b15dacdc3aa18"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/google/gemma-4-E4B-it/2026-10-05T21-30-03.443323/details_mmlu-pt-deduplicated|0_2026-10-05T21-30-03.443323.parquet",
+      "sha256": "f09a4db50c669aabc1b6ca8ff0b8bd158fc27ddd69230b95cfa09099a4927f96"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/meta-llama/Llama-3.1-8B-Instruct/2026-10-05T22-49-00.143332/details_mmlu-pt-filtered|0_2026-10-05T22-49-00.143332.parquet",
+      "sha256": "8bb43cfc6815792ae0105943f01e461ac5339d8781d6dff206df592af898b01d"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/meta-llama/Llama-3.1-8B-Instruct/2026-10-05T22-49-00.143332/details_mmlu-pt-deduplicated|0_2026-10-05T22-49-00.143332.parquet",
+      "sha256": "892c4c1da9a21954c236d981eb1896e8c53b41679cc0f4428bb4fc8df4aad161"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/meta-llama/Llama-3.2-1B-Instruct/2026-10-05T22-39-47.936527/details_mmlu-pt-filtered|0_2026-10-05T22-39-47.936527.parquet",
+      "sha256": "c31fc5e2b656e4b34b260ad6fdf5ad17e0ee7d773a775e21e31aa2dca3c483eb"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/meta-llama/Llama-3.2-1B-Instruct/2026-10-05T22-39-47.936527/details_mmlu-pt-deduplicated|0_2026-10-05T22-39-47.936527.parquet",
+      "sha256": "d8bac136c86f09b478ca6a9bd879730cbf7cf16e41b11b2acc267797c2b5a85e"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/meta-llama/Llama-3.2-3B-Instruct/2026-10-05T22-43-17.923776/details_mmlu-pt-filtered|0_2026-10-05T22-43-17.923776.parquet",
+      "sha256": "684f5317420ee3239f56160efa1c48b58c593d2bb25fce0f8b96ae8729c2ee2d"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/meta-llama/Llama-3.2-3B-Instruct/2026-10-05T22-43-17.923776/details_mmlu-pt-deduplicated|0_2026-10-05T22-43-17.923776.parquet",
+      "sha256": "24514bc118070594d821782a5e1387bc5a07a698c376d68c9830fb87a582a0aa"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16/2026-10-05T23-10-27.696711/details_mmlu-pt-filtered|0_2026-10-05T23-10-27.696711.parquet",
+      "sha256": "fb683fa2c796fd128d30be6eb9a4b942610568e08db32366b7ec8573159b9b52"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16/2026-10-05T23-10-27.696711/details_mmlu-pt-deduplicated|0_2026-10-05T23-10-27.696711.parquet",
+      "sha256": "7d4e35872fae5a838e97553a8b120f7f2ebc06db7a0deecae918dcd530e71401"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16/2026-10-05T23-01-33.140460/details_mmlu-pt-filtered|0_2026-10-05T23-01-33.140460.parquet",
+      "sha256": "09bc705b58374f5bf89443e1583d28551b2b9b5a685be2a5e6a6e44ea78775dc"
+    },
+    {
+      "path": "/raid/aluno_paulosantana/repositories/light-benchmark/output/old/details/nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16/2026-10-05T23-01-33.140460/details_mmlu-pt-deduplicated|0_2026-10-05T23-01-33.140460.parquet",
+      "sha256": "2c5ed1b8c513536d63d3d55b28949d20e6954d53f1753f720e5720d48e1fabf4"
+    }
+  ],
+  "checks": {
+    "complete_coverage": true,
+    "content_equal": true,
+    "retained_scores_equal": true,
+    "csv_metrics_equal": true
+  },
+  "files_sha256": {
+    "evaluation_aggregations.csv": "afae111cb18ed466855e49ef16c393cb1d14d554a9be06c612b72e099121924f",
+    "evaluation_decomposition.csv": "8debe547264f6d92a25775d6db81467898f8921fc5969f3a66fdf53821a34b61",
+    "evaluation_exams.csv": "75d2df6dadc16efd0135f51d0bb320887fa17ebf1cba0f226c3ba1b53d60251e",
+    "evaluation_models.csv": "83bfc25851aced149edab3d1832ec80014187c59d43784c62a8ea8b74eb8ed37"
+  }
+}

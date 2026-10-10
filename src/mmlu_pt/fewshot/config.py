@@ -8,6 +8,7 @@ from pathlib import Path
 from mmlu_pt.annotation.knowledge_area.config import canonical_json, digest, timestamp, write_json  # noqa: F401
 
 DEFAULT_SOURCE = "bench-temp-2/mmlu-pt-knowledge-annotated"
+DEFAULT_DEDUPLICATED_SOURCE = "bench-temp-2/mmlu-pt-deduplicated"
 DEFAULT_HIGH_SCHOOL_REPO = "bench-temp-2/mmlu-pt-high-school"
 DEFAULT_UNDERGRADUATE_REPO = "bench-temp-2/mmlu-pt-undergraduate"
 DEFAULT_OUTPUT_DIR = Path("output/fewshot-work")
@@ -16,7 +17,7 @@ LEVELS = ("high_school", "undergraduate")
 LETTERS = "ABCDE"
 ID_COLUMN = "id"
 RATIONALE_COLUMN = "rationale"
-# Source columns kept in the published datasets; other knowledge-annotation columns are dropped.
+# Minimal public fields; the source's annotation columns are also preserved.
 REQUIRED_COLUMNS = ("exam", "exam_edition", "exam_url", "num", "question", "choices", "answer",
                     "academic_level", "subject", "macro_area")
 OUTPUT_COLUMNS = (ID_COLUMN, *REQUIRED_COLUMNS, RATIONALE_COLUMN)
@@ -28,6 +29,11 @@ REASONING_EFFORTS = ("none", "low", "medium", "high", "xhigh", "max")
 class RunConfig:
     source: str = DEFAULT_SOURCE
     source_revision: str | None = None
+    source_path: str | None = None
+    deduplicated_source: str = DEFAULT_DEDUPLICATED_SOURCE
+    deduplicated_revision: str | None = None
+    deduplicated_path: str | None = None
+    dev_from: str | None = None
     split: str = "train"
     high_school_repo: str = DEFAULT_HIGH_SCHOOL_REPO
     undergraduate_repo: str = DEFAULT_UNDERGRADUATE_REPO
@@ -77,7 +83,8 @@ def run_id(config: RunConfig, source: dict, prompt_digest: str) -> str:
     identity = {"source": source["identifier"], "revision": source["revision"], "split": config.split,
                 "seed": config.seed, "shots": config.shots, "model": config.model,
                 "reasoning_effort": config.reasoning_effort, "prompt_hash": prompt_digest,
-                "shared_prefix_chars": config.shared_prefix_chars}
+                "shared_prefix_chars": config.shared_prefix_chars,
+                "test_source": source.get("test_source"), "dev_snapshot": source.get("dev_snapshot")}
     return digest(identity)[:12]
 
 

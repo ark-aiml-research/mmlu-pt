@@ -1,0 +1,93 @@
+% =============================================================================
+% Related Work section of "Portuguese-MMLU: Measuring Massive Multitask
+% Language Understanding in Portuguese".
+%
+% Usage: \input{related_work} in acl_latex.tex, after the Introduction.
+% Required packages: natbib (\citep, \citet; loaded by acl.sty) and hyperref
+% or url (\url in footnotes; the ACL template loads hyperref).
+% Bibliography entries are in related_work.bib: append them to custom.bib or
+% use \bibliography{custom,related_work}. Every cited work is peer-reviewed;
+% web resources appear only in footnotes.
+% =============================================================================
+
+\section{Related Work}
+\label{sec:related}
+
+MMLU \citep{hendrycks2021mmlu} established the format that most knowledge
+benchmarks follow today: multiple-choice questions over 57 academic and
+professional subjects, collected from exams and study materials and scored by
+accuracy in zero- and few-shot settings. Its limitations have driven two lines
+of follow-up work. The first revises the English benchmark itself: MMLU-Pro
+raises the number of options from four to ten and removes trivial and noisy
+items, lowering the accuracy of frontier models by 16 to 33 points
+\citep{wang2024mmlupro}, and MMLU-Redux re-annotates 5,700 questions by hand,
+estimates that 6.5\% of MMLU items are erroneous and shows that correcting
+them changes model rankings \citep{gema2025mmluredux}. The second builds
+benchmarks directly from official human examinations, whose items are written
+and calibrated by experts for a population of real candidates: AGIEval, for
+instance, gathers college-entrance exams, law-school admission tests, bar
+exams and mathematics competitions in English and Chinese, and finds that
+models remain weak on questions that demand domain knowledge or multi-step
+reasoning \citep{zhong2024agieval}. Portuguese-MMLU belongs to this second
+line, since all its questions come from official Brazilian exams, and the two
+revision efforts above motivate the quality controls applied before release.
+
+The usual way to evaluate a language other than English is to translate an
+English benchmark. Global-MMLU translates MMLU into 42 languages, Portuguese
+among them, with professional and community translators and annotators, and
+labels 28\% of its questions as culturally sensitive; model rankings change
+when only that subset is used, which the authors attribute to the
+Western-centric content of the source \citep{singh2025globalmmlu}. MMLU-ProX
+extends MMLU-Pro to 29 languages, including Portuguese, through model
+translation followed by expert review, and reports gaps of up to 24 points
+between high- and low-resource languages \citep{xuan2025mmluprox}; OpenAI's
+MMMLU offers a professionally translated Brazilian Portuguese version of
+MMLU.\footnote{\url{https://huggingface.co/datasets/openai/MMMLU}} Native
+benchmarks take the opposite route and argue that translation imports errors
+and a foreign curriculum. CMMLU \citep{li2024cmmlu}, ArabicMMLU
+\citep{koto2024arabicmmlu}, TurkishMMLU \citep{yuksel2024turkishmmlu} and
+KMMLU \citep{son2025kmmlu} are built from exams and teaching materials written
+in the target language; KMMLU, with 35,030 questions from Korean examinations,
+finds that models score below the pass mark of the source exams and that one
+fifth of its questions require knowledge of Korean culture. Portuguese appears
+in multi-country exam collections only as a small slice: M3Exam includes about
+1,400 Brazilian questions, among them ENEM items, in a nine-language benchmark
+\citep{zhang2023m3exam}; INCLUDE has 581 Portuguese questions among 197,243
+across 44 languages \citep{romanou2025include}; and Kaleidoscope, a
+multimodal collection in 18 languages, contributes 2,000 Portuguese items,
+half of which require an image \citep{salazar2026kaleidoscope}. A native,
+multi-domain benchmark of the scale of CMMLU or KMMLU does not exist for
+Portuguese.
+
+Brazilian exams were proposed as a test for artificial intelligence before
+large language models: the ENEM Challenge turned the national high-school
+exam into a machine-readable question set and reported retrieval and
+word-embedding solvers between 26\% and 29\% accuracy on its text-only
+questions \citep{silveira2018enem}. With generative models, the exams became
+the core of Portuguese evaluation suites. BLUEX collects the entrance exams of
+USP and UNICAMP \citep{almeida2023bluex}; the Poeta suite, with 14 Portuguese
+datasets, was used to show that continued pretraining in Portuguese improves
+the Sabi\'a models over multilingual baselines \citep{pires2023sabia}; and the
+Tucano models were evaluated with a harness that combines ENEM, BLUEX and the
+OAB bar exam with inference, similarity and classification tasks and four
+benchmarks machine-translated from English \citep{correa2025tucano}.
+Recent resources widen the formats and the variants covered: EduBench
+contains 3,149 discursive questions from entrance exams with expert reference
+answers \citep{paiola2026edubench}; a benchmark built from the 2025 ENAMED
+medical-licensing exam scores 22 models with the exam's official
+item-response model and finds that many open-weight models fall below the
+passing threshold \citep{correia2026enamed}; and CLARIN-PT-LDB is a
+leaderboard for European Portuguese \citep{silva2026clarinptldb}. These
+resources are either single-exam, with tens to a few thousand questions, or
+built around the same three sources, ENEM, BLUEX and OAB, so that subjects
+such as health, business, engineering and the social sciences at
+undergraduate level remain largely untested in Portuguese.
+
+Portuguese-MMLU differs from this prior work in scope and construction. It
+gathers native questions from 17 Brazilian examinations, spanning university
+entrance exams, an informatics olympiad, professional certification,
+public-sector recruitment and medical licensing and residency exams, at two
+academic levels. Every question is assigned a subject and a macro area,
+duplicates are removed at the exact and the semantic level, and items whose
+statement cannot be recovered are revised out before release, so that results
+can be compared per area across the many disciplines the exams cover.

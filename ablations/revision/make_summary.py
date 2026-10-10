@@ -1,10 +1,12 @@
 """Print and verify every number quoted in the dataset-revision appendix.
 
 Reads config/removed_questions.json, the original and revised pipeline stages, the knowledge-area
-annotation runs that detected the defects and the audit of run 1.1. Nothing is written; any
-inconsistency between the artifacts raises ValueError. Run with .venv/bin/python from the repo root.
+annotation runs that detected the defects and the audit of run 1.1. Any
+inconsistency between the artifacts raises ValueError. Published split aggregates are exported.
+Run with .venv/bin/python from the repo root.
 """
 
+import argparse
 import hashlib
 import json
 import re
@@ -356,7 +358,43 @@ def check_inputs() -> list[Path]:
     return [path for path in required if not path.exists()]
 
 
+def published_split_table() -> pd.DataFrame:
+    """Check global split separation and summarize the published datasets."""
+    directory = OUTPUT_DIR / "fewshot-work" / "main"
+    manifest = read_json(directory / "manifest.json")
+    identities = {"test": set(), "dev": set()}
+    rows = []
+    for level, repository in (("high_school", "bench-temp-2/mmlu-pt-high-school"),
+                              ("undergraduate", "bench-temp-2/mmlu-pt-undergraduate")):
+        counts = {"test": 0, "dev": 0}
+        for path in sorted((directory / "datasets" / level).iterdir()):
+            if not path.is_dir():
+                continue
+            data = load_from_disk(str(path))
+            for split in counts:
+                for row in data[split]:
+                    identity = annotation_id(row)
+                    if identity != row["id"] or identity != row["annotation_id"]:
+                        raise ValueError("A published ID differs from its content.")
+                    if identity in identities[split] or row["academic_level"] != level:
+                        raise ValueError("Duplicate published ID or incorrect academic level.")
+                    identities[split].add(identity)
+                    counts[split] += 1
+        rows.append({"level": level, **counts, "repository": repository,
+                     "revision": manifest["published"][repository]["revision"]})
+    deduplicated = set(load_stage(REVISED_06 / "huggingface")["annotation_id"])
+    if identities["test"] & identities["dev"] or identities["test"] != deduplicated - identities["dev"]:
+        raise ValueError("Published test selection or global dev separation is inconsistent.")
+    table = pd.DataFrame(rows)
+    if table[["test", "dev"]].values.tolist() != [[8705, 30], [29095, 45]]:
+        raise ValueError("Unexpected published split counts.")
+    return table
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-dir", type=Path, default=Path(__file__).resolve().parent / "aggregates")
+    args = parser.parse_args()
     missing = check_inputs()
     if missing:
         print("Missing inputs:", *missing, sep="\n  ")
@@ -431,6 +469,14 @@ def main() -> int:
         hub = manifest["hub"]
         print(f"{name}: {hub['repository']} revision {hub['revision']} pushed {hub['pushed_at']}")
     print(f"post-annotation: {post['hub']['repository']} revision {post['hub']['revision']} pushed {post['hub']['pushed_at']}")
+    table = published_split_table()
+    print_frame("Published splits:", table)
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    table.to_csv(args.output_dir / "published_splits.csv", index=False)
+    manifest = {"checks": {"unique_ids": True, "global_dev_separation": True,
+                           "exact_deduplicated_test_selection": True},
+                "files_sha256": {"published_splits.csv": file_sha256(args.output_dir / "published_splits.csv")}}
+    (args.output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     return 0
 
 
