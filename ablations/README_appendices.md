@@ -13,6 +13,7 @@ Run from the repository root:
 .venv/bin/python ablations/knowledge_area/make_figures.py
 .venv/bin/python ablations/deduplication/evaluation_summary.py
 .venv/bin/python ablations/revision/make_summary.py
+.venv/bin/python ablations/hard/make_figures.py
 ```
 
 The annotation generator writes `figures/` and `aggregates/` under its directory;
@@ -22,6 +23,11 @@ separate test distributions from annotation runs, label changes, abstentions
 and costs. The deduplication CSVs contain model, exam, aggregation and
 composition results verified against the original per-item predictions.
 Manifests record validations, dataset revisions and export hashes.
+
+The Hard-subset generator verifies `output/hard-direct-v2` against the rule tables in
+`ablations/hard` and the panel predictions, prints the numbers quoted in
+`appendix_hard.tex` and `appendix_hard_short.tex`, and writes `figures/`; its citations are in
+`references_hard.bib`.
 
 The figure macros default to `ablations/<area>/figures` and can be defined before
 including the appendices to point to the manuscript's figure directories.

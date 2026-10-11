@@ -1,0 +1,507 @@
+% =============================================================================
+% Appendix: construction of the Hard subsets (MMLU-PT-Hard-Direct).
+%
+% Usage: \input this file after \appendix in the paper.
+% Required packages: graphicx, booktabs, natbib (\citep, \citet), amssymb.
+% Assumes UTF-8 input and T1 font encoding (both provided by the ACL template).
+% Bibliography entries for every citation are in ablations/hard/references_hard.bib.
+%
+% Every number comes from the build artifacts in output/hard-direct-v2
+% (manifest.json, audit.jsonl, distributions.json, mean_scores.csv,
+% sensitivity.csv, publication.json), from the rule comparison in
+% ablations/hard (counts.csv, scores.csv, provenance.json) and from the
+% recorded predictions of the three panel models in the light-benchmark
+% experiment exp-mmlu-pt-direct. ablations/hard/make_figures.py checks these
+% artifacts against each other, prints every number quoted below and
+% generates the figures. By default figures are read from ./figures; to change
+% this, define the macro before the \input, e.g.
+%   \newcommand{\HardFigDir}{ablations/hard/figures}
+% =============================================================================
+
+\providecommand{\HardFigDir}{figures}
+
+\section{Construction of the Hard Subsets}
+\label{app:hard}
+
+The Hard subsets keep the test questions that at least one of three strong
+models fails. A question is removed only when all three models of a fixed
+selection panel answer it correctly in both the zero-shot and the five-shot
+protocol, that is, six correct answers out of six. The subsets were built
+from predictions already recorded for the full benchmark, without new
+inference, and they keep every column, the original row order and the
+original dev examples. This appendix describes the recorded predictions
+(\S\ref{app:hard-predictions}), the selection rule
+(\S\ref{app:hard-rule}), the alternative rules it was compared with
+(\S\ref{app:hard-alternatives}), what keeps a question in the subset
+(\S\ref{app:hard-retention}), the effect on composition
+(\S\ref{app:hard-composition}) and on model scores
+(\S\ref{app:hard-scores}), the build and its checks
+(\S\ref{app:hard-build}) and the limitations
+(\S\ref{app:hard-limitations}).
+
+\paragraph{Summary.} (1)~The panel is Gemini~3.8 Flash, Gemma~4 31B and
+Qwen3.5 27B. Of the 37,798 test questions, 15,268 are kept: 4,584 of the
+8,704 high-school questions (52.67\%) and 10,684 of the 29,094 undergraduate
+questions (36.72\%). (2)~Seven removal rules were compared over 21 models.
+Consensus rules over all 21 models or over five compact models remove at
+most 31.42\% of a level, and only the panel rule removes more than half of
+the benchmark. (3)~The weaker panel members decide most retentions:
+Gemini~3.8 Flash answered 78.18\% of the kept high-school questions and
+75.07\% of the kept undergraduate questions correctly in both protocols.
+(4)~The selection shifts the high-school composition towards mathematics and
+logic, whose share grows from 32.30\% to 57.24\%. The undergraduate
+composition changes by at most 4.6 percentage points per macro area.
+(5)~The 18 models outside the panel lose between 6.31 and 33.59 points, and
+their ranking is largely preserved (Spearman 0.889 for high school and 0.990
+for undergraduate). (6)~About one Hard question in nine is kept only because
+a panel response did not follow the requested answer format, mostly in
+Gemma~4 31B's zero-shot high-school responses.
+
+% -----------------------------------------------------------------------------
+\subsection{Recorded predictions}
+\label{app:hard-predictions}
+
+The selection reuses the direct-answer evaluation of the full benchmark: 21
+instruction-tuned models from six series (three Tucano2, six Qwen3.5, two
+Gemini, five Gemma~4, three Llama and two Nemotron models). Each test
+question is shown with its lettered choices after the instruction
+``Responda à questão. Forneça somente a alternativa correta no formato
+`Resposta: X'.'' (``Answer the question. Give only the correct choice in
+the format `Answer: X'.''). Generation is greedy and limited to 64 new
+tokens. Thinking is disabled for the Qwen3.5 models. Gemini~3.8 Flash is
+called with low reasoning effort and Gemini~2.5 Flash with none. The five-shot protocol prepends the five dev
+examples of the question's configuration in a fixed order. A response is
+scored with extractive match: the predicted choice letter is extracted from
+the text and compared with the key, so every score is 0 or 1. Every model has
+exactly one score per question and protocol.
+
+% -----------------------------------------------------------------------------
+\subsection{Selection rule}
+\label{app:hard-rule}
+
+For a question $q$, a panel model $m$ and a protocol
+$k\in\{0,5\}$, let $s_{m,k}(q)\in\{0,1\}$ be the recorded extractive-match
+score, and let $\bar s_m(q)=\tfrac12\,(s_{m,0}(q)+s_{m,5}(q))$. The question is
+removed when $\bar s_m(q)=1$ for all three panel models, which is equivalent
+to $\sum_{m,k}s_{m,k}(q)=6$. It is kept as soon as one of the six results
+is an error. Questions of intermediate difficulty are therefore kept, and the
+subset is not sampled or balanced by area.
+
+Removing items that models solve by consensus follows adversarial filtering,
+which discards examples that a model ensemble already handles
+\citep{zellers2018swag,zellers2019hellaswag,lebras2020aflite}. More recent
+benchmarks apply the same idea with language models as judges of
+difficulty: BIG-Bench Hard keeps the tasks on which models had not yet
+surpassed human raters \citep{suzgun2023bbh}, and MMLU-Pro removes questions
+that most of a panel of small models answers correctly
+\citep{wang2024mmlupro}. The panel here combines the strongest model of the
+pool, the closed Gemini~3.8 Flash, with the largest dense open-weight models
+of two other series, Gemma~4 and Qwen3.5. Requiring all three to agree prevents any single model from
+defining easiness, and requiring both protocols prevents a question from
+being removed because of one favourable prompt. Selecting with the models
+that are later evaluated makes adversarially built sets harder for those
+models in particular \citep{phang2022adversarially}, so panel scores on the
+subset are reported separately (\S\ref{app:hard-scores}).
+
+% -----------------------------------------------------------------------------
+\subsection{Alternative rules}
+\label{app:hard-alternatives}
+
+Seven rules were computed on the same recorded predictions, all using the
+mean of the zero-shot and five-shot scores
+(Table~\ref{tab:hard-rules}, Figure~\ref{fig:hard-rules}). Three rules use
+all 21 models with decreasing thresholds. Rule ``$\geq$80\%, by
+series'' gives equal weight to the six model series, so that a series with
+many sizes does not dominate the vote. Two rules use five compact models, the
+smallest of each open-weight series. The last rule is the
+adopted panel rule.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& \multicolumn{2}{c}{High school} & \multicolumn{2}{c}{Undergraduate} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Remove when & Kept & Rem.\ \% & Kept & Rem.\ \% \\
+\midrule
+21/21 models, 42/42 & 8,407 & 3.41 & 28,594 & 1.72 \\
+$\geq$19/21 models, $\geq$38/42 & 7,193 & 17.36 & 25,380 & 12.77 \\
+$\geq$17/21 models, $\geq$34/42 & 6,422 & 26.22 & 21,781 & 25.14 \\
+$\geq$80\%, by series & 6,457 & 25.82 & 22,091 & 24.07 \\
+$\geq$4/5 compact, $\geq$8/10 & 7,240 & 16.82 & 24,460 & 15.93 \\
+$\geq$3/5 compact, $\geq$6/10 & 6,176 & 29.04 & 19,953 & 31.42 \\
+\textbf{3/3 panel, 6/6} & \textbf{4,584} & \textbf{47.33} & \textbf{10,684} & \textbf{63.28} \\
+\bottomrule
+\end{tabular}
+\caption{Alternative removal rules over 8,704 high-school and 29,094
+undergraduate test questions. Thresholds are on the sum of the per-model
+means of zero-shot and five-shot scores; the second figure gives the
+equivalent number of correct answers among all model--protocol results.
+\emph{Rem.\ \%}: share of the level removed. The adopted rule is in bold.}
+\label{tab:hard-rules}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\HardFigDir/rule_sizes.pdf}
+\caption{Share of each level removed by every rule of
+Table~\ref{tab:hard-rules}.}
+\label{fig:hard-rules}
+\end{figure}
+
+Consensus over the whole pool removes little: only 2.11\% of the benchmark
+is answered correctly by all 21 models in both protocols, because the
+smallest models fail many easy questions. Lowering the threshold to 17 of
+21 models removes 25.38\%, and the series-weighted rule behaves almost
+identically (24.47\%). Rules over compact models remove questions that are
+easy for small models, which are not necessarily easy for strong ones. The
+panel rule removes 59.61\% of the benchmark and is the only rule under which
+the strongest non-panel model, Gemini~2.5 Flash, falls below 55\% in both
+levels (\S\ref{app:hard-scores}). It was adopted because it defines
+easiness by the models closest to the state of the art in the pool, which
+leaves room to measure progress above them.
+
+\paragraph{Both protocols.} The panel is unanimous on 4,384 high-school
+questions in zero-shot and on 5,158 in five-shot; 4,120 are unanimous in
+both and are removed. A rule based on five-shot results alone would also
+remove 1,038 questions that a panel member fails without demonstrations, and
+a rule based on zero-shot alone would remove 264 questions that a member
+fails with them. For undergraduate the corresponding counts are 19,447 and
+19,983 unanimous questions, 18,410 removed, 1,573 failed only in zero-shot
+and 1,037 failed only in five-shot. Requiring both protocols keeps these
+questions, whose easiness depends on the prompt.
+
+% -----------------------------------------------------------------------------
+\subsection{What keeps a question}
+\label{app:hard-retention}
+
+Table~\ref{tab:hard-retention} breaks down the kept questions by the number of
+correct panel answers and by the panel members that fail them. Gemini~3.8
+Flash answers 3,584 of the 4,584 kept high-school questions (78.18\%) and
+8,021 of the 10,684 kept undergraduate questions (75.07\%) correctly in both
+protocols. It is the only failing member for just 39 and 383 of them. The
+subset is therefore defined mainly by the errors of the two open-weight
+models. Gemma~4 31B alone keeps 1,357 high-school questions (29.60\%) and
+Qwen3.5 27B alone keeps 3,024 undergraduate questions (28.30\%). At the other
+end, 377 high-school and 1,005 undergraduate questions are failed in all six
+results.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+& High school & Undergrad. \\
+\midrule
+Kept questions & 4,584 & 10,684 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Correct panel results out of six}} \\
+\quad 0 & 377 & 1,005 \\
+\quad 1--2 & 1,396 & 2,520 \\
+\quad 3--4 & 1,657 & 4,774 \\
+\quad 5 & 1,154 & 2,385 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Only failing panel member}} \\
+\quad Gemini 3.8 Flash & 39 & 383 \\
+\quad Gemma 4 31B & 1,357 & 2,038 \\
+\quad Qwen3.5 27B & 319 & 3,024 \\
+Two failing members & 2,122 & 3,527 \\
+Three failing members & 747 & 1,712 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Every panel error without the answer line}} \\
+\quad Questions & 1,000 & 787 \\
+\quad Share of kept & 21.82\% & 7.37\% \\
+\bottomrule
+\end{tabular}
+\caption{What keeps a question in the Hard subsets. A member fails a question
+when it errs in at least one protocol. The last block counts questions all of
+whose panel errors are responses without a ``Resposta: X'' line.}
+\label{tab:hard-retention}
+\end{table}
+
+\paragraph{Answer format.} Extractive match counts any response without the
+key as an error, including responses that ignore the requested format.
+Almost all such responses come from Gemma~4 31B: 3,316 of its 3,727
+zero-shot high-school errors contain no ``Resposta: X'' line and no bare
+letter, against 678 of its 2,670 five-shot errors. They are mostly
+step-by-step explanations cut at the 64-token limit. The metric still
+extracts a letter from most of them; only 929 of the zero-shot high-school
+errors have no extracted choice at all. Qwen3.5 27B and Gemini~3.8 Flash
+produce at most 21 such responses in any level and protocol. As a result,
+1,000 kept high-school questions (21.82\%) and 787 kept undergraduate
+questions (7.37\%) are kept only because of responses without the answer
+line, 1,787 in total (11.70\% of the subsets). Of these, 278 and 186 are kept
+only because of responses with no extracted choice. This also explains
+Gemma~4 31B's low zero-shot high-school score on the subset
+(Table~\ref{tab:hard-scores}).
+
+% -----------------------------------------------------------------------------
+\subsection{Effect on composition}
+\label{app:hard-composition}
+
+Because easiness varies by subject, the selection changes the composition of
+each level (Figures~\ref{fig:hard-composition-hs}
+and~\ref{fig:hard-composition-ug}, Table~\ref{tab:hard-composition}). In high school, 93.3\% of the mathematics,
+statistics and logic questions are kept and their share grows from 32.30\% to
+57.24\%. Only 14.8\% of the humanities questions and 22.8\% of the language
+and literature questions are kept. Subjects follow the same pattern:
+96.4\% of high-school logic and 91.5\% of high-school mathematics remain,
+against 6.1\% of philosophy, 9.4\% of history and 9.8\% of sociology. Among
+exams, OBI, the Brazilian informatics olympiad, keeps 1,246 of its 1,317
+questions (94.6\%) and becomes 27.18\% of the high-school subset, while ENEM
+keeps 37.1\%. The undergraduate level changes less. Mathematics, statistics
+and logic grows from 4.06\% to 8.66\%, law from 36.00\% to 38.86\%, and every
+other macro area changes by less than 2 percentage points.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\HardFigDir/composition_shift_high_school.pdf}
+\caption{Macro-area shares of the high-school level in the original test set
+and in the Hard subset. The number of Hard questions is in parentheses.}
+\label{fig:hard-composition-hs}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\HardFigDir/composition_shift_undergraduate.pdf}
+\caption{Macro-area shares of the undergraduate level in the original test
+set and in the Hard subset. The number of Hard questions is in parentheses.}
+\label{fig:hard-composition-ug}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Level & Macro area & Hard & Kept \% & Share \% \\
+\midrule
+HS & Math., Statistics, Logic & 2,624 & 93.3 & 57.24 \\
+HS & Natural, Earth, Agr., Vet. & 1,140 & 56.6 & 24.87 \\
+HS & Languages, Lit., Arts, Comm. & 529 & 22.8 & 11.54 \\
+HS & Humanities & 217 & 14.8 & 4.73 \\
+HS & Computing, Eng., Arch., Des. & 72 & 91.1 & 1.57 \\
+HS & Health Sciences & 2 & 11.8 & 0.04 \\
+\midrule
+UG & Law & 4,152 & 39.6 & 38.86 \\
+UG & Health Sciences & 1,331 & 33.3 & 12.46 \\
+UG & Economics, Business, Acc. & 1,105 & 33.1 & 10.34 \\
+UG & Computing, Eng., Arch., Des. & 1,076 & 32.7 & 10.07 \\
+UG & Math., Statistics, Logic & 925 & 78.3 & 8.66 \\
+UG & Social and Applied Social & 805 & 36.2 & 7.53 \\
+UG & Languages, Lit., Arts, Comm. & 465 & 27.5 & 4.35 \\
+UG & Natural, Earth, Agr., Vet. & 464 & 33.9 & 4.34 \\
+UG & Humanities & 361 & 23.5 & 3.38 \\
+\bottomrule
+\end{tabular}
+\caption{Hard questions per macro area. \emph{Kept \%}: share of the area's
+original test questions that remain; \emph{Share \%}: share of the level's
+Hard subset. HS: high school; UG: undergraduate.}
+\label{tab:hard-composition}
+\end{table}
+
+Some configurations become very small. High-school health sciences keeps 2
+of its 17 questions, and high-school Spanish loses all 6 of its questions.
+Seven subjects keep fewer than 10 questions. No configuration is empty, so
+every configuration of the full benchmark exists in the Hard subsets with the
+same five dev examples.
+
+% -----------------------------------------------------------------------------
+\subsection{Effect on model scores}
+\label{app:hard-scores}
+
+Table~\ref{tab:hard-scores} and Figures~\ref{fig:hard-accuracy-hs}
+and~\ref{fig:hard-accuracy-ug} compare the
+mean of zero-shot and five-shot accuracy on the original test set and on the
+Hard subsets. The 18 models outside the panel lose between 7.72 and 30.64
+points in high school and between 6.31 and 33.59 points in undergraduate.
+Their range narrows from 32.07--68.61\% to 21.42--43.35\% in high school and
+from 31.85--80.38\% to 24.10--53.27\% in undergraduate. Uniform guessing
+would score 21.10\% and 22.19\% on the subsets, since questions have four or
+five choices. Nine of the 18 models are within 5 points of that baseline in
+high school and four are in undergraduate, so the subsets mostly separate
+the larger models. The ranking of the 18 models is largely preserved, with
+Spearman correlations of 0.889 in high school and 0.990 in undergraduate. The
+largest change is in high school, where Tucano2-qwen 3.7B drops five
+positions and Llama~3.2 1B rises four.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\HardFigDir/accuracy_shift_high_school.pdf}
+\caption{Mean of zero-shot and five-shot accuracy of the 21 models on the
+original high-school test set and on its Hard subset. Panel models are in
+bold and marked with diamonds; their Hard scores are conditioned on the
+selection. The dashed line is the expected accuracy of uniform guessing on
+the subset.}
+\label{fig:hard-accuracy-hs}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\HardFigDir/accuracy_shift_undergraduate.pdf}
+\caption{Mean of zero-shot and five-shot accuracy of the 21 models on the
+original undergraduate test set and on its Hard subset, with the conventions
+of Figure~\ref{fig:hard-accuracy-hs}.}
+\label{fig:hard-accuracy-ug}
+\end{figure}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+& \multicolumn{4}{c}{High school} & \multicolumn{4}{c}{Undergraduate} \\
+\cmidrule(lr){2-5}\cmidrule(l){6-9}
+Model & Orig. & Hard & 0-shot & 5-shot & Orig. & Hard & 0-shot & 5-shot \\
+\midrule
+Gemini 3.8 Flash$^\dagger$ & 90.71 & 82.35 & 84.21 & 80.50 & 92.52 & 79.64 & 80.58 & 78.70 \\
+Gemma 4 31B$^\dagger$ & 63.25 & 30.22 & 18.70 & 41.75 & 79.99 & 45.52 & 42.34 & 48.69 \\
+Qwen3.5 27B$^\dagger$ & 69.20 & 41.51 & 40.86 & 42.17 & 76.06 & 34.81 & 34.22 & 35.40 \\
+\midrule
+Gemini 2.5 Flash & 68.61 & 43.35 & 36.04 & 50.65 & 80.38 & 53.27 & 49.25 & 57.28 \\
+Qwen3.5 35B-A3B & 65.60 & 39.33 & 40.03 & 38.63 & 72.96 & 39.65 & 39.56 & 39.73 \\
+Qwen3.5 9B & 60.58 & 33.84 & 35.67 & 32.00 & 65.77 & 33.65 & 34.58 & 32.73 \\
+Qwen3.5 4B & 57.26 & 32.49 & 32.35 & 32.64 & 60.95 & 31.96 & 32.16 & 31.76 \\
+Nemotron 3 Nano 30B-A3B & 53.10 & 30.49 & 30.52 & 30.45 & 55.58 & 31.10 & 31.18 & 31.02 \\
+Gemma 4 26B-A4B & 60.15 & 29.56 & 21.29 & 37.83 & 76.47 & 45.33 & 43.24 & 47.42 \\
+Gemma 4 E4B & 54.37 & 26.54 & 23.28 & 29.80 & 61.79 & 31.28 & 30.04 & 32.53 \\
+Llama 3.1 8B & 48.79 & 26.40 & 27.12 & 25.68 & 51.79 & 29.53 & 29.46 & 29.61 \\
+Nemotron 3 Nano 4B & 46.90 & 26.25 & 26.37 & 26.13 & 46.94 & 28.36 & 28.44 & 28.28 \\
+Gemma 4 12B & 56.55 & 25.91 & 17.87 & 33.94 & 69.93 & 36.34 & 34.11 & 38.58 \\
+Qwen3.5 2B & 45.33 & 25.68 & 24.11 & 27.25 & 46.55 & 28.01 & 28.05 & 27.98 \\
+Llama 3.2 3B & 42.92 & 25.46 & 26.00 & 24.91 & 42.98 & 27.89 & 28.38 & 27.41 \\
+Qwen3.5 0.8B & 37.57 & 24.51 & 25.04 & 23.97 & 37.66 & 26.68 & 26.85 & 26.51 \\
+Llama 3.2 1B & 32.07 & 24.35 & 24.83 & 23.87 & 31.85 & 25.54 & 25.60 & 25.49 \\
+Tucano2-qwen 3.7B & 47.37 & 23.91 & 20.68 & 27.14 & 48.68 & 28.69 & 27.33 & 30.04 \\
+Tucano2-qwen 1.5B & 40.50 & 23.19 & 22.40 & 23.97 & 37.35 & 25.83 & 25.66 & 26.00 \\
+Gemma 4 E2B & 44.90 & 22.00 & 18.43 & 25.57 & 50.76 & 28.17 & 26.87 & 29.46 \\
+Tucano2-qwen 0.5B & 34.82 & 21.42 & 19.92 & 22.93 & 33.39 & 24.10 & 23.91 & 24.29 \\
+\bottomrule
+\end{tabular}
+\caption{Accuracy (\%) on the original test set and on the Hard subsets.
+\emph{Orig.} and \emph{Hard}: mean of zero-shot and five-shot accuracy;
+\emph{0-shot} and \emph{5-shot}: accuracy on the Hard subset per protocol.
+The subsets have 4,584 high-school and 10,684 undergraduate questions. Models
+are sorted by their high-school Hard score. $^\dagger$Panel model; its Hard
+score is conditioned on its own results. Paired item-bootstrap 95\%
+intervals of the Hard means are at most $\pm$1.4 points in high school and
+$\pm$0.9 in undergraduate.}
+\label{tab:hard-scores}
+\end{table*}
+
+\paragraph{Panel members.} By construction, every kept question has at least
+one panel error, so panel scores on the subsets are not independent
+measurements. To gauge this effect, each member was held out in turn, the
+subset was rebuilt with the other two members, and the held-out model was
+scored on it (Table~\ref{tab:hard-loo}). Gemini~3.8 Flash scores almost the
+same with and without its own vote (82.76\% against 82.35\% in high school),
+since it is rarely the only failing member. In undergraduate, removing each
+member's own vote raises its score by 1.86 to 7.10 points. In high school the
+effect is mixed: Qwen3.5 27B gains 1.54 points, while Gemma~4 31B loses 2.67
+points on a rebuilt subset of only 3,227 questions. The rebuilt subsets
+differ in size and content, so the comparison is indicative only.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& \multicolumn{2}{c}{High school} & \multicolumn{2}{c}{Undergraduate} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Held-out model & $n$ & Mean & $n$ & Mean \\
+\midrule
+Gemini 3.8 Flash & 4,545 & 82.76 & 10,301 & 81.50 \\
+Gemma 4 31B & 3,227 & 27.55 & 8,646 & 49.65 \\
+Qwen3.5 27B & 4,265 & 43.05 & 7,660 & 41.91 \\
+\bottomrule
+\end{tabular}
+\caption{Leave-one-out selection. The subset is rebuilt with the two other
+panel members, and the held-out model's mean of zero-shot and five-shot
+accuracy (\%) is computed on it. $n$: size of the rebuilt subset. Paired
+item-bootstrap 95\% intervals are at most $\pm$1.5 points.}
+\label{tab:hard-loo}
+\end{table}
+
+% -----------------------------------------------------------------------------
+\subsection{Build and verification}
+\label{app:hard-build}
+
+Predictions are joined to test questions by academic level and by the
+stable content identifier of each question, never by row position. The
+build reads every per-question prediction of the experiment and stops if a
+score is missing, duplicated or not binary, if an identifier is unknown, or
+if the prompt text, choice labels or key of a prediction differ from the
+dataset snapshot. It also checks that dev and test identifiers are unique and
+disjoint. Before writing, it verifies that the removed questions are exactly
+those with six correct panel results, and that the selection does not
+change when the protocols or the panel members are reordered or when the
+scores of the 18 other models are inverted.
+
+The output keeps all dataset columns and the original test order, and copies
+the dev split of each configuration unchanged (30 high-school and 45
+undergraduate examples). Each split is exported to Hugging Face format and to
+JSONL, and both exports are reloaded and compared record by record with the
+selected rows. An audit file lists every original test question with its six
+panel scores and the removal decision. A manifest records the panel, the
+rule, the counts and the SHA-256 hashes of the inputs and of the ordered list
+of selected identifiers. Accuracy intervals use Wilson intervals for
+single protocols and a paired item bootstrap (2,000 resamples, seed 42) for
+the mean of the two protocols. The published datasets match the local splits
+in schema, identifiers, order and content (Table~\ref{tab:hard-hub}).
+
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{@{}lrrl@{}}
+\toprule
+Level & Test & Dev & Revision \\
+\midrule
+High school & 4,584 & 30 & \texttt{510cba3b}\ldots \\
+Undergraduate & 10,684 & 45 & \texttt{7572aceb}\ldots \\
+\midrule
+Total & 15,268 & 75 & -- \\
+\bottomrule
+\end{tabular}
+\caption{Published Hard splits of \texttt{bench-temp-2/mmlu-pt-high-school-hard}
+and \texttt{bench-temp-2/mmlu-pt-undergraduate-hard}. The full revisions are
+\texttt{510cba3b920b272b6231}\allowbreak\texttt{99051718ebfda3fc9b84} and
+\texttt{7572aceb8a6240a14d6d}\allowbreak\texttt{7d1d99b223304225beba}.}
+\label{tab:hard-hub}
+\end{table}
+
+% -----------------------------------------------------------------------------
+\subsection{Limitations}
+\label{app:hard-limitations}
+
+\paragraph{Panel-relative difficulty.} ``Hard'' means not solved by all three
+panel members in both protocols. It is not a human judgement of difficulty,
+and the panel scores on the subsets are conditioned on their own errors.
+Filtering with the evaluated models can also change how other models are
+ranked \citep{phang2022adversarially}. Here the ranking of the 18 other
+models changes little, but future models are compared on a set chosen
+against the current panel.
+
+\paragraph{Adaptive choice.} The panel rule was chosen after the alternative
+rules and their scores had been computed on the same predictions, so the
+choice is adaptive. Each protocol has one greedy decoding per model, so
+questions near the decision boundary may change status under another prompt
+or decoding.
+
+\paragraph{Format and defects.} The rule reads only the recorded extractive
+match. 1,787 kept questions owe their place to panel responses without the
+requested answer line, mostly truncated explanations from Gemma~4 31B. The
+1,382 questions that the panel fails in all six results may include items
+with an ambiguous statement or a wrong key, a known source of errors in
+multiple-choice benchmarks \citep{gema2025done}. These questions were not
+reviewed by hand.
+
+\paragraph{Composition.} The subsets are not balanced by area. The
+high-school subset is dominated by mathematics and logic, and some
+configurations have very few questions, such as high-school health sciences
+with two. Per-area scores on these configurations are not reliable.
